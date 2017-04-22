@@ -1,0 +1,79 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+}
+
+@mixin absoluteFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+
+$tabs-height: 42px;
+
+#xi-root {
+  @include absoluteFill;
+  font-weight: 100;
+  color: #333;
+
+  .xi-workspace {
+    @include absoluteFill;
+  }
+
+  .xi-view {
+    position: absolute;
+    top: $tabs-height;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid black;
+    outline: none;
+  }
+
+  .xi-line-view {
+    height: 100%;
+    font-family: monospace;
+  }
+
+  .xi-line {
+    position: relative;
+    min-height: 1em;
+    margin: 0;
+  }
+
+  .xi-cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 1em;
+    background: #000;
+  }
+
+  // Used for measure char widths.
+  .xi-measure {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+
+    div { position: static; }
+  }
+
+
+  // Syntax definitions.
+  .xi-selection {
+    background: #d7d4f0;
+  }
+}
