@@ -4,6 +4,7 @@ import { el, on, off, clamp } from './utils';
 let instanceId = 0;
 
 const svgBackground = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="topleft" viewBox="0 0 214 29" ><path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/></symbol><symbol id="topright" viewBox="0 0 214 29"><use xlink:href="#topleft"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="50%" height="100%" transfrom="scale(-1, 1)"><use xlink:href="#topleft" width="214" height="29" class="xi-tab-background"/><use xlink:href="#topleft" width="214" height="29" class="xi-tab-shadow"/></svg><g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0"><use xlink:href="#topright" width="214" height="29" class="xi-tab-background"/><use xlink:href="#topright" width="214" height="29" class="xi-tab-shadow"/></svg></g></svg>`;
+const svgNewTab = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="addnew" viewBox="0 0 53 29" ><path d="M 14.3 5 L 34.3 5 43 22 22.3 22 Z" /></symbol><symbol id="topright" viewBox="0 0 53 29"><use xlink:href="#addnew"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="100%" height="100%" transfrom="scale(1, 1)"><use xlink:href="#addnew" width="53" height="29" class="xi-tab-background"/><use xlink:href="#addnew" width="53" height="29" class="xi-tab-shadow"/></svg></svg>`;
 
 export default class Tabs {
   constructor(workspace) {
@@ -11,14 +12,19 @@ export default class Tabs {
     this.draggabillyInstances = [];
     this.id = instanceId++;
 
-    // Option
+    // TODO: Option
     this.tabOverlapDistance = 14;
     this.minWidth = 45;
     this.maxWidth = 243;
-    // Option
+    // TODO: Option
+
+    const newBtnBg = el('div', null, 'xi-tab-background');
+    newBtnBg.innerHTML = svgNewTab;
+    const newBtnIcon = el('div', null, 'xi-tab-icon');
+    this.newTabButton = el('div', [newBtnBg, newBtnIcon], 'xi-tab xi-new-tab');
 
     this.styleEl = el('style');
-    this.contentEl = el('div', null, 'xi-tabs-content');
+    this.contentEl = el('div', [this.newTabButton], 'xi-tabs-content');
     this.bottomBar = el('div', null, 'xi-tabs-bottom-bar');
 
     this.el = el('div', [this.contentEl], 'xi-tabs-container');
@@ -62,12 +68,16 @@ export default class Tabs {
     on(window, 'resize', (e) => this.layoutTabs(), false);
 
     on(this.el, 'click', ({ target }) => {
+      if (target.classList.contains('xi-new-tab')) {
+        this.addTab(); // TODO: opts
+      }
       if (target.classList.contains('xi-tab-close')) {
-        this.removeTab(target.parentNode);
+        this.removeTab(target.parentNode); // TODO: before close
       }
     });
 
     on(this.el, 'mousedown', ({ target }) => {
+      if (target.classList.contains('xi-new-tab')) return;
       if (target.classList.contains('xi-tab') ||
           target.classList.contains('xi-tab-content') ||
           target.classList.contains('xi-tab-icon')) {
@@ -106,15 +116,18 @@ export default class Tabs {
   }
 
   layoutTabs() {
-    const tabWidth = this.tabWidth(),
+    const tabs = this.tabs(),
+          tabWidth = this.tabWidth(),
           effectiveWidth = this.tabEffectiveWidth();
 
     this.cleanUpPreviouslyDraggedTabs();
-    for (const tab of this.tabs()) tab.style.width = `${tabWidth}px`;
+    for (const tab of tabs) tab.style.width = `${tabWidth}px`;
+    if (tabs.length > 0) tabs[tabs.length - 1].style.width = '48px';
 
     requestAnimationFrame(() => {
       let styleHTML = '';
       this.tabPositions().forEach((left, i) => {
+        // [data-xi-tabs-instance-id=${this.id}]
         styleHTML += `
           .xi-tabs-content .xi-tab:nth-child(${i+1})  {
             transform: translate3d(${left}px, 0, 0);
@@ -153,6 +166,7 @@ export default class Tabs {
     this.draggabillyInstances.forEach((inst) => inst.destroy());
 
     tabs.forEach((tab, originalIndex) => {
+      if (tab == this.newTabButton) return;
       const originalPosX = tabPositions[originalIndex];
       const draggabillyInstance = new Draggabilly(tab, {
         axis: 'x',
@@ -199,7 +213,7 @@ export default class Tabs {
         const currentIndex = tabs.indexOf(tab);
 
         const currentPosX = originalPosX + moveVector.x;
-        const destinationIndex = clamp(Math.floor((currentPosX + (effectiveWidth / 2)) / effectiveWidth), 0, tabs.length);
+        const destinationIndex = clamp(Math.floor((currentPosX + (effectiveWidth / 2)) / effectiveWidth), 0, tabs.length - 2);
 
         if (currentIndex != destinationIndex) {
           this.animateTabMove(tab, currentIndex, destinationIndex);
@@ -245,7 +259,7 @@ export default class Tabs {
     tab.classList.add('xi-tab-just-added');
     setTimeout(() => tab.classList.remove('xi-tab-just-added'), 500);
 
-    this.contentEl.appendChild(tab);
+    this.contentEl.insertBefore(tab, this.newTabButton);
     this.updateTab(tab, Object.assign({}, { title: '', icon: '' }, data));
     this.emit('tabAdd', { tab });
     this.setCurrentTab(tab);
