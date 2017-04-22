@@ -57,6 +57,12 @@ $activeTabBackgroundColor: #f2f2f2;
       cursor: default;
     }
 
+    &.xi-new-tab {
+      &:active svg .xi-tab-background {
+        fill: $activeTabBackgroundColor;
+      }
+    }
+
     .xi-tab-background {
       position: absolute;
       top: 0;
