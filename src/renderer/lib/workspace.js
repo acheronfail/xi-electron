@@ -63,6 +63,7 @@ export default class Workspace {
   // return true when closing, false otherwise.
   // TODO: query core to see if view is dirty.
   closeView(id) {
+    console.log(id);
     if (this.views[id] /* && !this.isDirty(id) */ ) {
       this.views[id].destroy();
       delete this.views[id];

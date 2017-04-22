@@ -337,6 +337,6 @@ export default class Tabs extends EventEmitter {
 
   remove(id) {
     const tab = this.el.querySelector(`.xi-tab[data-id='${id}']`);
-    if (tab) this.removeTab(tab, true);
+    if (tab) this.removeTab(tab /*, true */ );
   }
 }

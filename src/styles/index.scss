@@ -28,6 +28,7 @@ $tabs-height: 42px;
 
   .xi-workspace {
     @include absoluteFill;
+    background: #dad9da;
   }
 
   .xi-view {
@@ -38,6 +39,7 @@ $tabs-height: 42px;
     bottom: 0;
     border: 1px solid black;
     outline: none;
+    background: #fff;
   }
 
   .xi-line-view {
@@ -51,6 +53,12 @@ $tabs-height: 42px;
     margin: 0;
   }
 
+  @keyframes cursor-blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
   .xi-cursor {
     position: absolute;
     top: 0;
@@ -58,6 +66,8 @@ $tabs-height: 42px;
     width: 2px;
     height: 1em;
     background: #000;
+    animation: cursor-blink 1060ms infinite;
+    animation-delay: 300ms;
   }
 
   // Used for measure char widths.
