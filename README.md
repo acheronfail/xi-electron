@@ -5,7 +5,9 @@ NOTE: This is still a WIP!
 
 ## Getting started
 
-To build and run `xi-electron`:
+To build and run `xi-electron` you'll need to have [NodeJS](https://nodejs.org) installed (Node version 6 or greater) as well as Git.
+
+To get started, simply run:
 
 ```bash
 > https://gitlab.com/callodacity/xi-electron
