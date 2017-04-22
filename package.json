@@ -1,0 +1,64 @@
+{
+    "name": "xi-electron",
+    "productName": "xi-electron",
+    "version": "1.0.0",
+    "description": "An Electron-based front-end for the xi-editor",
+    "main": "src/main.js",
+    "scripts": {
+        "dev": "cross-env NODE_ENV=development electron-forge start",
+        "start": "cross-env NODE_ENV=production electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make",
+        "lint": "eslint src"
+    },
+    "keywords": [],
+    "author": "<author>",
+    "license": "MIT",
+    "config": {
+        "forge": {
+            "make_targets": {
+                "win32": [
+                    "squirrel"
+                ],
+                "darwin": [
+                    "zip"
+                ],
+                "linux": [
+                    "deb",
+                    "rpm"
+                ]
+            },
+            "electronPackagerConfig": {},
+            "electronWinstallerConfig": {
+                "name": "xi_electron"
+            },
+            "electronInstallerDebian": {},
+            "electronInstallerRedhat": {},
+            "github_repository": {
+                "owner": "",
+                "name": ""
+            },
+            "windowsStoreConfig": {
+                "packageName": "",
+                "name": "xielectron"
+            }
+        }
+    },
+    "dependencies": {
+        "draggabilly": "^2.1.1",
+        "electron-compile": "^6.4.0"
+    },
+    "devDependencies": {
+        "babel-plugin-transform-async-to-generator": "^6.24.1",
+        "babel-preset-env": "^1.4.0",
+        "babel-preset-react": "^6.24.1",
+        "cross-env": "^4.0.0",
+        "electron-prebuilt-compile": "1.6.2",
+        "electron-reload": "^1.1.0",
+        "eslint": "^3.19.0",
+        "eslint-config-airbnb": "^14.1.0",
+        "eslint-plugin-import": "^2.2.0",
+        "eslint-plugin-jsx-a11y": "^3.0.0",
+        "eslint-plugin-react": "^6.10.3"
+    }
+}
