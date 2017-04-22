@@ -13,10 +13,11 @@ export default class LineView {
     this.el = view.el.appendChild(el('div', [this.lineContainer, this.measure], 'xi-line-view'));
 
     this.updateViewport();
+    on(window, 'resize', () => this.updateViewport(), false);
   }
 
   // Determine how many lines should render, and send this info to xi-core.
-  // TODO: call this on window resize
+  // TODO: don't always request from 0!
   updateViewport() {
     const nVisibleLines = Math.ceil(this.el.offsetHeight / this.textHeight(true));
     this.view.edit('scroll', [0, nVisibleLines]);

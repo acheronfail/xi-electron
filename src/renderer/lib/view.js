@@ -16,6 +16,15 @@ export default class View {
     this.registerKeyEvents();
   }
 
+  destroy() {
+    // TODO: isDirty methods from core ?
+    this.workspace.sendToCore({
+      method: "close_view",
+      params: { view_id: this.id }
+    });
+    this.el.remove();
+  }
+
   show() {
     this.el.style.display = 'block';
     this.focus();
@@ -55,7 +64,7 @@ export default class View {
   }
 
   /**
-   * Editing methods.
+   * Methods that communicate with xi-core.
    */
 
   insert(chars) {

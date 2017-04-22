@@ -16,6 +16,16 @@ let template = [{
     label: 'New File',
     accelerator: 'CmdOrCtrl+N',
     click: (item, win) => send(win, 'new-file')
+  }, {
+    type: 'separator'
+  }, {
+    label: 'Close Window',
+    accelerator: 'Shift+CmdOrCtrl+W',
+    click: (item, win) => send(win, 'close-window')
+  }, {
+    label: 'Close File',
+    accelerator: 'CmdOrCtrl+W',
+    click: (item, win) => send(win, 'close-file')
   }]
 }, {
   label: 'Edit',
@@ -90,9 +100,8 @@ let template = [{
     accelerator: 'CmdOrCtrl+M',
     role: 'minimize'
   }, {
-    label: 'Close',
-    accelerator: 'CmdOrCtrl+W',
-    role: 'close'
+    label: 'Zoom',
+    role: 'zoom'
   }, {
     type: 'separator'
   }, {

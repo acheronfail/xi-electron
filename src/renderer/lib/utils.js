@@ -22,11 +22,19 @@ export function el(tag, content, cls, style) {
 }
 
 export function on(el, ev, f, opts) {
-  el.addEventListener(ev, f, opts);
+  if (Array.isArray(ev)) {
+    ev.forEach((e) => on(el, e, f, opts));
+  } else {
+    el.addEventListener(ev, f, opts);
+  }
 }
 
 export function off(el, ev, f, opts) {
-  el.removeEventListener(ev, f, opts);
+  if (Array.isArray(ev)) {
+    ev.forEach((e) => off(el, e, f, opts));
+  } else {
+    el.removeEventListener(ev, f, opts);
+  }
 }
 
 export function removeChildren(el) {
