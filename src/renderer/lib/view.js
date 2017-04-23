@@ -1,10 +1,16 @@
+import path from 'path';
 import LineView from './line-view';
 import { el, on } from './utils';
 import { execKey } from './key-events';
 
+const MODIFIER_NONE = 0;
+const MODIFIER_SHIFT = 2;
+
 export default class View {
-  constructor(workspace, id) {
-    this.id = id;
+  constructor(workspace, viewId, data) {
+    this.id = viewId;
+    this.path = data.file_path;
+    this.name = this.path ? path.basename(this.path) : 'Untitled';
     this.workspace = workspace;
 
     this.el = workspace.el.appendChild(el('div', null, 'xi-view'));
@@ -15,6 +21,16 @@ export default class View {
     this.lineView = new LineView(this);
 
     this.registerKeyEvents();
+
+    // Initialise pointer state and events.
+    this.pointerState = {
+      clicks: 0,
+      last: {
+        pageX: -1,
+        pageY: -1,
+        end: 0
+      }
+    };
     on(this.el, 'mousedown', this.onPointerStart.bind(this), false);
   }
 
@@ -69,12 +85,20 @@ export default class View {
    * Methods that communicate with xi-core.
    */
 
+  save() {
+    console.log(this.path);
+  }
+
   insert(chars) {
     this.edit('insert', { chars })
   }
 
   click(line, char, mod, count) {
     this.edit('click', [line, char, mod, count]);
+  }
+
+  drag(line, char, mod) {
+    this.edit('drag', [line, char, mod]);
   }
 
   edit(method, params = {}) {
@@ -106,11 +130,42 @@ export default class View {
   }
 
   onPointerStart(e) {
+    const now = Date.now();
     const pos = this.lineView.posFromMouse(e);
-    console.log(pos.toString());
-    this.click(pos.line, pos.char, 0, 1);
+    const state = this.pointerState;
 
-    // switch button type
+    // TODO: switch button type
+
+    // Forget last click if too much time has passed.
+    if (now - state.last.end > 500) {
+      state.last = { pageY: -1, pageX: -1, end: 0 };
+    }
+
+    // TODO: multi-clicks
+    if (isClose(e, state.last)) {
+      state.clicks++;
+    } else {
+      state.clicks = 1;
+      state.last.pageX = e.pageX;
+      state.last.pageY = e.pageY;
+      state.last.end = now;
+    }
+
+    const modifier = e.shiftKey ? MODIFIER_SHIFT : MODIFIER_NONE;
+    this.click(pos.line, pos.char, modifier, state.clicks);
+
+
+
+    // TODO: dragging!
+    // i.e., on('mousemove'), off(...), etc...
+
   }
 }
 
+
+// Checks if two points { left, top } are close to one another.
+function isClose(a, b) {
+  if (a.pageX == -1 || b.pageX == -1) return false;
+  let dx = b.pageX - a.pageX, dy = b.pageY - a.pageY;
+  return dx * dx + dy * dy < 20 * 20;
+}

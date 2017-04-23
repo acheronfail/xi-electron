@@ -37,9 +37,9 @@ $tabs-height: 42px;
     left: 0;
     right: 0;
     bottom: 0;
-    border: 1px solid black;
     outline: none;
     background: #fff;
+    padding: 10px;
   }
 
   .xi-line-view {
@@ -53,6 +53,8 @@ $tabs-height: 42px;
     min-height: 1em;
     margin: 0;
     cursor: text;
+
+    &.xi-active-line { background: #e8f2ff; }
   }
 
   @keyframes cursor-blink {
@@ -66,7 +68,7 @@ $tabs-height: 42px;
     top: 0;
     left: 0;
     width: 2px;
-    height: 1em;
+    height: 100%;
     background: #000;
     animation: cursor-blink 1060ms infinite;
     animation-delay: 300ms;

@@ -1,5 +1,5 @@
 import { app, BrowserWindow } from 'electron';
-import { DEV } from './config';
+import { DEV } from './environment';
 import glob from 'glob';
 import path from 'path';
 
@@ -15,7 +15,7 @@ if (DEV) {
 // Start the app.
 function initialise() {
   // Load main process modules.
-  const modules = glob.sync(path.join(__dirname, 'main/**/*.js'))
+  const modules = glob.sync(path.join(__dirname, 'main/preload/**/*.js'))
   modules.forEach((module) => require(module));
 
   function createWindow() {

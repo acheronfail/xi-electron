@@ -1,0 +1,3 @@
+import settings from 'electron-settings';
+
+// Do settings setup here...
