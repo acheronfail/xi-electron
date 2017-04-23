@@ -1,5 +1,5 @@
 import cp from 'child_process';
-import { CORE_PATH } from '../../config';
+import { CORE_PATH } from '../../environment';
 import { el } from './utils';
 import View from './view';
 import Tabs from './tabs';
@@ -8,10 +8,23 @@ import Tabs from './tabs';
 let instanceId = 0;
 
 export default class Workspace {
-  constructor(place, options = {}) {
+  constructor(place, settings) {
+    if (!place || !settings) {
+      throw new Error('Invalid arguments sent to workspace!');
+    }
+
+    // This is our reference to each view. Keyed by their `id` from xi-core.
     this.views = {};
+
+    // This is an array that links each view to its `instanceId`. Used
+    // to link the view object to the view returned by xi-core, since those
+    // operations are asynchronous.
+    this.instanceData = [];
+
+    // Create the main element.
     this.el = place.appendChild(el('div', null, 'xi-workspace'));
 
+    // Initialise tabs.
     this.tabs = new Tabs(this);
     this.tabs.on('new', () => this.newView());
     this.tabs.on('change', ({ id }) => this.selectView(id));
@@ -20,21 +33,34 @@ export default class Workspace {
       if (!this.closeView(id)) e.preventDefault();
     });
 
+    // Initialise xi-core.
     this.core = cp.spawn(CORE_PATH);
     this.core.stdout.on('data', this.receiveFromCore.bind(this));
     this.core.stderr.on('data', (data) => {
       console.error(data.toString());
     });
 
+    // TODO: re-open previously opened tabs.
+    // Create an empty view.
     this.newView();
   }
 
-  newView() {
+  /**
+   * Working with views.
+   */
+
+  newView(params = {}) {
+    this.instanceData[instanceId] = params;
     this.sendToCore({
-      id: instanceId++,
+      params,
+      id: instanceId,
       method: "new_view",
-      params: {}
     });
+    instanceId++;
+  }
+
+  activeView() {
+    return this.views[this._selected_view];
   }
 
   activeViewId() {
@@ -53,17 +79,21 @@ export default class Workspace {
     }
   }
 
-  createView(id) {
-    const view = new View(this, id);
-    this.views[id] = view;
-    this.tabs.add({ title: view.id, id: view.id });
-    this.selectView(id);
+  createView(instanceId, viewId) {
+    const view = new View(this, viewId, this.instanceData[instanceId]);
+    this.views[viewId] = view;
+    this.tabs.add({ title: view.name, id: view.id });
+    this.selectView(viewId);
+  }
+
+  saveView(view) {
+    // TODO: add clean / dirty state to tabs!
+    view.save();
   }
 
   // return true when closing, false otherwise.
   // TODO: query core to see if view is dirty.
   closeView(id) {
-    console.log(id);
     if (this.views[id] /* && !this.isDirty(id) */ ) {
       this.views[id].destroy();
       delete this.views[id];
@@ -72,6 +102,16 @@ export default class Workspace {
 
     // TODO: open dialog to user.
     return false;
+  }
+
+  /**
+   * Working with projects / files.
+   */
+
+  openFile(filepaths) {
+    filepaths.forEach((filepath) => {
+      this.newView({ 'file_path': filepath });
+    });
   }
 
   /**
@@ -84,6 +124,10 @@ export default class Workspace {
       this.newView();
     } else if (method == 'close-file') {
       this.tabs.remove(this.activeViewId());
+    } else if (method == 'save-file') {
+      this.saveView(this.activeView());
+    } else if (method == 'dialog-open-file') {
+      this.openFile(...args);
     } else {
       console.warn('message not handled from main process');
       console.log(method, args);
@@ -109,7 +153,7 @@ export default class Workspace {
     const msgs = this.parseMessage(data);
     msgs.forEach((msg) => {
       if (msg.result) {
-        this.createView(msg.result);
+        this.createView(msg.id, msg.result);
       }
       else if (msg.method == 'update') {
         const view = this.views[msg.params.view_id];

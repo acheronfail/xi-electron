@@ -292,7 +292,9 @@ export default class Tabs extends EventEmitter {
   }
 
   updateTab(tab, data) {
-    if (!data.id) throw new Error('Tab must have an `id` property!');
+    if (data.id === null || data.id === undefined) {
+      throw new Error('Tab must have an `id` property!');
+    }
     for (const key in data) {
       if (key == 'title') {
         tab.querySelector('.xi-tab-title').textContent = data.title;
@@ -309,7 +311,9 @@ export default class Tabs extends EventEmitter {
    */
 
   add(data) {
-    if (!data.id) throw new Error('Tab must have an `id` property!');
+    if (data.id === null || data.id === undefined) {
+      throw new Error('Tab must have an `id` property!');
+    }
     const tab = this.createTab();
 
     tab.classList.add('xi-tab-just-added');

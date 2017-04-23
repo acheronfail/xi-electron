@@ -1,5 +1,12 @@
 import { el } from './utils';
 
+// TODO: position cursor in the middle and add options:
+//      (like Sublime Text)
+//      options: cursor_extra_top
+//               cursor_extra_bottom
+//               cursor_width
+//               cursor_style
+
 export default class Cursor {
   constructor(line, pos) {
     this.line = line;

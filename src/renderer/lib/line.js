@@ -24,6 +24,14 @@ export default class Line {
     return this.cursors.length > 0;
   }
 
+  highlight(flag) {
+    if (flag && !this.hasSelection()) {
+      this.el.classList.add('xi-active-line');
+    } else {
+      this.el.classList.remove('xi-active-line');
+    }
+  }
+
   render() {
     // Remove old cursors, and create new ones.
     this._cursors.forEach((c) => c.el.remove());
@@ -31,6 +39,9 @@ export default class Line {
     this.cursors.forEach((ch, i) => {
       this._cursors[i] = new Cursor(this, ch);
     });
+
+    // Highlight line if it contains a cursor.
+    this.highlight(this.hasCursor());
 
     // Empty spans.
     while (this.spans.lastChild) {
