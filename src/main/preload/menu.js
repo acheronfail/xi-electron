@@ -1,10 +1,7 @@
 import electron, { BrowserWindow, Menu, app } from 'electron';
+import { send } from '../utils';
+import { openFile, openFolder } from './dialog';
 
-function send(win, method, ...args) {
-  if (win) {
-    win.webContents.send('message', method, ...args);
-  }
-}
 
 let template = [{
   label: 'File',
@@ -16,6 +13,30 @@ let template = [{
     label: 'New File',
     accelerator: 'CmdOrCtrl+N',
     click: (item, win) => send(win, 'new-file')
+  }, {
+    type: 'separator'
+  }, {
+    label: 'Open File...',
+    accelerator: 'CmdOrCtrl+O',
+    click: (item, win) => openFile(win, { title: 'Open File...' })
+  }, {
+    label: 'Open Folder...',
+    accelerator: 'Shift+CmdOrCtrl+O',
+    click: (item, win) => openFolder(win, { title: 'Open Folder...' })
+  }, {
+    type: 'separator'
+  }, {
+    label: 'Save',
+    accelerator: 'CmdOrCtrl+S',
+    click: (item, win) => send(win, 'save-file')
+  }, {
+    label: 'Save As...',
+    accelerator: 'Shift+CmdOrCtrl+S',
+    click: (item, win) => send(win, 'save-file-as')
+  }, {
+    label: 'Save All',
+    accelerator: 'Alt+CmdOrCtrl+S',
+    click: (item, win) => send(win, 'save-all')
   }, {
     type: 'separator'
   }, {
