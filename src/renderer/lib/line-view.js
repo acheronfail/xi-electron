@@ -1,5 +1,6 @@
 import LineCache from './line-cache';
-import { el, on, removeChildrenAndAdd } from './utils';
+import Pos from './pos';
+import { clamp, el, on, removeChildrenAndAdd } from './utils';
 
 // TODO: scroll editor to show cursor
 
@@ -70,7 +71,59 @@ export default class LineView {
     this.lines().forEach((line) => line.render());
   }
 
-  lines() {
+  // Compute the character position closest to the given coordinates.
+  posAt(x, y, forRect) {
+    // TODO: make all this relative to the scrolled region.
+    // i.e., not from "0" !
+
+    if (y < 0) {
+      return new Pos(0, 0);
+    }
+
+    let lineNo = this.lineAtHeight(y);
+    if (isNaN(lineNo)) return null;
+
+    // Clicked past the end of the document.
+    const last = this.lines().length - 1;
+    if (lineNo > last) {
+      return new Pos(last, this.getLine(last).text.length);
+    }
+
+    let line = this.getLine(lineNo);
+
+    let char = Math.round((x < 0 ? 0 : x) / this.charWidth());
+    if (forRect) {
+      // TODO: rectangular selections.
+      // Probably have to wait for xi-core.
+    } else {
+      char = clamp(char, 0, line.text.length);
+    }
+
+    return new Pos(lineNo, char);
+  }
+
+  getLine(i) {
+    return this.lineCache.lines[i];
+  }
+
+  lineAtHeight(y) {
+    const textHeight = this.textHeight();
+    return Math.round((y - (textHeight / 2)) / textHeight);
+  }
+
+  /**
+   * External instance methods.
+   */
+
+  lines(i) {
     return this.lineCache.lines;
+  }
+
+  posFromMouse(e, forRect = false) {
+    const { left, top } = this.el.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - top;
+
+    return this.posAt(x, y, forRect);
   }
 }
