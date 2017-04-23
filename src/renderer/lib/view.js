@@ -13,7 +13,9 @@ export default class View {
     on(this.el, 'blur', this.onBlur.bind(this), false);
 
     this.lineView = new LineView(this);
+
     this.registerKeyEvents();
+    on(this.el, 'mousedown', this.onPointerStart.bind(this), false);
   }
 
   destroy() {
@@ -71,6 +73,10 @@ export default class View {
     this.edit('insert', { chars })
   }
 
+  click(line, char, mod, count) {
+    this.edit('click', [line, char, mod, count]);
+  }
+
   edit(method, params = {}) {
     this.workspace.sendToCore({
       method: 'edit',
@@ -90,7 +96,6 @@ export default class View {
     const onKeyEvent = (e) => {
       if (this.hasFocus && execKey(this, e)) {
         e.preventDefault();
-        // restartBlink(cs);
         // // Show crosshair when "alt" key is held down (rectangular selections).
         // if (!mobile && e.keyCode == 18) showCrossHair(cs);
       }
@@ -98,6 +103,14 @@ export default class View {
 
     on(this.el, 'keydown', onKeyEvent, false);
     on(this.el, 'keypress', onKeyEvent, false);
+  }
+
+  onPointerStart(e) {
+    const pos = this.lineView.posFromMouse(e);
+    console.log(pos.toString());
+    this.click(pos.line, pos.char, 0, 1);
+
+    // switch button type
   }
 }
 
