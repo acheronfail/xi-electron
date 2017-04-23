@@ -45,12 +45,14 @@ $tabs-height: 42px;
   .xi-line-view {
     height: 100%;
     font-family: monospace;
+    &, * { user-select: none; }
   }
 
   .xi-line {
     position: relative;
     min-height: 1em;
     margin: 0;
+    cursor: text;
   }
 
   @keyframes cursor-blink {
