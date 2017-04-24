@@ -47,7 +47,8 @@
     "dependencies": {
         "draggabilly": "^2.1.1",
         "electron-compile": "^6.4.0",
-        "electron-settings": "^3.0.14"
+        "electron-settings": "^3.0.14",
+        "fs-extra": "^2.1.2"
     },
     "devDependencies": {
         "babel-plugin-transform-async-to-generator": "^6.24.1",

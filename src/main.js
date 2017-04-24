@@ -36,6 +36,8 @@ function initialise() {
   };
 
   app.on('ready', () => {
+    // Load our config.
+    require(path.join(__dirname, 'main/config.js'));
     // Create window.
     createWindow();
   });
