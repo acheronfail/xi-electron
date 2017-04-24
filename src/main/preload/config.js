@@ -7,6 +7,6 @@ import { USER_PREFS } from '../../environment';
 process.nextTick(function () {
   // Ensure the preferences file exists.
   fs.outputFile(USER_PREFS, 'test', { flag: 'wx' }, (err) => {
-    if (err.code != 'EEXIST') throw err;
+    if (err && err.code != 'EEXIST') throw err;
   });
 });
