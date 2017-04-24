@@ -17,8 +17,12 @@ export default class LineView {
     on(window, 'resize', () => this.updateViewport(), false);
   }
 
+  get settings() {
+    return this.view.settings;
+  }
+
   // Determine how many lines should render, and send this info to xi-core.
-  // TODO: don't always request from 0!
+  // TODO: don't always request from 0, get "view.firstLine" or something.
   updateViewport() {
     const nVisibleLines = Math.ceil(this.el.offsetHeight / this.textHeight(true));
     this.view.edit('scroll', [0, nVisibleLines]);

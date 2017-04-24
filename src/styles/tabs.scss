@@ -1,3 +1,4 @@
+$xiTabHeight: 2.8em;
 $xiTabSpaceAbove: 1em;
 $xiTabSpaceBelow: 0.45em;
 $activeTabBackgroundColor: #f2f2f2;
@@ -40,7 +41,7 @@ $activeTabBackgroundColor: #f2f2f2;
   .xi-tab {
     position: absolute;
     left: 0;
-    height: 2.8em;
+    height: $xiTabHeight;
     width: 24em;
     border: 0;
     margin: 0;
@@ -98,19 +99,20 @@ $activeTabBackgroundColor: #f2f2f2;
     }
 
     &.xi-tab-just-added {
-      top: 10px;
-      animation: xi-tab-just-added 120ms forwards ease-in-out;
+      top: $xiTabHeight;
+      animation: xi-tab-just-added 180ms forwards ease-in-out;
+      animation-delay: 50ms;
     }
 
     @keyframes xi-tab-just-removed {
       to {
-        top: 2.8em;
+        top: $xiTabHeight;
       }
     }
 
     &.xi-tab-just-removed {
       top: 0;
-      animation: xi-tab-just-removed 120ms forwards ease-in-out;
+      animation: xi-tab-just-removed 280ms forwards ease-in-out;
     }
 
   }

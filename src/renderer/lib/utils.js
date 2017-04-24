@@ -21,6 +21,12 @@ export function el(tag, content, cls, style) {
   return e;
 }
 
+export function link() {
+  const e = el('link');
+  e.rel = 'stylesheet';
+  return e;
+}
+
 export function on(el, ev, f, opts) {
   if (Array.isArray(ev)) {
     ev.forEach((e) => on(el, e, f, opts));
