@@ -1,12 +1,19 @@
 import cp from 'child_process';
 import { CORE_PATH } from '../../environment';
-import { el } from './utils';
+import { el, link } from './utils';
 import View from './view';
 import Tabs from './tabs';
 
-// ID of views ?
+// Unique instance id of each view.
 let instanceId = 0;
 
+// Defaults for app settings.
+const DEFAULTS = {
+  'theme.ui': '',
+  'view.active-line': true
+};
+
+// Each window has a workspace.
 export default class Workspace {
   constructor(place, settings) {
     if (!place || !settings) {
@@ -15,10 +22,10 @@ export default class Workspace {
 
     // Setup settings.
     this.settings = settings;
-    this.settings.watch('renderer.theme-ui', () => this.updateTheme());
+    this.loadSettings();
 
     // Setup our theming.
-    this.theme = { uiEl: el('link'), syntaxEl: el('link') };
+    this.theme = { uiEl: link(), syntaxEl: link() };
     this.updateTheme();
 
     // This is our reference to each view. Keyed by their `id` from xi-core.
@@ -47,10 +54,6 @@ export default class Workspace {
     this.core.stderr.on('data', (data) => {
       console.error(data.toString());
     });
-
-    // TODO: re-open previously opened tabs.
-    // Create an empty view.
-    this.newView();
   }
 
   /**
@@ -140,12 +143,27 @@ export default class Workspace {
     uiEl.remove();
 
     // Get new settings and add it to the DOM.
-    const themePath = this.settings.get('renderer.theme-ui', null);
+    const themePath = this.settings.get('theme.ui', null);
     if (themePath !== null) {
-      uiEl.rel = 'stylesheet';
       uiEl.href = themePath;
       document.head.appendChild(uiEl);
     }
+  }
+
+  /**
+   * Settings.
+   */
+
+  loadSettings() {
+    const s = this.settings;
+
+    // Set defaults.
+    for (const key in DEFAULTS) {
+      if (!s.has(key)) s.set(key, DEFAULTS[key]);
+    }
+
+    // Listen for changes.
+    s.watch('theme.ui', () => this.updateTheme());
   }
 
   /**

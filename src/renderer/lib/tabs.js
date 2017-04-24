@@ -4,13 +4,13 @@ import { el, on, off, clamp } from './utils';
 
 // TODO: curve edges of new tab button
 // TODO: fill width better
-// TODO: don't prevent resize if adding tabs
+// TODO: dirty indicator
+// TODO: fix close button positioning
 
 let instanceId = 0;
 
-const svgBackground = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="topleft" viewBox="0 0 214 29" ><path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/></symbol><symbol id="topright" viewBox="0 0 214 29"><use xlink:href="#topleft"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="50%" height="100%" transfrom="scale(-1, 1)"><use xlink:href="#topleft" width="214" height="29" class="xi-tab-background"/><use xlink:href="#topleft" width="214" height="29" class="xi-tab-shadow"/></svg><g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0"><use xlink:href="#topright" width="214" height="29" class="xi-tab-background"/><use xlink:href="#topright" width="214" height="29" class="xi-tab-shadow"/></svg></g></svg>`;
+const svgBackground = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="topleft" viewBox="0 0 214 29" ><path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3 -0.4 14.3 0.1 14.3 0.1Z"/></symbol><symbol id="topright" viewBox="0 0 214 29"><use xlink:href="#topleft"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="50%" height="100%" transfrom="scale(-1, 1)"><use xlink:href="#topleft" width="214" height="29" class="xi-tab-background"/><use xlink:href="#topleft" width="214" height="29" class="xi-tab-shadow"/></svg><g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0"><use xlink:href="#topright" width="214" height="29" class="xi-tab-background"/><use xlink:href="#topright" width="214" height="29" class="xi-tab-shadow"/></svg></g></svg>`;
 const svgNewTab = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="addnew" viewBox="0 0 53 29" ><path d="M 14.3 5 L 34.3 5 43 22 22.3 22 Z" /></symbol><symbol id="topright" viewBox="0 0 53 29"><use xlink:href="#addnew"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="100%" height="100%" transfrom="scale(1, 1)"><use xlink:href="#addnew" width="53" height="29" class="xi-tab-background"/><use xlink:href="#addnew" width="53" height="29" class="xi-tab-shadow"/></svg></svg>`;
-
 export default class Tabs extends EventEmitter {
   constructor(workspace) {
     super();
@@ -18,12 +18,6 @@ export default class Tabs extends EventEmitter {
     this.workspace = workspace;
     this.draggabillyInstances = [];
     this.id = instanceId++;
-
-    // TODO: Options
-    this.tabOverlapDistance = 14;
-    this.minWidth = 45;
-    this.maxWidth = 243;
-    // TODO: Options
 
     const newBtnBg = el('div', null, 'xi-tab-background');
     newBtnBg.innerHTML = svgNewTab;
@@ -38,13 +32,24 @@ export default class Tabs extends EventEmitter {
     this.el.setAttribute('data-xi-tabs-instance-id', this.id);
     this.container = workspace.el.appendChild(el('div', [this.el, this.styleEl], 'xi-tabs'));
 
-    this.registerEvents();
-    this.layoutTabs();
+    this._reloadSettings();
     this.fixZIndices();
     this.registerDragEvents();
+    this.registerMouseEvents();
+
+    // Bind necessary methods to this class.
+    this.checkOutside = this.checkOutside.bind(this);
   }
 
-  registerEvents() {
+  _reloadSettings() {
+    const settings = this.workspace.settings;
+    this.overlapDistance = settings.get('tabs.overlap-distance', 14);
+    this.minWidth = settings.get('tabs.min-width', 45);
+    this.maxWidth = settings.get('tabs.max-width', 243);
+    this.layoutTabs();
+  }
+
+  registerMouseEvents() {
     on(window, 'resize', (e) => this.layoutTabs(), false);
 
     on(this.el, 'click', ({ target }) => {
@@ -52,7 +57,11 @@ export default class Tabs extends EventEmitter {
         this.emit('new');
       }
       if (target.classList.contains('xi-tab-close')) {
-        this.removeTab(target.parentNode); // TODO: before close
+        // Prevent resizing of tabs while removing them.
+        if (!this.el.classList.contains('xi-tabs-no-resize')) {
+          this.disableResize();
+        }
+        this.removeTab(target.parentNode);
       }
     });
 
@@ -64,33 +73,30 @@ export default class Tabs extends EventEmitter {
         this.selectTab(target);
       }
     }, false);
+  }
 
-    // Prevent resizing while mouse is over the element.
-    const checkOutside = ({ pageX: x, pageY: y }) => {
-      if (!this.container.contains(document.elementFromPoint(x, y))) {
-        enableResize();
-      }
-    };
+  /**
+   * Prevent resizing while mouse is over the element.
+   */
 
-    const disableResize = () => {
-      this._cachedTabWidth = this.tabWidth();
-      this.el.classList.add('xi-tabs-no-resize');
-      on(window, 'mousemove', checkOutside, false);
-    };
+  enableResize() {
+    off(window, 'mousemove', this.checkOutside, false);
+    this.el.classList.remove('xi-tabs-no-resize');
+    this.el.classList.add('xi-tabs-animate');
+    this.layoutTabs();
+    setTimeout(() => this.el.classList.remove('xi-tabs-animate'), 200);
+  }
 
-    const enableResize = () => {
-      off(window, 'mousemove', checkOutside, false);
-      this.el.classList.remove('xi-tabs-no-resize');
-      this.el.classList.add('xi-tabs-animate');
-      this.layoutTabs();
-      setTimeout(() => this.el.classList.remove('xi-tabs-animate'), 200);
-    };
+  checkOutside({ pageX: x, pageY: y }) {
+    if (!this.container.contains(document.elementFromPoint(x, y))) {
+      this.enableResize();
+    }
+  }
 
-    on(this.el, 'mousemove', (e) => {
-      if (!this.el.classList.contains('xi-tabs-no-resize')) {
-        disableResize();
-      }
-    });
+  disableResize() {
+    this._cachedTabWidth = this.tabWidth();
+    this.el.classList.add('xi-tabs-no-resize');
+    on(window, 'mousemove', this.checkOutside, false);
   }
 
   /**
@@ -105,13 +111,13 @@ export default class Tabs extends EventEmitter {
     if (this.el.classList.contains('xi-tabs-no-resize')) {
       return this._cachedTabWidth;
     }
-    const tabsContentWidth = this.contentEl.clientWidth - this.tabOverlapDistance;
-    const width = (tabsContentWidth / this.tabs().length) + this.tabOverlapDistance;
+    const tabsContentWidth = this.contentEl.clientWidth - this.overlapDistance;
+    const width = (tabsContentWidth / this.tabs().length - 1) + this.overlapDistance;
     return clamp(width, this.minWidth, this.maxWidth);
   }
 
   tabEffectiveWidth() {
-    return this.tabWidth() - this.tabOverlapDistance;
+    return this.tabWidth() - this.overlapDistance;
   }
 
   tabPositions() {
@@ -314,6 +320,12 @@ export default class Tabs extends EventEmitter {
     if (data.id === null || data.id === undefined) {
       throw new Error('Tab must have an `id` property!');
     }
+
+    // Ensure new tabs resize.
+    if (this.el.classList.contains('xi-tabs-no-resize')) {
+      this.enableResize();
+    }
+
     const tab = this.createTab();
 
     tab.classList.add('xi-tab-just-added');
