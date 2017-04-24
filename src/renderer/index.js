@@ -1,9 +1,10 @@
 import Workspace from './lib/workspace';
+import settings from 'electron-settings';
 import { ipcRenderer, remote } from 'electron';
 
 const workspace = window.workspace = new Workspace(
   document.querySelector('#xi-root'),
-  remote.require('electron-settings')
+  settings
 );
 
 ipcRenderer.on('message', (e, method, ...args) => {

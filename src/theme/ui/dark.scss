@@ -1,0 +1,46 @@
+$tabBackgroundColor: #373737;
+$activeTabBackgroundColor: #505050;
+
+.xi-tabs-container {
+  background: #282828;
+
+  .xi-tabs-bottom-bar {
+    background: $activeTabBackgroundColor;
+  }
+
+  .xi-tab {
+    // New tab button.
+    &.xi-new-tab {
+      // On click.
+      &:active svg .xi-tab-background {
+        fill: $activeTabBackgroundColor;
+      }
+    }
+
+    // Normal tab.
+    .xi-tab-background > svg {
+      // backgorund color.
+      .xi-tab-background { fill: $tabBackgroundColor; }
+       // outline color.
+      .xi-tab-shadow { stroke: #000; }
+    }
+
+    // Selected tab.
+    &.xi-tab-selected .xi-tab-background > svg {
+      .xi-tab-background {
+        fill: $activeTabBackgroundColor;
+      }
+    }
+  }
+
+  // Tab title.
+  .xi-tab-title {
+    -webkit-font-smoothing: antialiased;
+    color: #fff;
+  }
+
+  // Tab close button.
+  .xi-tab-close {
+    color: #cfcfcf;
+  }
+}
