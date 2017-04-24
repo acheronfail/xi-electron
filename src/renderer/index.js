@@ -7,6 +7,12 @@ const workspace = window.workspace = new Workspace(
   settings
 );
 
+ipcRenderer.once('args', (e, filepaths) => {
+  filepaths.forEach((filepath) => {
+    workspace.newView({ 'file_path': filepath });
+  });
+});
+
 ipcRenderer.on('message', (e, method, ...args) => {
   workspace.message(method, ...args);
 });

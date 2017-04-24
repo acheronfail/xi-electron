@@ -13,13 +13,18 @@ export default class View {
     this.name = this.path ? path.basename(this.path) : 'Untitled';
     this.workspace = workspace;
 
+    // Element setup.
     this.el = workspace.el.appendChild(el('div', null, 'xi-view'));
     this.el.setAttribute('tabindex', 0);
+
+    // Focus and blur events.
     on(this.el, 'focus', this.onFocus.bind(this), false);
     on(this.el, 'blur', this.onBlur.bind(this), false);
 
+    // Create the line view.
     this.lineView = new LineView(this);
 
+    // Initialise the view.
     this.registerKeyEvents();
 
     // Initialise pointer state and events.
@@ -32,6 +37,10 @@ export default class View {
       }
     };
     on(this.el, 'mousedown', this.onPointerStart.bind(this), false);
+  }
+
+  get settings() {
+    return this.workspace.settings;
   }
 
   destroy() {
@@ -58,6 +67,7 @@ export default class View {
   }
 
   onFocus() {
+    this.el.classList.add('xi-focused');
     this.hasFocus = true;
   }
 
@@ -66,6 +76,7 @@ export default class View {
   }
 
   onBlur() {
+    this.el.classList.remove('xi-focused');
     this.hasFocus = false;
   }
 

@@ -25,11 +25,13 @@ export default class Line {
   }
 
   highlight(flag) {
-    if (flag && !this.hasSelection()) {
+    if (this.hasCursor() && !this.hasSelection()) {
       this.el.classList.add('xi-active-line');
-    } else {
-      this.el.classList.remove('xi-active-line');
     }
+  }
+
+  get settings() {
+    return this.lineView.settings;
   }
 
   render() {
@@ -41,7 +43,11 @@ export default class Line {
     });
 
     // Highlight line if it contains a cursor.
-    this.highlight(this.hasCursor());
+    if (this.settings.get('view.active-line')) {
+      this.highlight();
+    } else if (this.el.classList.contains('xi-active-line')) {
+      this.el.classList.remove('xi-active-line');
+    }
 
     // Empty spans.
     while (this.spans.lastChild) {
