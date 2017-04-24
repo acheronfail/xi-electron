@@ -1,3 +1,4 @@
+import assert from 'assert';
 import cp from 'child_process';
 import { CORE_PATH } from '../../environment';
 import { el, link } from './utils';
@@ -7,21 +8,15 @@ import Tabs from './tabs';
 // Unique instance id of each view.
 let instanceId = 0;
 
-// Defaults for app settings.
-const DEFAULTS = {
-  'theme.ui': '',
-  'view.active-line': true
-};
-
 // Each window has a workspace.
 export default class Workspace {
   constructor(place, settings) {
-    if (!place || !settings) {
-      throw new Error('Invalid arguments sent to workspace!');
-    }
+    assert.strictEqual(typeof place.nodeType, 'number', 'First parameter must be an element');
+    assert.strictEqual(typeof settings, 'object', 'Second parameter must be a settings instance');
 
     // Setup settings.
     this.settings = settings;
+    this.settings.on('change', () => this.loadSettings());
     this.loadSettings();
 
     // Setup our theming.
@@ -154,16 +149,9 @@ export default class Workspace {
    * Settings.
    */
 
+  // Called on initial load of settings, as well as when they're updated.
   loadSettings() {
-    const s = this.settings;
-
-    // Set defaults.
-    for (const key in DEFAULTS) {
-      if (!s.has(key)) s.set(key, DEFAULTS[key]);
-    }
-
-    // Listen for changes.
-    s.watch('theme.ui', () => this.updateTheme());
+    // TODO: update theme
   }
 
   /**

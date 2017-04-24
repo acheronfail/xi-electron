@@ -5,6 +5,7 @@ import { DEV, WINDOW_URL } from '../environment';
 class WindowManager {
   constructor() {
     this.windows = [];
+    this.send = send;
   }
 
   createWindow(paths = [], dimensions = [800, 600]) {
@@ -33,6 +34,16 @@ class WindowManager {
 
     return win;
   }
+
+  sendToAll(method, ...args) {
+    this.windows.forEach((win) => send(win, method, ...args));
+  }
 }
 
+// Export a single WindowManager instance.
 export default new WindowManager();
+
+// Helper function for sending messages to windows.
+export function send(win, method, ...args) {
+  win.webContents.send('message', method, ...args);
+}

@@ -1,7 +1,7 @@
 import electron, { BrowserWindow, Menu, app } from 'electron';
 import { send } from '../utils';
 import { openFile, openFolder } from './dialog';
-import { USER_PREFS } from '../../environment';
+import { PREFS_DEFAULT_PATH, PREFS_USER_PATH } from '../../environment';
 import WindowManager from '../window';
 
 let template = [{
@@ -205,7 +205,7 @@ if (process.platform === 'darwin') {
       submenu: [{
         label: 'Settings',
         accelerator: 'CmdOrCtrl+,',
-        click: (item, win) => WindowManager.createWindow([USER_PREFS])
+        click: (item, win) => WindowManager.createWindow([PREFS_DEFAULT_PATH, PREFS_USER_PATH])
       }]
     }, {
       type: 'separator'

@@ -32,21 +32,17 @@ export default class Tabs extends EventEmitter {
     this.el.setAttribute('data-xi-tabs-instance-id', this.id);
     this.container = workspace.el.appendChild(el('div', [this.el, this.styleEl], 'xi-tabs'));
 
-    this._reloadSettings();
+    const s = this.workspace.settings;
+    this.overlapDistance = s.get('tabs.overlap-distance', 14);
+    this.minWidth = s.get('tabs.min-width', 45);
+    this.maxWidth = s.get('tabs.max-width', 243);
+    this.layoutTabs();
     this.fixZIndices();
     this.registerDragEvents();
     this.registerMouseEvents();
 
     // Bind necessary methods to this class.
     this.checkOutside = this.checkOutside.bind(this);
-  }
-
-  _reloadSettings() {
-    const settings = this.workspace.settings;
-    this.overlapDistance = settings.get('tabs.overlap-distance', 14);
-    this.minWidth = settings.get('tabs.min-width', 45);
-    this.maxWidth = settings.get('tabs.max-width', 243);
-    this.layoutTabs();
   }
 
   registerMouseEvents() {
