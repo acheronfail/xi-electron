@@ -33,6 +33,19 @@ ipcMain.on('dialog-open-folder', (e, win, opts) => {
   openFolder(win || w(e), opts);
 });
 
+/**
+ * Export dialog methods.
+ */
+
+// export function showMessageBox(win, opts) {}
+
+export function showErrorBox(title, content) {
+  dialog.showErrorBox(title, content);
+}
+
+/**
+ * Helpers.
+ */
 
 // Gets the BrowserWindow from an event.
 function w(e) {

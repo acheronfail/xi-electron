@@ -45,10 +45,12 @@
         }
     },
     "dependencies": {
+        "deep-freeze": "^0.0.1",
         "draggabilly": "^2.1.1",
         "electron-compile": "^6.4.0",
-        "electron-settings": "^3.0.14",
-        "fs-extra": "^2.1.2"
+        "fs-extra": "^2.1.2",
+        "proper-lockfile": "^2.0.1",
+        "strip-json-comments": "^2.0.1"
     },
     "devDependencies": {
         "babel-plugin-transform-async-to-generator": "^6.24.1",

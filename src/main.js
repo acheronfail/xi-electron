@@ -9,6 +9,16 @@ if (DEV) {
   require('electron-reload')(__dirname);
 }
 
+// Map SIGINT & SIGTERM to process exit so that they fire exit events on the
+// process (so lockfiles are removed).
+process.once('SIGINT', () => process.exit(1));
+process.once('SIGTERM', () => process.exit(1));
+
+// TODO: handle uncaught errors
+// TODO: handle window hangs
+// TODO: handle window crashes
+// TODO: handle main proc crashes
+
 // Start the app.
 function initialise() {
   // Load main process modules.
