@@ -1,6 +1,10 @@
 # Xi Electron
 ## _A front-end for the xi-editor built with modern web technologies._
 
+## Demo
+
+![XiEditor](./demo/demo.png)
+
 NOTE: This is still a WIP!
 
 ## Getting started
