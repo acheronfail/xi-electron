@@ -200,6 +200,15 @@ if (process.platform === 'darwin') {
     }, {
       type: 'separator'
     }, {
+      label: 'Preferences',
+      submenu: [{
+        label: 'Settings',
+        accelerator: 'CmdOrCtrl+,',
+        click: (item, win) => send(win, 'open-settings')
+      }]
+    }, {
+      type: 'separator'
+    }, {
       label: 'Services',
       role: 'services',
       submenu: []

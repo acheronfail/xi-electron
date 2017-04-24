@@ -13,6 +13,14 @@ export default class Workspace {
       throw new Error('Invalid arguments sent to workspace!');
     }
 
+    // Setup settings.
+    this.settings = settings;
+    this.settings.watch('renderer.theme-ui', () => this.updateTheme());
+
+    // Setup our theming.
+    this.theme = { uiEl: el('link'), syntaxEl: el('link') };
+    this.updateTheme();
+
     // This is our reference to each view. Keyed by their `id` from xi-core.
     this.views = {};
 
@@ -88,7 +96,13 @@ export default class Workspace {
 
   saveView(view) {
     // TODO: add clean / dirty state to tabs!
-    view.save();
+    this.sendToCore({
+      method: 'save',
+      params: {
+        view_id: view.id,
+        file_path: view.path
+      }
+    })
   }
 
   // return true when closing, false otherwise.
@@ -112,6 +126,26 @@ export default class Workspace {
     filepaths.forEach((filepath) => {
       this.newView({ 'file_path': filepath });
     });
+  }
+
+  /**
+   * Theming.
+   */
+
+  // TODO: check if path exists!
+  // and check if correct stylesheet! (onerror) ?
+  updateTheme() {
+    const uiEl = this.theme.uiEl;
+    // Remove previous theme from DOM.
+    uiEl.remove();
+
+    // Get new settings and add it to the DOM.
+    const themePath = this.settings.get('renderer.theme-ui', null);
+    if (themePath !== null) {
+      uiEl.rel = 'stylesheet';
+      uiEl.href = themePath;
+      document.head.appendChild(uiEl);
+    }
   }
 
   /**
