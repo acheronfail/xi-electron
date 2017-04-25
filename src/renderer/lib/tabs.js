@@ -1,5 +1,6 @@
 import Draggabilly from 'draggabilly';
-import EventEmitter from './events';
+
+import EventEmitter from '../../common/events';
 import { el, on, off, clamp } from './utils';
 
 // TODO: curve edges of new tab button

@@ -1,6 +1,7 @@
 import path from 'path';
+
 import LineView from './line-view';
-import { el, on } from './utils';
+import { el, on } from '../lib/utils';
 import { execKey } from './key-events';
 
 const MODIFIER_NONE = 0;

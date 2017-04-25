@@ -1,6 +1,6 @@
 import LineCache from './line-cache';
 import Pos from './pos';
-import { clamp, el, on, removeChildrenAndAdd } from './utils';
+import { clamp, el, on, removeChildrenAndAdd } from '../lib/utils';
 
 // TODO: scroll editor to show cursor
 

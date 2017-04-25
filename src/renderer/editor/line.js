@@ -1,5 +1,5 @@
 import Cursor from './cursor';
-import { el } from './utils';
+import { el } from '../lib/utils';
 
 // Line styles.
 const STYLE_SEL = 0;

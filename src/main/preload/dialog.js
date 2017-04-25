@@ -1,5 +1,5 @@
 import { ipcMain, dialog, BrowserWindow } from 'electron';
-import { send } from '../utils';
+import { send } from '../window';
 
 /**
  * Open File.

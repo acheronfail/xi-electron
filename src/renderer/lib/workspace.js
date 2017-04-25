@@ -1,8 +1,10 @@
 import assert from 'assert';
 import cp from 'child_process';
-import { CORE_PATH } from '../../environment';
+import path from 'path';
+
+import { CORE_PATH, APP_DIR } from '../../common/environment';
 import { el, link } from './utils';
-import View from './view';
+import View from '../editor/view';
 import Tabs from './tabs';
 
 // Unique instance id of each view.
@@ -14,14 +16,13 @@ export default class Workspace {
     assert.strictEqual(typeof place.nodeType, 'number', 'First parameter must be an element');
     assert.strictEqual(typeof settings, 'object', 'Second parameter must be a settings instance');
 
+    // Setup our theming.
+    this.theme = { uiEl: link(), syntaxEl: link() };
+
     // Setup settings.
     this.settings = settings;
     this.settings.on('change', () => this.loadSettings());
     this.loadSettings();
-
-    // Setup our theming.
-    this.theme = { uiEl: link(), syntaxEl: link() };
-    this.updateTheme();
 
     // This is our reference to each view. Keyed by their `id` from xi-core.
     this.views = {};
@@ -132,16 +133,13 @@ export default class Workspace {
 
   // TODO: check if path exists!
   // and check if correct stylesheet! (onerror) ?
-  updateTheme() {
-    const uiEl = this.theme.uiEl;
-    // Remove previous theme from DOM.
-    uiEl.remove();
-
+  updateTheme(el, filepath) {
+    // Remove previous theme element from DOM.
+    el.remove();
     // Get new settings and add it to the DOM.
-    const themePath = this.settings.get('theme.ui', null);
-    if (themePath !== null) {
-      uiEl.href = themePath;
-      document.head.appendChild(uiEl);
+    if (typeof filepath == 'string') {
+      el.href = filepath;
+      document.head.appendChild(el);
     }
   }
 
@@ -151,7 +149,20 @@ export default class Workspace {
 
   // Called on initial load of settings, as well as when they're updated.
   loadSettings() {
-    // TODO: update theme
+    const s = this.settings;
+    // Update theme, remember, paths should be relative to our Packages
+    // directory.
+    this.updateTheme(this.theme.uiEl, path.join(APP_DIR, s.get('theme.ui')));
+    this.updateTheme(this.theme.syntaxEl, path.join(APP_DIR, s.get('theme.syntax')));
+  }
+
+  serialise() {
+    const views = [];
+    for (const id in this.views) {
+      const view = this.views[id];
+      views.push({ id: view.id });
+    }
+    return Promise.resolve(JSON.stringify(views));
   }
 
   /**
@@ -160,17 +171,24 @@ export default class Workspace {
    */
 
   message(method, ...args) {
-    if (method == 'new-file') {
-      this.newView();
-    } else if (method == 'close-file') {
-      this.tabs.remove(this.activeViewId());
-    } else if (method == 'save-file') {
-      this.saveView(this.activeView());
-    } else if (method == 'dialog-open-file') {
-      this.openFile(...args);
-    } else {
-      console.warn('message not handled from main process');
-      console.log(method, args);
+    switch (method) {
+      // File based methods.
+      case 'new-file':
+        return this.newView();
+      case 'close-file':
+        return this.tabs.remove(this.activeViewId());
+      case 'save-file':
+        return this.saveView(this.activeView());
+      case 'dialog-open-file':
+        return this.openFile(...args);
+      // Window based methods.
+      case 'close-window':
+        return window.close();
+
+      default:
+        console.warn('message not handled from main process');
+        console.log(method, args);
+        return;
     }
   }
 
