@@ -1,5 +1,5 @@
-import { BrowserWindow } from 'electron';
-import { DEV, WINDOW_URL } from '../environment';
+import { BrowserWindow, ipcMain } from 'electron';
+import { DEV, WINDOW_URL } from '../common/environment';
 
 
 class WindowManager {
@@ -8,6 +8,33 @@ class WindowManager {
     this.send = send;
   }
 
+  //
+  serialise() {
+    const results = this.windows.map((win) => {
+      return new Promise((resolve, reject) => {
+        ipcMain.once(`__serialise__${win.id}__`, (e, text) => {
+          resolve(JSON.stringify({
+            bounds: win.getBounds(),
+            views: text
+          }));
+        });
+
+        win.webContents.send('__serialise__', win.id);
+      });
+    });
+
+    return new Promise((resolve, reject) => {
+      Promise.all(results).then((data) => {
+        try {
+          resolve(JSON.stringify(data));
+        } catch (err) {
+          reject(err);
+        }
+      }).catch(resolve);
+    });
+  }
+
+  // Create a new window.
   createWindow(paths = [], dimensions = [800, 600]) {
     const win = new BrowserWindow({
       show: false,
@@ -35,6 +62,7 @@ class WindowManager {
     return win;
   }
 
+  // Send a message to all windows.
   sendToAll(method, ...args) {
     this.windows.forEach((win) => send(win, method, ...args));
   }

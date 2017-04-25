@@ -1,10 +1,11 @@
-import assert from 'assert';
 import { ipcRenderer } from 'electron';
+import assert from 'assert';
 import strip from 'strip-json-comments';
-import lockfile from 'proper-lockfile';
-import { PREFS_LOCK, PREFS_DEFAULT_PATH, PREFS_USER_PATH } from '../../environment';
 import fs from 'fs-extra';
+
+import { PREFS_DEFAULT_PATH, PREFS_USER_PATH } from './environment';
 import EventEmitter from './events';
+import { requestLock } from './lock';
 
 /**
  * Settings module.
@@ -27,13 +28,21 @@ class Settings extends EventEmitter {
 
     // Read each file, parse, and combine into object in given order.
     this._paths = paths;
-    this._load();
+    this._load('ready');
   }
 
   // Loads the settings.
-  _load(callback) {
-    this._store = Object.assign({}, ...this._paths.map((p) => this._read(p)));
-    if (callback && typeof callback == 'function') callback();
+  _load(event) {
+    // Lock the resource to ensure we're the only ones reading from prefs.
+    requestLock((err, release) => {
+      if (err) throw err;
+      // Read each preferences file.
+      this._store = Object.assign({}, ...this._paths.map((p) => this._read(p)));
+      // Release the lock on our file.
+      release();
+      // Emit event asynchronously.
+      process.nextTick(() => this.emit(event));
+    });
   }
 
   // Read and parse a JSON file with comments.
@@ -83,7 +92,7 @@ class Settings extends EventEmitter {
   _onFileChange(filepath, eventType) {
     // Reload settings and emit change event.
     if (eventType == 'change') {
-      this._load(() => this.emit('change'));
+      this._load('change');
     }
 
     else if (eventType == 'rename') {
@@ -116,44 +125,12 @@ class Settings extends EventEmitter {
 
 
 /**
- * File operations.
- */
-
-// Time in ms after which to abort the operation.
-const MAX_WAIT = 10000;
-// Time in ms to wait before retrying before a read op.
-const POLL_READ = 25;
-// Time in ms to wait before retrying before a write op.
-const POLL_WRITE = 250;
-
-// Request access to write the settings files.
-function request(op, wait, _start) {
-  _start = _start || Date.now();
-
-  lockfile.lock(PREFS_LOCK, compromised, (err, release) => {
-    if (err) return compromised(err);
-    op(release);
-  });
-
-  function compromised(err) {
-    // Abort if we've been trying too long.
-    if (Date.now() - _start > MAX_WAIT) {
-      throw new Error('Request timed out.');
-    }
-    // If resource still locked, keep trying trying.
-    if (err.code == 'ELOCKED') {
-      setTimeout(() => request(op, wait, _start), wait);
-    }
-  }
-}
-
-
-/**
  * Dot-notation helpers.
  */
 
 // Checks if the given object contains the given key path.
 function hasKeyPath(obj, keyPath) {
+
   const keys = keyPath.split(/\./);
 
   for (let i = 0, len = keys.length; i < len; i++) {

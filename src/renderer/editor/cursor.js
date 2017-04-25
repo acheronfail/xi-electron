@@ -1,6 +1,7 @@
-import { el } from './utils';
+import { el } from '../lib/utils';
 
 // TODO: position cursor in the middle and add options:
+//      (add in a dynamic stylesheet?)
 //      (like Sublime Text)
 //      options: cursor_extra_top
 //               cursor_extra_bottom

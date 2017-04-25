@@ -1,8 +1,8 @@
 import electron, { BrowserWindow, Menu, app } from 'electron';
-import { send } from '../utils';
+
 import { openFile, openFolder } from './dialog';
-import { PREFS_DEFAULT_PATH, PREFS_USER_PATH } from '../../environment';
-import WindowManager from '../window';
+import { PREFS_DEFAULT_PATH, PREFS_USER_PATH } from '../../common/environment';
+import WindowManager, { send } from '../window';
 
 let template = [{
   label: 'File',

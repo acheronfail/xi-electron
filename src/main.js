@@ -1,7 +1,8 @@
-import { app } from 'electron';
-import { DEV } from './environment';
 import glob from 'glob';
-import path from 'path';
+import { app } from 'electron';
+
+import { releaseLock } from './common/lock';
+import { DEV, PRELOAD_SCRIPTS, EXIT_EXTERNAL, EXIT_UNCAUGHT } from './common/environment';
 import WindowManager from './main/window';
 
 if (DEV) {
@@ -10,20 +11,27 @@ if (DEV) {
 }
 
 // Map SIGINT & SIGTERM to process exit so that they fire exit events on the
-// process (so lockfiles are removed).
-process.once('SIGINT', () => process.exit(1));
-process.once('SIGTERM', () => process.exit(1));
+// process (so our lockfiles are removed).
+process.once('SIGINT', () => process.exit(EXIT_EXTERNAL));
+process.once('SIGTERM', () => process.exit(EXIT_EXTERNAL));
 
-// TODO: handle uncaught errors
+// Cleanup our resources on uncaught exceptions.
+process.on('uncaughtException', (err) => {
+  releaseLock();
+
+  console.error('Uncaught error!');
+  console.error(err);
+  // TODO: log/report crashes
+  process.exit(EXIT_UNCAUGHT);
+});
+
 // TODO: handle window hangs
 // TODO: handle window crashes
-// TODO: handle main proc crashes
 
 // Start the app.
 function initialise() {
   // Load main process modules.
-  const modules = glob.sync(path.join(__dirname, 'main/preload/**/*.js'))
-  modules.forEach((module) => require(module));
+  glob.sync(PRELOAD_SCRIPTS).forEach((script) => require(script));
 
   app.on('ready', () => {
     // TODO: re-open tabs and windows from last time?
@@ -46,20 +54,12 @@ function initialise() {
       WindowManager.createWindow();
     }
   });
+
+  app.on('before-quit', () => {
+    console.log(WindowManager.windows.length)
+  });
 }
 
-// Handle Squirrel on Windows startup events.
-switch (process.argv[1]) {
-  // case '--squirrel-install':
-  //   autoUpdater.createShortcut(function () { app.quit() })
-  //   break
-  // case '--squirrel-uninstall':
-  //   autoUpdater.removeShortcut(function () { app.quit() })
-  //   break
-  // case '--squirrel-obsolete':
-  // case '--squirrel-updated':
-  //   app.quit()
-  //   break
-  default:
-    initialise();
-}
+
+// We're ready! Start 'er up!
+initialise();
