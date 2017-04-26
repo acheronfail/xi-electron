@@ -49,6 +49,7 @@ export default class Workspace {
     this.core.stdout.on('data', this.receiveFromCore.bind(this));
     this.core.stderr.on('data', (data) => {
       console.error(data.toString());
+      // TODO: attempt to reboot core process?
     });
   }
 

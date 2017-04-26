@@ -152,6 +152,7 @@ $activeTabBackgroundColor: #f2f2f2;
     margin-top: .5em;
     max-width: calc(100% - 5em);
     pointer-events: none;
+    -webkit-font-smoothing: antialiased;
   }
 
   .xi-tab-close {
@@ -161,7 +162,7 @@ $activeTabBackgroundColor: #f2f2f2;
     border-radius: 50%;
     z-index: 2;
     right: 1.4em;
-    top: .7em;
+    top: 0.7em;
     color: #505050;
 
     &:before {
@@ -169,21 +170,17 @@ $activeTabBackgroundColor: #f2f2f2;
       content: "\00D7";
       position: absolute;
       display: block;
-      top: .05em;
+      top: 0.05em;
       bottom: 0;
       left: 0;
       width: 100%;
       text-align: center;
-      font-size: 1.15em;
+      font-size: 1em;
       line-height: 1;
     }
     &:hover {
-      &, &:active {
-        color: #fff;
-      }
-    }
-    &:hover {
       background: #e25c4b;
+      color: #fff;
 
       &:active {
         background: #b74a3b;

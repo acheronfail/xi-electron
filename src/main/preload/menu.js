@@ -1,8 +1,15 @@
 import electron, { BrowserWindow, Menu, app } from 'electron';
 
-import { openFile, openFolder } from './dialog';
+import { openFile, openFolder } from '../dialog';
 import { PREFS_DEFAULT_PATH, PREFS_USER_PATH } from '../../common/environment';
 import WindowManager, { send } from '../window';
+
+// The app's ready event has already fired, so no need to wait to set
+// the menu.
+export function init() {
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
 
 let template = [{
   label: 'File',
@@ -250,11 +257,6 @@ if (process.platform === 'darwin') {
 //   const helpMenu = template[template.length - 1].submenu;
 //   addUpdateMenuItems(helpMenu, 0);
 // }
-
-app.on('ready', () => {
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
-});
 
 app.on('browser-window-created', () => {
   let reopenMenuItem = findReopenMenuItem();

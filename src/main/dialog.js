@@ -1,5 +1,5 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron';
-import { send } from '../window';
+import { dialog, BrowserWindow } from 'electron';
+import { send } from './window';
 
 /**
  * Open File.
@@ -13,10 +13,6 @@ export function openFile(win = null, opts = {}) {
   });
 }
 
-ipcMain.on('dialog-open-file', (e, win, opts) => {
-  openFile(win || w(e), opts);
-});
-
 /**
  * Open Folder.
  */
@@ -29,10 +25,6 @@ export function openFolder(win = null, opts = {}) {
   });
 }
 
-ipcMain.on('dialog-open-folder', (e, win, opts) => {
-  openFolder(win || w(e), opts);
-});
-
 /**
  * Export dialog methods.
  */
@@ -41,13 +33,4 @@ ipcMain.on('dialog-open-folder', (e, win, opts) => {
 
 export function showErrorBox(title, content) {
   dialog.showErrorBox(title, content);
-}
-
-/**
- * Helpers.
- */
-
-// Gets the BrowserWindow from an event.
-function w(e) {
-  return BrowserWindow.fromWebContents(e.sender);
 }

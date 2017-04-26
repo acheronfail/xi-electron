@@ -1,50 +1,51 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { DEV, WINDOW_URL } from '../common/environment';
 
+const DEFAULT_BOUNDS = {
+  width: 800,
+  height: 600
+};
 
 class WindowManager {
   constructor() {
-    this.windows = [];
     this.send = send;
+    // We keep references to all our windows here. They are stored like so:
+    // [
+    //   { win: <BrowserWindow>, data: { ... } }
+    // ]
+    this.windows = [];
   }
 
-  //
-  serialise() {
-    const results = this.windows.map((win) => {
-      return new Promise((resolve, reject) => {
-        ipcMain.once(`__serialise__${win.id}__`, (e, text) => {
-          resolve(JSON.stringify({
-            bounds: win.getBounds(),
-            views: text
-          }));
-        });
+  // TODO: async passing of view data to WindowManager so that we can
+  // close the window quickly without communication b/w renderer and main
 
-        win.webContents.send('__serialise__', win.id);
+  saveWindowState() {
+    return this.windows.map(({ win, data }) => {
+      return {
+        bounds: win.getBounds(),
+        data: data || {}
+      };
+    });
+  }
+
+  restoreWindowState(states = null) {
+    if (states) {
+      states.forEach(({ bounds, data }) => {
+        this.createWindow(data.paths || [], bounds);
       });
-    });
-
-    return new Promise((resolve, reject) => {
-      Promise.all(results).then((data) => {
-        try {
-          resolve(JSON.stringify(data));
-        } catch (err) {
-          reject(err);
-        }
-      }).catch(resolve);
-    });
+    } else {
+      this.createWindow();
+    }
   }
 
   // Create a new window.
-  createWindow(paths = [], dimensions = [800, 600]) {
-    const win = new BrowserWindow({
-      show: false,
-      width: dimensions[0],
-      height: dimensions[1]
-    });
+  createWindow(paths = [], bounds = DEFAULT_BOUNDS) {
+    const opts = Object.assign({ show: false }, bounds);
+    const win = new BrowserWindow(opts);
     win.loadURL(WINDOW_URL);
 
     // Save our window.
-    const index = this.windows.push(win) - 1;
+    const index = this.windows.push({ win }) - 1;
 
     // Remove our reference to it when it's closed.
     win.on('closed', () => this.windows.splice(index, 1));
@@ -64,7 +65,7 @@ class WindowManager {
 
   // Send a message to all windows.
   sendToAll(method, ...args) {
-    this.windows.forEach((win) => send(win, method, ...args));
+    this.windows.forEach(({ win }) => send(win, method, ...args));
   }
 }
 
