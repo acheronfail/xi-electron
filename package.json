@@ -50,15 +50,16 @@
         "electron-compile": "^6.4.0",
         "fs-extra": "^2.1.2",
         "proper-lockfile": "^2.0.1",
+        "spawn-rx": "^2.0.10",
         "strip-json-comments": "^2.0.1"
     },
     "devDependencies": {
         "babel-plugin-transform-async-to-generator": "^6.24.1",
         "babel-preset-env": "^1.4.0",
         "babel-preset-react": "^6.24.1",
+        "babili": "^0.0.12",
         "cross-env": "^4.0.0",
         "electron-prebuilt-compile": "1.6.2",
-        "electron-reload": "^1.1.0",
         "eslint": "^3.19.0",
         "eslint-config-airbnb": "^14.1.0",
         "eslint-plugin-import": "^2.2.0",
