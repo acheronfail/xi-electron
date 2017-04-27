@@ -9,7 +9,8 @@
         "start": "cross-env NODE_ENV=production electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
-        "lint": "eslint src"
+        "lint": "eslint src",
+        "postinstall": "./bin/install-core.sh"
     },
     "keywords": [],
     "author": "callodacity",
