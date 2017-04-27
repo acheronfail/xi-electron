@@ -1,14 +1,12 @@
 import assert from 'assert';
 import cp from 'child_process';
 import path from 'path';
+import { ipcRenderer } from 'electron';
 
 import { CORE_PATH, APP_DIR } from '../../common/environment';
 import { el, link } from './utils';
 import View from '../editor/view';
 import Tabs from './tabs';
-
-// Unique instance id of each view.
-let instanceId = 0;
 
 // Each window has a workspace.
 export default class Workspace {
@@ -45,7 +43,8 @@ export default class Workspace {
     });
 
     // Initialise xi-core.
-    this.core = cp.spawn(CORE_PATH);
+    const env = Object.assign({ RUST_BACKTRACE: 1 }, process.env);
+    this.core = cp.spawn(CORE_PATH, [], { env });
     this.core.stdout.on('data', this.receiveFromCore.bind(this));
     this.core.stderr.on('data', (data) => {
       console.error(data.toString());
@@ -58,13 +57,13 @@ export default class Workspace {
    */
 
   newView(params = {}) {
+    const instanceId = ipcRenderer.sendSync('request-instance-id');
     this.instanceData[instanceId] = params;
     this.sendToCore({
       params,
       id: instanceId,
       method: "new_view",
     });
-    instanceId++;
   }
 
   activeView() {

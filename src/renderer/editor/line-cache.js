@@ -59,8 +59,8 @@ export default class LineCache {
         case 'copy':
         case 'update':
           let nRemaining = n;
-          if (io < this.nInvalidBefore) {
-            let nInvalid = Math.min(n, this.nInvalidBefore - io);
+          if (oi < this.nInvalidBefore) {
+            let nInvalid = Math.min(n, this.nInvalidBefore - oi);
             if (newLines.length == 0) {
               newInvalidBefore += nInvalid;
             } else {

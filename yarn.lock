@@ -3973,7 +3973,7 @@ source-map@~0.2.0:
   dependencies:
     amdefine ">=0.0.4"
 
-spawn-rx@^2.0.10, spawn-rx@^2.0.3:
+spawn-rx@^2.0.3:
   version "2.0.10"
   resolved "https://registry.yarnpkg.com/spawn-rx/-/spawn-rx-2.0.10.tgz#a8cb098f4bb5de51dad06851b7018549230ef9d5"
   dependencies:

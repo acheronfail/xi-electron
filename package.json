@@ -50,7 +50,6 @@
         "electron-compile": "^6.4.0",
         "fs-extra": "^2.1.2",
         "proper-lockfile": "^2.0.1",
-        "spawn-rx": "^2.0.10",
         "strip-json-comments": "^2.0.1"
     },
     "devDependencies": {
