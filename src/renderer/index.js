@@ -2,10 +2,12 @@ import Workspace from './lib/workspace';
 import { loadSettings } from '../common/settings';
 import { ipcRenderer, remote } from 'electron';
 
+let workspace;
+
 // Load workspace after settings are ready.
 const settings = loadSettings();
 settings.on('ready', () => {
-  window.workspace = new Workspace(
+  workspace = window.workspace = new Workspace(
     document.querySelector('#xi-root'),
     settings
   );
@@ -23,5 +25,5 @@ ipcRenderer.once('args', (e, filepaths) => {
 
 // Standard message passing between main and renderer.
 ipcRenderer.on('message', (e, method, ...args) => {
-  workspace.message(method, ...args);
+  if (workspace) workspace.message(method, ...args);
 });

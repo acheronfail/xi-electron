@@ -11,10 +11,10 @@
               }
             }
           ],
+          "babili",
           "react"
         ],
         "plugins": [
-          "babili",
           "transform-async-to-generator"
         ],
         "sourceMaps": "inline"
