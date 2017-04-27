@@ -1,5 +1,5 @@
 # Xi Electron
-## _A front-end for the xi-editor built with modern web technologies._
+_A front-end for the xi-editor built with modern web technologies._
 
 ## Demo
 
@@ -24,7 +24,11 @@ The built app will be output to `xi-electron/out/`.
 
 ## Updating `xi-core`
 
-In order to use an updated version of the `xi-core`, you must build it and place it in `xi-electron/src/xi-core/`. You can do so by following these steps (taken from [the `xi-editor` repo](https://github.com/google/xi-editor#building-the-core)):
+The easiest way by far is to use the install script found in [`bin/install-core`](bin/install-core.sh). You will need to have Git, Rust and relevant build tools installed. This script will clone the latest version of `xi-core`, build it, and copy it into `xi-electron`.
+
+In order to build it manually, follow these steps:
+
+To update `xi-core`, you must build it and place it in `xi-electron/src/xi-core/`. You can do so by following these steps (taken from [the `xi-editor` repo](https://github.com/google/xi-editor#building-the-core)):
 
 > You need [Xcode 8.2](https://developer.apple.com/xcode/) (only on Mac) and [Rust](https://www.rust-lang.org/) (version 1.13+ is recommended and supported). You should have `cargo` in your path. You'll also need cmake installed, to run the syntax highlighter. If you have homebrew, easiest to run `brew install cmake`. It is possible to build without cmake, but requires some editing of build scripts.
 
