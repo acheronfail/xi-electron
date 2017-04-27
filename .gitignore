@@ -2,3 +2,4 @@ node_modules
 out
 
 src/xi-core/
+\.xi-core
