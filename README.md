@@ -14,7 +14,7 @@ To build and run `xi-electron` you'll need to have [NodeJS](https://nodejs.org) 
 To get started, simply run:
 
 ```bash
-> https://gitlab.com/callodacity/xi-electron
+> git clone https://gitlab.com/callodacity/xi-electron
 > cd xi-electron
 > npm install   # or `yarn`
 > npm run make  # or `yarn make`
