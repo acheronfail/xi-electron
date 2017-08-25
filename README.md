@@ -26,6 +26,8 @@ The built app will be output to `xi-electron/out/`.
 
 The easiest way by far is to use the install script found in [`bin/install-core`](bin/install-core.sh). You will need to have Git, Rust and relevant build tools installed. This script will clone the latest version of `xi-core`, build it, and copy it into `xi-electron`.
 
+---
+
 In order to build it manually, follow these steps:
 
 To update `xi-core`, you must build it and place it in `xi-electron/src/xi-core/`. You can do so by following these steps (taken from [the `xi-editor` repo](https://github.com/google/xi-editor#building-the-core)):
