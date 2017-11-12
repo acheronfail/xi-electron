@@ -3,18 +3,18 @@
 import { elt, on } from '../utils/dom';
 import FontMetrics from './font-metrics';
 import LineCache from './line-cache';
-import Canvas from './canvas';
+import { createView } from './views';
 
 // TODO: class types
 // TODO: params object types for each update type
 
 type ViewOptions = {
-
+  type: string // "Canvas", DOM" or "WebGL"
 };
 
 // this module should be controlled by the "workspace" which has the xi-core running
 // it is linked to a view inside of xi-core via a "ViewProxy"
-export default class View {
+export default class ViewController {
 
   // Proxy to xi-core's corresponding view.
   // TODO: class types
@@ -29,8 +29,8 @@ export default class View {
   // FontMetrics.
   _metrics: FontMetrics;
 
-  // Canvas.
-  _canvas: any;
+  // Actual view which manages drawing of the editor.
+  _view: any;
 
   // Whether or not this view has focus.
   _hasFocus: boolean;
@@ -52,13 +52,12 @@ export default class View {
       family: 'monospace',
       size: 20
     });
-    this._canvas = new Canvas(this, {});
+
+    this._view = createView(opts.type, this._wrapper, {});
 
     this._proxy.on('update', this._update.bind(this));
     this._proxy.on('scroll_to', this._scrollTo.bind(this));
     this._proxy.on('available_plugins', this._availablePlugins.bind(this));
-
-    // TODO: input/output
   }
 
   /**
@@ -88,7 +87,7 @@ export default class View {
   // View management methods.
 
   render() {
-    this._canvas.render(this._lineCache, this._metrics);
+    this._view.render(this._lineCache, this._metrics);
   }
 
   blur() {
@@ -103,8 +102,8 @@ export default class View {
     return this._hasFocus;
   }
 
-  getCanvasElement() {
-    return this._canvas._canvas;
+  getWrapperElement() {
+    return this._wrapper;
   }
 
   /**

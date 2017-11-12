@@ -13,6 +13,14 @@ export const STYLE_SELECTION: StyleIdentifier = 0;
 export const STYLE_HIGHLIGHT: StyleIdentifier = 1;
 export const N_RESERVED_STYLES: StyleIdentifier = 2;
 
+export const COLORS = {
+  SELECTION:  'rgba(0, 0, 255, 0.5)',
+  HIGHLIGHT:  'rgba(255, 215, 0, 0.5)',
+  CURSOR:     '#FF0000',
+  BACKGROUND: '#FFFFFF',
+  FOREGROUND: '#000000',
+};
+
 // A basic type representing a range of text and and a style identifier.
 export class StyleSpan {
   range: Range;
