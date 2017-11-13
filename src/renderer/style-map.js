@@ -13,6 +13,7 @@ export const STYLE_SELECTION: StyleIdentifier = 0;
 export const STYLE_HIGHLIGHT: StyleIdentifier = 1;
 export const N_RESERVED_STYLES: StyleIdentifier = 2;
 
+// TODO: probably move this into another "theme" file...
 export const COLORS = {
   SELECTION:  'rgba(0, 0, 255, 0.5)',
   HIGHLIGHT:  'rgba(255, 215, 0, 0.5)',

@@ -26,9 +26,9 @@ export default class Workspace {
     this._wrapper = place.appendChild(elt('div', null, 'xi-workspace'));
 
     // All events are listened to on the window.
-    on(window, 'keydown', this.onKeyedInput.bind(this), false);
-    on(window, 'keypress', this.onKeyedInput.bind(this), false);
-    on(window, 'mousedown', this.onPointerInput.bind(this), false);
+    on(window, 'keydown', this.keyedInput.bind(this), false);
+    on(window, 'keypress', this.keyedInput.bind(this), false);
+    on(window, 'mousedown', this.mousedown.bind(this), false);
 
     // Create View objects whenever xi-core creates a view.
     Core.on('new_view', (proxy) => {
@@ -40,13 +40,13 @@ export default class Workspace {
   }
 
   // TODO: perhaps there's a better way to get the active view.
-  activeView() {
-    return this._controllers.find((view) => view.isFocused());
+  activeViewController() {
+    return this._controllers.find((controller) => controller.isFocused());
   }
 
-  onKeyedInput(event) {
-    const view = this.activeView();
-    if (view && execKey(view, event)) {
+  keyedInput(event) {
+    const controller = this.activeViewController();
+    if (controller && execKey(controller, event)) {
       event.preventDefault();
     }
   }
@@ -54,14 +54,12 @@ export default class Workspace {
   // TODO: move mouse events into another file
   // TODO: drag events, click, dbl click, alt click, etc. ALL THE EVENTS!
   // TODO: mouse events inside views.
-  onPointerInput(event) {
-    // TODO: abstract these into different view types: e.g., canvas view, DOM view, WebGL view, etc
-    const view = this._controllers.find((view) => view.getWrapperElement() == event.target);
-    if (view) {
-      event.preventDefault();
-      // TODO: calc click position
-      // TODO: abstract and pass in event, so different view types may handle it differently
-      return view.click(0, 0, 0, 0);
+  mousedown(event) {
+    const controller = this._controllers.find((controller) => {
+      return controller.getWrapperElement().contains(event.target);
+    });
+    if (controller) {
+      controller.click(event);
     }
   }
 }

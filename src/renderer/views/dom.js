@@ -1,7 +1,7 @@
 // @flow
 
-import { elt } from '../../../utils/dom';
-import { STYLE_SELECTION, STYLE_HIGHLIGHT, COLORS } from '../../style-map';
+import { elt } from '../../utils/dom';
+import { STYLE_SELECTION, STYLE_HIGHLIGHT, COLORS } from '../style-map';
 
 export default class DOMView {
   // The actual canvas.

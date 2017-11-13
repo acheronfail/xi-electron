@@ -1,5 +1,5 @@
-import { elt } from '../../../utils/dom';
-import { STYLE_SELECTION, STYLE_HIGHLIGHT, COLORS } from '../../style-map';
+import { elt } from '../../utils/dom';
+import { STYLE_SELECTION, STYLE_HIGHLIGHT, COLORS } from '../style-map';
 
 export default class CanvasView {
   // The actual canvas.
@@ -7,6 +7,9 @@ export default class CanvasView {
 
   // Canvas context.
   _ctx: any;
+
+  // TODO: scrolling
+  // TODO: make a viewport margin so we know which lines are currently visible
 
   constructor(place: HTMLElement, opts: any) {
     this._canvas = place.appendChild(elt('canvas'));

@@ -1,4 +1,4 @@
-export function execKey(view, event) {
+export function execKey(viewController, event) {
   if (event.type == 'keydown') {
     let action;
     if (event.shiftKey) {
@@ -8,13 +8,13 @@ export function execKey(view, event) {
     }
 
     if (action) {
-      view.edit(action);
+      viewController.doAction(action);
       return true;
     }
   }
 
   if (event.type == 'keypress') {
-    view.insert(event.key);
+    viewController.insert(event.key);
     return true;
   }
 

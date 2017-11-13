@@ -5,19 +5,18 @@ import FontMetrics from './font-metrics';
 import LineCache from './line-cache';
 import { createView } from './views';
 
-// TODO: class types
-// TODO: params object types for each update type
+type ViewType = 'Canvas' | 'DOM' | 'WebGL';
 
 type ViewOptions = {
-  type: string // "Canvas", DOM" or "WebGL"
+  type?: ViewType
 };
 
 // this module should be controlled by the "workspace" which has the xi-core running
 // it is linked to a view inside of xi-core via a "ViewProxy"
 export default class ViewController {
+  // TODO: class types
 
   // Proxy to xi-core's corresponding view.
-  // TODO: class types
   _proxy: any;
 
   // Wrapper element.
@@ -64,28 +63,38 @@ export default class ViewController {
    * Public API
    */
 
-  // Editing methods.
+  doAction(action: string) {
+    this._edit(action);
+  }
 
   insert(chars: string) {
-    this.edit('insert', { chars })
+    this._edit('insert', { chars })
   }
 
-  click(line: number, char: number, mod: number, count: number) {
+  click(event: any) {
     if (!this.isFocused()) this.focus();
-    this.edit('click', [line, char, mod, count]);
+    event.preventDefault();
+
+    const { left, top } = this._wrapper.getBoundingClientRect();
+    const x = event.clientX - left;
+    const y = event.clientY - top;
+
+    const [line, char] = this.posFromCoords(x, y, false);
+    this._click(line, char, 0, 0);
   }
 
-  drag(line: number, char: number, mod: number) {
-    if (!this.isFocused()) this.focus();
-    this.edit('drag', [line, char, mod]);
+  // Returns a [line, char] from the given coordinates.
+  posFromCoords(x: number, y: number, forRect: boolean): [number, number] {
+    const charWidth = this._metrics.charWidth();
+    const lineHeight = this._metrics.lineHeight();
+
+    const line = Math.round((y - (lineHeight / 2)) / lineHeight);
+    const char = Math.round((x < 0 ? 0 : x) / charWidth);
+
+    return [line, char];
   }
 
-  edit(method: string, params: any = {}) {
-    this._proxy.send('edit', { method, params });
-  }
-
-  // View management methods.
-
+  // Trigger a render of the view.
   render() {
     this._view.render(this._lineCache, this._metrics);
   }
@@ -118,6 +127,20 @@ export default class ViewController {
     this._hasFocus = true;
   }
 
+  // Messages to xi-core.
+
+  _click(line: number, char: number, mod: number, count: number) {
+    this._edit('click', [line, char, mod, count]);
+  }
+
+  _drag(line: number, char: number, mod: number) {
+    this._edit('drag', [line, char, mod]);
+  }
+
+  _edit(method: string, params: any = {}) {
+    this._proxy.send('edit', { method, params });
+  }
+
   // Responses to xi-core's messages.
 
   _update(params: any) {
@@ -130,6 +153,6 @@ export default class ViewController {
   }
 
   _availablePlugins(params: any) {
-    // console.log(params);
+    console.log(params);
   }
 }

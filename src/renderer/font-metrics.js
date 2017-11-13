@@ -52,17 +52,17 @@ export default class FontMetrics {
     this._computeLineHeight();
   }
 
-  baseline(force: boolean) {
+  baseline(force: boolean = false) {
     if (!force && this._cachedBaseline != null) return this._cachedBaseline;
     return this._computeBaseline();
   }
 
-  charWidth(force: boolean) {
+  charWidth(force: boolean = false) {
     if (!force && this._cachedCharWidth != null) return this._cachedCharWidth;
     return this._computeCharWidth();
   }
 
-  lineHeight(force: boolean) {
+  lineHeight(force: boolean = false) {
     if (!force && this._cachedLineHeight != null) return this._cachedLineHeight;
     return this._computeLineHeight();
   }
