@@ -1,19 +1,20 @@
 import cp from 'child_process';
-import EventEmitter from 'events';
+import EventEmitter from '../utils/emitter';
 import { XI_CORE_BIN, XI_PLUGIN_DIR } from '../utils/environment';
 import ViewProxy from './view-proxy';
+
+type xiMethod = 'new_view' | 'update';
 
 // This manages xi-core.
 class Core extends EventEmitter {
 
   // spawned child process.
-  // TODO: types
   _child: any;
 
   // References to our ViewProxy classes. Keyed by the view's id.
   _proxies: any;
 
-  constructor(env = {}) {
+  constructor(env: any = {}) {
     super();
 
     this._proxies = {};
@@ -23,12 +24,12 @@ class Core extends EventEmitter {
     this._child.on('close', this._coreClosed.bind(this));
 
     // Receive messages from xi-core as text.
-    this._stdout.setEncoding('utf8');
-    this._stderr.setEncoding('utf8');
+    this._stdout().setEncoding('utf8');
+    this._stderr().setEncoding('utf8');
 
     // Listen to its streams.
-    this._stdout.on('data', this._eventFromCore.bind(this));
-    this._stderr.on('data', this._errorFromCore.bind(this));
+    this._stdout().on('data', this._eventFromCore.bind(this));
+    this._stderr().on('data', this._errorFromCore.bind(this));
   }
 
   /**
@@ -43,10 +44,10 @@ class Core extends EventEmitter {
   //
   // Serialise and send a message to xi-core.
   // Returns `true` on success, `false` on error.
-  send(method, params = {}, rest = {}) {
+  send(method: xiMethod, params?: any = {}, rest?: any = {}) {
     const data = { method, params, ...rest };
     try {
-      this._stdin.write(`${JSON.stringify(data)}\n`);
+      this._stdin().write(`${JSON.stringify(data)}\n`);
       return true;
     } catch (e) {
       console.error(e);
@@ -59,12 +60,12 @@ class Core extends EventEmitter {
    */
 
   // Getters for easier access to streams.
-  get _stdin() { return this._child.stdin; }
-  get _stdout() { return this._child.stdout; }
-  get _stderr() { return this._child.stderr; }
+  _stdin() { return this._child.stdin; }
+  _stdout() { return this._child.stdout; }
+  _stderr() { return this._child.stderr; }
 
   // Called when we get events from xi-core's `stdout` stream.
-  _eventFromCore(data) {
+  _eventFromCore(data: any) {
     parseMessages(data).forEach((msg) => {
 
       // Returned after calling 'new_view'.

@@ -155,8 +155,9 @@ export default class LineCache {
   computeMissing(first, last) {
     const result = [];
     last = Math.min(last, this.height());
+
     if (first >= last) {
-      console.error('compute missing called with first > last');
+      console.error(`compute missing called with first (${first}) >= last (${last})`);
       return result;
     }
 
@@ -169,6 +170,7 @@ export default class LineCache {
         }
       }
     }
+
     return result;
   }
 }

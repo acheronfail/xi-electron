@@ -9,7 +9,7 @@ export const Views = {
 };
 
 // Just default to canvas view for now.
-export function createView(type, place, opts) {
+export function createView(type: string, controller: any, opts?: any = {}) {
   const View = Views[type] || CanvasView;
-  return new View(place, opts);
+  return new View(controller, opts);
 };

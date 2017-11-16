@@ -1,14 +1,15 @@
 // @flow
 
 import { elt, removeChildrenAndAdd } from '../utils/dom';
+import EventEmitter from '../utils/emitter';
 
 type FontOptions = {
   family?: string,
   size?: number
 };
 
-
-export default class FontMetrics {
+// TODO: implement change events with emitter
+export default class FontMetrics extends EventEmitter {
   // Currently selected font family.
   _family: string = "Monaco, 'Courier New', Courier, monospace";
 
@@ -28,6 +29,8 @@ export default class FontMetrics {
   _cachedLineHeight: ?number = null;
 
   constructor(element: HTMLElement, opts: FontOptions) {
+    super();
+
     this._measure = element.appendChild(elt('div', null, 'xi-measure'));
     this._measure.style.position = 'absolute';
     this._measure.style.whiteSpace = 'nowrap';
@@ -50,6 +53,8 @@ export default class FontMetrics {
     this._computeBaseline();
     this._computeCharWidth();
     this._computeLineHeight();
+
+    this.emit('update');
   }
 
   baseline(force: boolean = false) {

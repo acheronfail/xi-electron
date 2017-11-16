@@ -1,5 +1,5 @@
 
-export function elt(tag, content, className, cssText) {
+export function elt(tag, content, className, cssText): HTMLElement {
   const e = document.createElement(tag);
   if (className) e.className = className
   if (cssText) e.style.cssText = cssText;

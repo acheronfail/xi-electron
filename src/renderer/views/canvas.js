@@ -1,60 +1,113 @@
+
 import { elt } from '../../utils/dom';
 import { STYLE_SELECTION, STYLE_HIGHLIGHT, COLORS } from '../style-map';
 
 export default class CanvasView {
   // The actual canvas.
-  _canvas: HTMLCanvasElement;
+  _canvas: HTMLElement;
 
   // Canvas context.
   _ctx: any;
 
-  // TODO: scrolling
-  // TODO: make a viewport margin so we know which lines are currently visible
+  // Pixel ratio of the canvas. Used to render canvas appropriately on hi-def
+  // screens (retina).
+  _devicePixelRatio: number = 1;
 
-  constructor(place: HTMLElement, opts: any) {
-    this._canvas = place.appendChild(elt('canvas'));
+  // The line at the top of the view, and character at the left.
+  _viewTop: number = 0;
+  _viewLeft: number = 0;
+
+  // How many lines/chars are visible in the view.
+  _viewLines: number = 0;
+  _viewChars: number = 0;
+
+  constructor(controller: any, metrics: any,  opts: any) {
+    this._wrapper = controller._wrapper;
+    this._metrics = controller._metrics;
+    this._lineCache = controller._lineCache;
+
+    this._canvas = this._wrapper.appendChild(elt('canvas'));
     this._canvas.style.display = 'block';
-
     this._ctx = this._canvas.getContext('2d');
 
-    // Render canvas appropriately on hi-def screens (retina).
-    if (window.devicePixelRatio) {
-      const { width, height } = this._canvas;
+    this.resize();
 
-      this._canvas.width = width * window.devicePixelRatio;
-      this._canvas.height = height * window.devicePixelRatio;
-      this._canvas.style.width = `${width}px`;
-      this._canvas.style.height = `${height}px`;
-      this._ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    this._metrics.on('update', () => this._updateViewport());
+  }
+
+  // Calculates how many lines/chars fit in the canvas.
+  _updateViewport() {
+    const charWidth = this._metrics.charWidth();
+    const lineHeight = this._metrics.lineHeight();
+    this._viewChars = Math.floor((this._canvas.width / charWidth) / this._devicePixelRatio);
+    this._viewLines = Math.floor((this._canvas.height / lineHeight) / this._devicePixelRatio);
+  }
+
+  resize() {
+    const { width, height } = this._wrapper.getBoundingClientRect();
+
+    this._canvas.width = width * this._devicePixelRatio;
+    this._canvas.height = height * this._devicePixelRatio;
+    this._canvas.style.width = `${width}px`;
+    this._canvas.style.height = `${height}px`;
+    this._ctx.scale(this._devicePixelRatio, this._devicePixelRatio);
+
+    this._updateViewport();
+    this._ctx.font = this._metrics.fontString();
+    this.render();
+  }
+
+  // TODO: more sophisticated scrolling: ie, momentum scrolling, use native div
+  // wrapper, scrollbars, etc
+  scrollTo(line, char) {
+    if (line < this._viewTop) {
+      this._viewTop = line;
+    } else if (line >= this._viewTop + this._viewLines) {
+      this._viewTop = line - this._viewLines + 1;
+    }
+
+    if (char < this._viewLeft) {
+      this._viewLeft = char;
+    } else if (char >= this._viewLeft + this._viewChars) {
+      this._viewLeft = char - this._viewChars + 1;
+    }
+
+    this.render();
+  }
+
+  // Returns an object with measurements about the current viewport: "top" and
+  // "height" are measured in lines, "left" and "width" in chars.
+  getViewport() {
+    return {
+      top:    this._viewTop,
+      height: this._viewLines,
+      left:   this._viewLeft,
+      width:  this._viewChars
     }
   }
 
   // Renders the document onto the canvas.
-  render(lineCache: any, metrics: any) {
-    const baseline = metrics.baseline();
-    const charWidth = metrics.charWidth();
-    const lineHeight = metrics.lineHeight();
+  // TODO: left/right scrolling
+  render() {
+    const baseline = this._metrics.baseline();
+    const charWidth = this._metrics.charWidth();
+    const lineHeight = this._metrics.lineHeight();
 
     // Clear canvas.
     this._ctx.fillStyle = COLORS.BACKGROUND;
     this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
 
-    // Set font.
-    // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font
-    // TODO: when do I need to set/reset this?
-    this._ctx.font = metrics.fontString();
+    const first = this._viewTop;
+    const last = first + this._viewLines;
 
-    const first = 0;
-    const last = Math.ceil(this._canvas.height / lineHeight);
-
-    lineCache.computeMissing(first, last).forEach((tuple) => {
-      console.log(`Requesting missing: ${tuple[0]}..${tuple[1]}`);
+    this._lineCache.computeMissing(first, last).forEach((tuple) => {
+      console.log(`[TODO] Requesting missing: ${tuple[0]}..${tuple[1]}`);
       // TODO: sendRpcAsync("request_lines", params: [f, l])
     });
 
     // First pass, for drawing background selections and search highlights.
-    for (let i = first; i < last; ++i) {
-      const line = lineCache.get(i);
+    for (let i = 0; i <= this._viewLines; ++i) {
+      const line = this._lineCache.get(first + i);
       if (!line || !line.containsReservedStyle()) continue;
 
       const y = lineHeight * (i);
@@ -79,8 +132,8 @@ export default class CanvasView {
     }
 
     // Second pass, for actually rendering text.
-    for (let i = first; i < last; ++i) {
-      const line = lineCache.get(i);
+    for (let i = 0; i <= this._viewLines; ++i) {
+      const line = this._lineCache.get(first + i);
       if (!line) continue;
 
       const y = lineHeight * (i);

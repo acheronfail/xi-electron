@@ -1,5 +1,3 @@
-// @flow
-
 import { elt, on } from '../utils/dom';
 import FontMetrics from './font-metrics';
 import LineCache from './line-cache';
@@ -52,11 +50,13 @@ export default class ViewController {
       size: 20
     });
 
-    this._view = createView(opts.type, this._wrapper, {});
+    this._view = createView(opts.type, this, {});
 
     this._proxy.on('update', this._update.bind(this));
     this._proxy.on('scroll_to', this._scrollTo.bind(this));
     this._proxy.on('available_plugins', this._availablePlugins.bind(this));
+
+    this.updateViewport();
   }
 
   /**
@@ -96,7 +96,7 @@ export default class ViewController {
 
   // Trigger a render of the view.
   render() {
-    this._view.render(this._lineCache, this._metrics);
+    this._view.render();
   }
 
   blur() {
@@ -113,6 +113,14 @@ export default class ViewController {
 
   getWrapperElement() {
     return this._wrapper;
+  }
+
+  // Determine how many lines should render, and send this info to xi-core so it
+  // knows how much information to give us.
+  updateViewport() {
+    const { top, height } = this._view.getViewport();
+    console.log(top, height)
+    this._edit('scroll', [top, height]);
   }
 
   /**
@@ -149,7 +157,7 @@ export default class ViewController {
   }
 
   _scrollTo(params: any) {
-    // console.log(params);
+    this._view.scrollTo(params.line, params.col);
   }
 
   _availablePlugins(params: any) {
