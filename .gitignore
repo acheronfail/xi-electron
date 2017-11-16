@@ -3,3 +3,7 @@ out
 
 src/xi-core/
 \.xi-core
+
+\.DS_Store
+
+src/xi-plugins/
