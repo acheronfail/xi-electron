@@ -11,7 +11,7 @@ export default class CanvasView {
 
   // Pixel ratio of the canvas. Used to render canvas appropriately on hi-def
   // screens (retina).
-  _devicePixelRatio: number = 1;
+  _devicePixelRatio: number = (window.devicePixelRatio || 1);
 
   // The line at the top of the view, and character at the left.
   _viewTop: number = 0;
