@@ -7,7 +7,7 @@ NOTE: This is still a WIP!
 
 * Make a front-end for [`xi-editor`](https://github.com/google/xi-editor) that is consistent across platforms
 * Experiement with different editor rendering techniques on the web, specifically:
-    - [-] `2d` - `<canvas>` (current implementation)
+    - [x] `2d` - `<canvas>` (current implementation)
     - [ ] `WebGL` - `<canvas>`
     - [ ] `DOM` - direct use of the DOM (have a look at [CodeMirror](https://github.com/codemirror/codemirror))
 * Hopefully create a functional mobile friendly version that is fast and pleasant to use
