@@ -1,6 +1,8 @@
 # Xi Electron
 _A front-end for the xi-editor built with modern web technologies._
 
+_THIS `V1` BRANCH is just the original attempt, xi-core implemented many changes that I'd already put into this, so this is now just archived._
+
 ## Demo
 
 ![XiEditor](./demo/demo.png)
