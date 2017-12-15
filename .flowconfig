@@ -1,0 +1,16 @@
+[ignore]
+.*/node_modules/.*
+.*/scripts/.*
+
+[include]
+.*/src/main/.*
+.*/src/renderer/.*
+
+[libs]
+
+[lints]
+
+[options]
+all=true
+
+[strict]

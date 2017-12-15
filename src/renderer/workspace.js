@@ -1,0 +1,91 @@
+import { elt, on } from '../utils/dom';
+import { execKey } from './key-events';
+import Core from './core';
+import ViewController from './view-controller';
+
+import type ViewProxy from './view-proxy';
+
+/**
+ * Our unique id of the our views, we send this through to xi-core when
+ * requesting a new view.
+ */
+let viewInstanceId = 0;
+
+/**
+ * Configuration options for each Workspace.
+ */
+type WorkspaceOptions = {};
+
+/**
+ * Top parent class that controls everything.
+ *   TODO: listen for commands
+ *   TODO: listen for user input
+ *   TODO: manage clipboard, etc
+ *   TODO: manage views
+ *   TODO: manage settings
+ */
+export default class Workspace {
+
+  // References of all our child view controllers.
+  _controllers: ViewController[];
+
+  // Wrapper top-level element.
+  _wrapper: any;
+
+  /**
+   * Create the Workspace.
+   * @param  {HTMLElement}      place Where to attach the workspace.
+   * @param  {WorkspaceOptions} opts  Configuration options.
+   */
+  constructor(place: any, opts: WorkspaceOptions) {
+    this._controllers = [];
+    this._wrapper = place.appendChild(elt('div', null, 'xi-workspace'));
+
+    // All events are listened to on the window.
+    on(window, 'keydown', this.keyedInput.bind(this), false);
+    on(window, 'keypress', this.keyedInput.bind(this), false);
+    on(window, 'mousedown', this.mousedown.bind(this), false);
+
+    // Create View objects whenever xi-core creates a view.
+    Core.on('new_view', (proxy: Function) => {
+      this._controllers.push(new ViewController(this._wrapper, proxy, { type: 'Canvas' }));
+    });
+
+    // Initially create just one view.
+    Core.send('new_view', {}, { id: viewInstanceId++ });
+  }
+
+  /**
+   * Find the active ViewController (if any).
+   * @return {ViewController} The active ViewController, or undefined.
+   */
+  activeViewController(): ?ViewController {
+    return this._controllers.find((controller) => controller.isFocused());
+  }
+
+  /**
+   * Called when the Workspace receives keyboard input ("keydown" or "keypress").
+   * @param  {Object} event DOM KeyEvent.
+   */
+  keyedInput(event: any) {
+    const controller = this.activeViewController();
+    if (controller && execKey(controller, event)) {
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Called when the Workspace receives mouse input.
+   *   TODO: move mouse events into another file
+   *   TODO: drag events, click, dbl click, alt click, etc. do ALL THE EVENTS!
+   * @param  {Object} event DOM MouseEvent.
+   */
+  mousedown(event: any) {
+    const controller = this._controllers.find((controller) => {
+      return controller.getWrapperElement().contains(event.target);
+    });
+    if (controller) {
+      controller.click(event);
+    }
+  }
+}

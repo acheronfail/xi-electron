@@ -1,13 +1,13 @@
-# TODO for `xi-electron`.
+# TODO for `xi-electron`
 
-
-## Development items
-
-- [ ] add in `xo` for code linting
-- [ ] use minification to remove `if (DEV) { ... }` branches from prod code
-- [ ] make build scripts for building the newest `xi-core`
-
-## Application items
-
+- [ ] lint code
+- [ ] create enums and convenience types for xi-editor's API
+- [ ] abstract keybindings into a service
+- [ ] re-factor to be more platform portable (hopefully generate nice libs for non-electron platforms)
 - [ ] add in gutters
     - [ ] line numbers
+    - [ ] gutter markers ?
+    - [ ] click to select line
+    - [ ] other gutter behaviour
+- [ ] implement DOMView
+- [ ] implement WebGLView

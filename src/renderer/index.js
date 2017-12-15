@@ -1,18 +1,9 @@
-import Workspace from './lib/workspace';
-import settings from 'electron-settings';
-import { ipcRenderer, remote } from 'electron';
+import Workspace from './workspace';
 
-const workspace = window.workspace = new Workspace(
-  document.querySelector('#xi-root'),
-  settings
-);
+const workspace = new Workspace(document.querySelector('#view'), {});
 
-ipcRenderer.once('args', (e, filepaths) => {
-  filepaths.forEach((filepath) => {
-    workspace.newView({ 'file_path': filepath });
-  });
-});
-
-ipcRenderer.on('message', (e, method, ...args) => {
-  workspace.message(method, ...args);
-});
+// TODO: devmode in environment
+if (true) {
+  window.workspace = workspace;
+  window.Core = require('./core').default;
+}

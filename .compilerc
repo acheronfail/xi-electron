@@ -3,17 +3,21 @@
     "development": {
       "application/javascript": {
         "presets": [
+          "flow",
           [
             "env",
             {
               "targets": {
-                "electron": 1.6
+                "electron": "1.7.9"
               }
             }
           ],
+          "stage-3",
+          "babili",
           "react"
         ],
         "plugins": [
+          "transform-class-properties",
           "transform-async-to-generator"
         ],
         "sourceMaps": "inline"
@@ -22,17 +26,21 @@
     "production": {
       "application/javascript": {
         "presets": [
+          "flow",
           [
             "env",
             {
               "targets": {
-                "electron": 1.6
+                "electron": "1.7.9"
               }
             }
           ],
+          "stage-3",
+          "babili",
           "react"
         ],
         "plugins": [
+          "transform-class-properties",
           "transform-async-to-generator"
         ],
         "sourceMaps": "none"
