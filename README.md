@@ -12,7 +12,7 @@ NOTE: This is still a WIP!
     - [ ] `DOM` - direct use of the DOM (have a look at [CodeMirror](https://github.com/codemirror/codemirror))
 * Hopefully create a functional mobile friendly version that is fast and pleasant to use
 
-The main motivation for this repo is to experiment and profile the speeds and performance of different rendering techniques in the browser, specifically with modern HTML5 APIs and the like. The final goal would be a fully cross-platform (desktop+mobile) text editing experience, but this is still a long hope at this stage.
+The main motivation for this repo is to experiment and profile the speeds and performance of different rendering techniques for text editors in the browser, specifically with modern HTML5 APIs and the like. The final goal would be a fully cross-platform (desktop+mobile) text editing experience, but that's still a long hope at this stage.
 
 ## Demo
 
