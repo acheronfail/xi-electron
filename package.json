@@ -55,7 +55,7 @@
         "babel-preset-env": "^1.4.0",
         "babel-preset-flow": "^6.23.0",
         "babel-preset-react": "^6.24.1",
-        "babel-preset-stage-3": "^6.24.1",
+        "babel-preset-stage-0": "^6.24.1",
         "babili": "^0.0.12",
         "cross-env": "^4.0.0",
         "dirutils": "^0.1.1",
