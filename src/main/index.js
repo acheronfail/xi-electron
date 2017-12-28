@@ -1,3 +1,4 @@
+// @flow
 import path from 'path';
 import { app, BrowserWindow } from 'electron';
 

@@ -1,3 +1,4 @@
+// @flow
 
 // TODO: more sophisticated theming.
 

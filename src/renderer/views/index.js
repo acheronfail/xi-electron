@@ -1,3 +1,4 @@
+// @flow
 import DOMView from './dom';
 import WebGLView from './webgl';
 import CanvasView from './canvas';

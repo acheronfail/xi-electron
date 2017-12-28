@@ -1,3 +1,4 @@
+// @flow
 // Simple event emitter class.
 export default class EventEmitter {
 

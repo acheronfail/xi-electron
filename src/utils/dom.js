@@ -1,3 +1,4 @@
+// @flow
 
 export function elt(tag: string, content?: any, className?: string, cssText?: string): any {
   const e = document.createElement(tag);

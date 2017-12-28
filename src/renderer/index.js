@@ -1,3 +1,4 @@
+// @flow
 import Workspace from './workspace';
 
 const workspace = new Workspace(document.querySelector('#view'), {});

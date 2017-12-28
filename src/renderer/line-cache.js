@@ -1,3 +1,4 @@
+// @flow
 import { StyleSpan, N_RESERVED_STYLES } from './style-map';
 
 /**

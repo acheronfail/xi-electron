@@ -1,3 +1,4 @@
+// @flow
 import EventEmitter from '../utils/emitter';
 
 /**

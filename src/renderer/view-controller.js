@@ -1,3 +1,4 @@
+// @flow
 import { elt, on } from '../utils/dom';
 import FontMetrics from './font-metrics';
 import LineCache from './line-cache';

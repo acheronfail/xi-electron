@@ -1,3 +1,4 @@
+// @flow
 import cp from 'child_process';
 import EventEmitter from '../utils/emitter';
 import { XI_CORE_BIN, XI_PLUGIN_DIR } from '../utils/environment';

@@ -1,3 +1,4 @@
+// @flow
 import { elt, on } from '../utils/dom';
 import { execKey } from './key-events';
 import Core from './core';

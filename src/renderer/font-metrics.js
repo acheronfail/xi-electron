@@ -1,3 +1,4 @@
+// @flow
 import { elt, removeChildrenAndAdd } from '../utils/dom';
 import EventEmitter from '../utils/emitter';
 
