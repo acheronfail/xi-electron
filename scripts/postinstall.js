@@ -1,5 +1,4 @@
-console.log('postinstall');
-console.log('Attempting to build xi-core...');
+console.log('Starting build of xi-core...');
 
 const cp = require('child_process');
 const fse = require('fs-extra');
@@ -55,3 +54,5 @@ process.popdir();
 fse.removeSync(XI_PLUGINS_DEST);
 fse.copySync(XI_PLUGINS_PY, XI_PLUGINS_DEST);
 fse.copySync(XI_PLUGINS_SYNTECT_BUILD, path.join(XI_PLUGINS_DEST, 'xi-syntect-plugin'));
+
+console.log('Build complete!');
