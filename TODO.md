@@ -1,5 +1,6 @@
 # TODO for `xi-electron`
 
+- [ ] make nice debugging tasks/configurations for vscode
 - [ ] lint code
 - [ ] create enums and convenience types for xi-editor's API
 - [ ] abstract keybindings into a service
