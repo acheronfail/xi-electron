@@ -1,0 +1,25 @@
+language: rust
+osx_image: xcode8.2
+
+rust:
+  - stable
+  - nightly
+
+os:
+  - linux
+  - osx
+
+matrix:
+  allow_failures:
+    - rust: nightly
+
+cache:
+  directories:
+    - $HOME/.cargo
+
+script:
+  - cd rust
+  - export CARGO_TARGET_DIR=/tmp/target
+  - cargo build || exit
+  - cargo build --manifest-path syntect-plugin/Cargo.toml || exit
+  - for MANIFEST in Cargo.toml */Cargo.toml; do cargo test --manifest-path $MANIFEST || exit; done

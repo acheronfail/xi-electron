@@ -1,49 +1,43 @@
 {
   "env": {
     "development": {
-      "application/javascript": {
-        "presets": [
-          "flow",
-          [
-            "env",
-            {
-              "targets": {
-                "electron": "1.7.9"
-              }
-            }
-          ],
-          "stage-0",
-          "babili",
-          "react"
-        ],
-        "plugins": [
-          "transform-class-properties",
-          "transform-async-to-generator"
-        ],
-        "sourceMaps": "inline"
+      "text/typescript": {
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "declaration": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "strictNullChecks": true,
+        "noUnusedLocals": true,
+        "noImplicitThis": true,
+        "noUnusedParameters": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "importHelpers": true,
+        "noEmitHelpers": true,
+        "experimentalDecorators": true,
+        "target": "es2015",
+        "module": "commonjs"
       }
     },
     "production": {
-      "application/javascript": {
-        "presets": [
-          "flow",
-          [
-            "env",
-            {
-              "targets": {
-                "electron": "1.7.9"
-              }
-            }
-          ],
-          "stage-0",
-          "babili",
-          "react"
-        ],
-        "plugins": [
-          "transform-class-properties",
-          "transform-async-to-generator"
-        ],
-        "sourceMaps": "none"
+      "text/typescript": {
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "declaration": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "strictNullChecks": true,
+        "noUnusedLocals": true,
+        "noImplicitThis": true,
+        "noUnusedParameters": true,
+        "sourceMap": false,
+        "importHelpers": true,
+        "noEmitHelpers": true,
+        "experimentalDecorators": true,
+        "target": "es2015"
       }
     }
   }
