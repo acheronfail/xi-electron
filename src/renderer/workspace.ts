@@ -3,7 +3,8 @@ import { execKey } from './key-events';
 import Core from './core';
 import ViewController from './view-controller';
 import ViewProxy from './view-proxy';
-import { ViewType } from './views';
+import { ViewType } from './view';
+import { CoreMethod } from './types/core';
 
 /**
  * Our unique id of the our views, we send this through to xi-core when
@@ -47,13 +48,13 @@ export default class Workspace {
     on((<any>window), 'mousedown', this.mousedown.bind(this), false);
 
     // Create View objects whenever xi-core creates a view.
-    Core.on('new_view', (proxy: ViewProxy) => {
+    Core.on(CoreMethod.NEW_VIEW, (proxy: ViewProxy) => {
       const viewOptions = { type: ViewType.Canvas };
       this._controllers.push(new ViewController(this._wrapper, proxy, viewOptions));
     });
 
     // Initially create just one view.
-    Core.send('new_view', {}, { id: viewInstanceId++ });
+    Core.send(CoreMethod.NEW_VIEW, {}, { id: viewInstanceId++ });
   }
 
   /**
@@ -66,9 +67,9 @@ export default class Workspace {
 
   /**
    * Called when the Workspace receives keyboard input ("keydown" or "keypress").
-   * @param  {Object} event DOM KeyEvent.
+   * @param  {KeyboardEvent} event DOM KeyEvent.
    */
-  keyedInput(event: any) {
+  keyedInput(event: KeyboardEvent) {
     const controller = this.activeViewController();
     if (controller && execKey(controller, event)) {
       event.preventDefault();
@@ -79,14 +80,14 @@ export default class Workspace {
    * Called when the Workspace receives mouse input.
    *   TODO: move mouse events into another file
    *   TODO: drag events, click, dbl click, alt click, etc. do ALL THE EVENTS!
-   * @param  {Object} event DOM MouseEvent.
+   * @param  {MouseEvent} event DOM MouseEvent.
    */
-  mousedown(event: any) {
+  mousedown(event: MouseEvent) {
     const controller = this._controllers.find((controller) => {
-      return controller.getWrapperElement().contains(event.target);
+      return controller.getWrapperElement().contains((<Node>event.target));
     });
     if (controller) {
-      controller.click(event);
+      controller.doClick(event);
     }
   }
 }

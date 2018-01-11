@@ -1,6 +1,10 @@
 import * as path from 'path';
 import { app, BrowserWindow } from 'electron';
 
+// TODO: live reload in devmode
+// TODO: menus
+// TODO: main proc
+
 let win: BrowserWindow | null = null;
 
 app.on('ready', async () => {

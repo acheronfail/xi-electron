@@ -2,6 +2,7 @@ import * as path from 'path';
 
 // environment
 export const DEVMODE = /node_modules[\\/]electron[\\/]/.test(process.execPath);
+export const MACOS = process.platform === 'darwin';
 
 // project dirs
 export const PROJECT_ROOT = path.resolve(__dirname, '..', '..');

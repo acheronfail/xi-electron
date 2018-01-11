@@ -1,7 +1,7 @@
 import Workspace from './workspace';
 import { DEVMODE } from '../utils/environment';
 
-const workspace = new Workspace(document.querySelector('#view'), {});
+const workspace = new Workspace(document.body, {});
 
 if (DEVMODE) {
   // tslint:disable-next-line
