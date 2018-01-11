@@ -214,7 +214,11 @@ export default class LineCache {
     }
 
     for (let i = first; i < last; ++i) {
-      if (i < this.nInvalidBefore || i >= (this.nInvalidBefore + this.lines.length) || this.lines[i - this.nInvalidBefore] == null) {
+      if (
+        i < this.nInvalidBefore ||
+        i >= (this.nInvalidBefore + this.lines.length) ||
+        this.lines[i - this.nInvalidBefore] == null
+      ) {
         if (result.length == 0 || result[result.length - 1][1] != i) {
           result.push([i, i + 1]);
         } else {

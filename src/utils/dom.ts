@@ -1,4 +1,9 @@
-export function elt(tag: string, content?: string | HTMLElement[] | null, className?: string, cssText?: string): HTMLElement {
+export function elt(
+  tag: string,
+  content?: string | HTMLElement[] | null,
+  className?: string,
+  cssText?: string
+): HTMLElement {
   const e = document.createElement(tag);
   if (className) { e.className = className; }
   if (cssText) { e.style.cssText = cssText; }

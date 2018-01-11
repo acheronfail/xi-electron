@@ -1,5 +1,20 @@
 import ViewController from './view-controller';
 
+// TODO: add in all supported commands
+export const keyMap: { [key: string]: string } = {
+  'Backspace': 'delete_backward',
+  'Enter': 'insert_newline',
+  'ArrowLeft': 'move_left',
+  'ArrowRight': 'move_right',
+  'ArrowUp': 'move_up',
+  'ArrowDown': 'move_down',
+
+  'Shift+ArrowLeft': 'move_left_and_modify_selection',
+  'Shift+ArrowRight': 'move_right_and_modify_selection',
+  'Shift+ArrowUp': 'move_up_and_modify_selection',
+  'Shift+ArrowDown': 'move_down_and_modify_selection',
+};
+
 /**
  * Called with a DOM key event ("keypress" or "keydown") which looks first for
  * actions (or keybindings) and then passes the input to the ViewController.
@@ -29,18 +44,3 @@ export function execKey(viewController: ViewController, event: KeyboardEvent): b
 
   return false;
 }
-
-// TODO: add in all supported commands
-export const keyMap: { [key: string]: string } = {
-  'Backspace':        'delete_backward',
-  'Enter':            'insert_newline',
-  'ArrowLeft':        'move_left',
-  'ArrowRight':       'move_right',
-  'ArrowUp':          'move_up',
-  'ArrowDown':        'move_down',
-
-  'Shift+ArrowLeft':  'move_left_and_modify_selection',
-  'Shift+ArrowRight': 'move_right_and_modify_selection',
-  'Shift+ArrowUp':    'move_up_and_modify_selection',
-  'Shift+ArrowDown':  'move_down_and_modify_selection',
-};

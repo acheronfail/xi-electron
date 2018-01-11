@@ -44,7 +44,8 @@ export default class EventEmitter {
 
     const n = this._events[event].push(listener);
     if (n > this._maxListeners) {
-      console.warn(`Possible EventEmitter memory leak detected. ${n} "${event}" listener(s) added. Use emitter.setMaxListeners() to increase limit.`);
+      console.warn(`Possible EventEmitter memory leak detected. ${n} "${
+        event}" listener(s) added. Use emitter.setMaxListeners() to increase limit.`);
     }
   }
 

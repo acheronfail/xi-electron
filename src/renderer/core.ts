@@ -28,15 +28,15 @@ export class Core extends EventEmitter {
 
     // Spawn xi-core.
     this.child = cp.spawn(XI_CORE_BIN, [], { env });
-    this.child.on('close', this._coreClosed.bind(this));
+    this.child.on('close', this.coreClosed.bind(this));
 
     // Receive messages from xi-core as text.
-    this._stdout().setEncoding('utf8');
-    this._stderr().setEncoding('utf8');
+    this.stdout().setEncoding('utf8');
+    this.stderr().setEncoding('utf8');
 
     // Listen to its streams.
-    this._stdout().on('data', this._eventFromCore.bind(this));
-    this._stderr().on('data', this._errorFromCore.bind(this));
+    this.stdout().on('data', this.eventFromCore.bind(this));
+    this.stderr().on('data', this.errorFromCore.bind(this));
   }
 
   /**
@@ -61,7 +61,7 @@ export class Core extends EventEmitter {
   send(method: string, params: any = {}, rest: any = {}): boolean {
     const data = { method, params, ...rest };
     try {
-      this._stdin().write(`${JSON.stringify(data)}\n`);
+      this.stdin().write(`${JSON.stringify(data)}\n`);
       return true;
     } catch (e) {
       console.error(e);
@@ -74,20 +74,20 @@ export class Core extends EventEmitter {
    */
 
   // Getters for easier access to streams.
-  _stdin() { return this.child.stdin; }
-  _stdout() { return this.child.stdout; }
-  _stderr() { return this.child.stderr; }
+  private stdin() { return this.child.stdin; }
+  private stdout() { return this.child.stdout; }
+  private stderr() { return this.child.stderr; }
 
   /**
    * Called when we get events from xi-core's `stdout` stream.
    * @param {String} data Raw data emitted from xi-core's stdout.
    */
-  _eventFromCore(raw: string) {
+  private eventFromCore(raw: string) {
     parseMessages(raw).forEach((msg) => {
 
       // Returned after calling 'new_view'.
       if (msg.result) {
-        this.proxies[msg.result] = new ViewProxy(this._proxySend, msg.id, msg.result);
+        this.proxies[msg.result] = new ViewProxy(this.proxySend, msg.id, msg.result);
         this.emit('new_view', this.proxies[msg.result]);
       } else if (msg.method) {
         this.proxies[msg.params.view_id].emit(msg.method, msg.params);
@@ -102,7 +102,7 @@ export class Core extends EventEmitter {
    * Called when we get events from xi-core's `stderr` stream.
    * @param {String} data Raw data emitted from xi-core's stderr.
    */
-  _errorFromCore(data: string) {
+  private errorFromCore(data: string) {
     console.error(`Error from core: "${data.toString()}"`);
   }
 
@@ -111,7 +111,7 @@ export class Core extends EventEmitter {
    * @param {Number} code   The exit code of the process.
    * @param {String} signal The close signal (why the process closed).
    */
-  _coreClosed(code: number, signal: string) {
+  private coreClosed(code: number, signal: string) {
     // TODO: if error attempt to reboot core process?
     // TODO: or alternatively just close the app with a dialog error?
     console.log('core proc closed: ', code, signal);
@@ -123,7 +123,7 @@ export class Core extends EventEmitter {
    * @param  {String} method The method to send.
    * @param  {Object} params The method's parameters.
    */
-  _proxySend = (method: string, params: any = {}): void => {
+  private proxySend = (method: string, params: any = {}): void => {
     this.send(method, params);
   }
 }
