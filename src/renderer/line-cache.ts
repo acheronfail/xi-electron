@@ -16,7 +16,7 @@ export class Line {
    * @param  {Object} data The JSON data.
    * @return {Line}        Newly created Line class.
    */
-  public static fromJSON(data: any): Line {
+  public static fromJSON(data: { text: string, cursor: number[], styles: number[] }): Line {
     const { text, cursor, styles } = data;
     const line = new Line();
     line.text = text;
@@ -31,11 +31,11 @@ export class Line {
 
   /**
    * Update a given line from the given JSON object (from xi-core).
-   * @param  {Line} line   The Line to update.
+   * @param  {Line}   line The Line to update.
    * @param  {Object} data The JSON data.
    * @return {Line}        The given Line class.
    */
-  public static updateFromJSON(data: any, line?: Line, ): Line | null {
+  public static updateFromJSON(data: { cursor: number[], styles: StyleSpan[] }, line?: Line, ): Line | null {
     const { cursor, styles } = data;
     if (!line) { return null; }
     if (cursor) { line.cursor = cursor; }

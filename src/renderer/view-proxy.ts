@@ -15,7 +15,7 @@ export default class ViewProxy extends EventEmitter {
   viewId: string;
 
   // A function given that sends a message to the Core.
-  sendToCore: any;
+  sendToCore: (method: CoreMethod, params: any) => void;
 
   /**
    * Create the ViewProxy.

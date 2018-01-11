@@ -13,7 +13,7 @@ import { CoreMethod } from './types/core';
 export class Core extends EventEmitter {
 
   // The spawned child process.
-  private child: any;
+  private child: cp.ChildProcess;
 
   // References to our ViewProxy classes. Keyed by the view's id.
   private proxies: { [key: string]: ViewProxy };
@@ -22,7 +22,7 @@ export class Core extends EventEmitter {
    * Create the class.
    * @param  {Object} env The environment map to use when spawning xi-core.
    */
-  constructor(env: any = {}) {
+  constructor(env: { [key: string]: string | number } = {}) {
     super();
 
     this.proxies = {};
@@ -113,10 +113,10 @@ export class Core extends EventEmitter {
   /**
    * This function is bound to this class and given to each ViewProxy so that
    * they may send messages back to the core process.
-   * @param  {String} method The method to send.
-   * @param  {Object} params The method's parameters.
+   * @param  {CoreMethod} method The method to send.
+   * @param  {Object}     params The method's parameters.
    */
-  private proxySend = (method: string, params: any = {}): void => {
+  private proxySend = (method: CoreMethod, params: any = {}): void => {
     this.send(method, params);
   }
 }

@@ -13,7 +13,7 @@ import LineCache from '../../line-cache';
 export default class WebGLView implements View {
 
   // Wrapper element.
-  private wrapper: any;
+  private wrapper: HTMLElement;
 
   // Parent ViewController's FontMetrics.
   private metrics: FontMetrics;

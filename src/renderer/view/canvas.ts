@@ -10,13 +10,13 @@ import LineCache from '../line-cache';
 export default class CanvasView implements View {
 
   // View's wrapper element.
-  private wrapper: any;
+  private wrapper: HTMLElement;
 
   // The actual canvas.
-  private canvas: any;
+  private canvas: HTMLCanvasElement;
 
   // Canvas context.
-  private ctx: any;
+  private ctx: CanvasRenderingContext2D;
 
   // Parent ViewController's FontMetrics.
   private metrics: FontMetrics;
@@ -41,9 +41,15 @@ export default class CanvasView implements View {
     this.metrics = controller.metrics;
     this.lineCache = controller.lineCache;
 
-    this.canvas = this.wrapper.appendChild(elt('canvas'));
+    this.canvas = (<HTMLCanvasElement>this.wrapper.appendChild(elt('canvas')));
     this.canvas.style.display = 'block';
-    this.ctx = this.canvas.getContext('2d');
+
+    const ctx = this.canvas.getContext('2d');
+    if (ctx) {
+      this.ctx = ctx;
+    } else {
+      throw new Error('Could not get CanvasRenderingContext2D');
+    }
 
     this.resize();
 

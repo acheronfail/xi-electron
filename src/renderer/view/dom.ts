@@ -13,7 +13,7 @@ import LineCache from '../line-cache';
 export default class DOMView implements View {
 
   // Wrapper element.
-  private wrapper: any;
+  private wrapper: HTMLElement;
 
   // Parent ViewController's FontMetrics.
   private metrics: FontMetrics;

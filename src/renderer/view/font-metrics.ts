@@ -20,7 +20,7 @@ export default class FontMetrics extends EventEmitter {
   private sizeValue: number = 16;
 
   // Measuring container. Used to calculate and measure the chosen font.
-  private measure: any;
+  private measure: HTMLElement;
 
   // Cached value for baseline.
   private cachedBaseline: number;
@@ -36,7 +36,7 @@ export default class FontMetrics extends EventEmitter {
    * @param  {HTMLElement} element Parent's wrapper.
    * @param  {FontOptions} opts    Options for the given font.
    */
-  constructor(element: any, opts: FontOptions) {
+  constructor(element: HTMLElement, opts: FontOptions) {
     super();
 
     this.measure = element.appendChild(elt('div', null, 'xi-measure'));

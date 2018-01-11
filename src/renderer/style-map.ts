@@ -27,9 +27,9 @@ export class StyleSpan {
    * Given a line of text and an array of style values, generate an array of
    * StyleSpans.
    *   See https://github.com/google/xi-editor/blob/protocol_doc/doc/update.md
-   * @param  {Array} raw    Array (sorted in 3-length-tuples) of spans.
+   * @param  {Array}  raw  Array (sorted in 3-length-tuples) of spans.
    * @param  {String} text The text of the line.
-   * @return {Array}        Generated StyleSpan array.
+   * @return {Array}       Generated StyleSpan array.
    */
   static stylesFromRaw(raw: number[], _text: string): StyleSpan[] {
     const styles = [];

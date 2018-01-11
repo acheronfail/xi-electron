@@ -17,11 +17,16 @@ export function elt(
   return e;
 }
 
-export function on(el: HTMLElement, event: string, listener: () => void, opts: any = false): void {
+export type ListenerOptions = {
+  capture: boolean,
+  passive: boolean
+} | boolean;
+
+export function on(el: HTMLElement, event: string, listener: () => void, opts: ListenerOptions = false): void {
   el.addEventListener(event, listener, opts);
 }
 
-export function off(el: HTMLElement, event: string, listener: () => void, opts: any = false): void {
+export function off(el: HTMLElement, event: string, listener: () => void, opts: ListenerOptions = false): void {
   el.removeEventListener(event, listener, opts);
 }
 

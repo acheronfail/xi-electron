@@ -12,7 +12,7 @@ import { CoreMethod } from './types/core';
 export default class ViewController {
 
   // Wrapper element.
-  public wrapper: any;
+  public wrapper: HTMLElement;
 
   // Line cache of the view inside xi-core.
   public lineCache: LineCache;
@@ -32,7 +32,7 @@ export default class ViewController {
    * @param {ViewProxy}   proxy This ViewController's ViewProxy.
    * @param {[type]}      opts  Configuration options.
    */
-  constructor(place: any, private proxy: ViewProxy, opts: ViewOptions) {
+  constructor(place: HTMLElement, private proxy: ViewProxy, opts: ViewOptions) {
     this.wrapper = place.appendChild(elt('div', null, 'xi-view'));
     this.wrapper.style.border = '1px solid #000';
     this.wrapper.style.overflow = 'hidden';
@@ -82,7 +82,7 @@ export default class ViewController {
    * @param  {Object} event DOM MouseEvent.
    * @return {Array}        A [line, char] object of where the click occurred.
    */
-  public doClick(event: any): [number, number] {
+  public doClick(event: MouseEvent): [number, number] {
     if (!this.isFocused()) { this.focus(); }
     event.preventDefault();
 

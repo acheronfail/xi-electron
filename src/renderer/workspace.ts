@@ -31,14 +31,14 @@ export default class Workspace {
   _controllers: ViewController[];
 
   // Wrapper top-level element.
-  _wrapper: any;
+  _wrapper: HTMLElement;
 
   /**
    * Create the Workspace.
    * @param  {HTMLElement}      place Where to attach the workspace.
    * @param  {WorkspaceOptions} opts  Configuration options.
    */
-  constructor(place: any, _opts: WorkspaceOptions) {
+  constructor(place: HTMLElement, _opts: WorkspaceOptions) {
     this._controllers = [];
     this._wrapper = place.appendChild(elt('div', null, 'xi-workspace'));
 
