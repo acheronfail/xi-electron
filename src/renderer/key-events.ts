@@ -1,18 +1,19 @@
 import ViewController from './view-controller';
+import { CoreMethod } from './types/core';
 
 // TODO: add in all supported commands
-export const keyMap: { [key: string]: string } = {
-  'Backspace': 'delete_backward',
-  'Enter': 'insert_newline',
-  'ArrowLeft': 'move_left',
-  'ArrowRight': 'move_right',
-  'ArrowUp': 'move_up',
-  'ArrowDown': 'move_down',
+export const keyMap: { [key: string]: CoreMethod } = {
+  'Backspace':        CoreMethod.DELETE_BACKWARD,
+  'Enter':            CoreMethod.INSERT_NEWLINE,
+  'ArrowLeft':        CoreMethod.MOVE_LEFT,
+  'ArrowRight':       CoreMethod.MOVE_RIGHT,
+  'ArrowUp':          CoreMethod.MOVE_UP,
+  'ArrowDown':        CoreMethod.MOVE_DOWN,
 
-  'Shift+ArrowLeft': 'move_left_and_modify_selection',
-  'Shift+ArrowRight': 'move_right_and_modify_selection',
-  'Shift+ArrowUp': 'move_up_and_modify_selection',
-  'Shift+ArrowDown': 'move_down_and_modify_selection',
+  'Shift+ArrowLeft':  CoreMethod.MOVE_LEFT_AND_MODIFY_SELECTION,
+  'Shift+ArrowRight': CoreMethod.MOVE_RIGHT_AND_MODIFY_SELECTION,
+  'Shift+ArrowUp':    CoreMethod.MOVE_UP_AND_MODIFY_SELECTION,
+  'Shift+ArrowDown':  CoreMethod.MOVE_DOWN_AND_MODIFY_SELECTION,
 };
 
 /**

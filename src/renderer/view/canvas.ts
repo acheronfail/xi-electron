@@ -4,7 +4,7 @@ import { COLORS } from '../theme';
 
 import { View, ViewOptions, Viewport } from './index';
 import ViewController from '../view-controller';
-import FontMetrics from '../font-metrics';
+import FontMetrics from './font-metrics';
 import LineCache from '../line-cache';
 
 export default class CanvasView implements View {

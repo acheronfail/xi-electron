@@ -1,10 +1,11 @@
 import { elt, on } from '../utils/dom';
-import FontMetrics from './font-metrics';
+import FontMetrics from './view/font-metrics';
 import LineCache from './line-cache';
-import { createView } from './views';
+import { createView } from './view';
 
-import { View, ViewOptions } from './views';
+import { View, ViewOptions } from './view';
 import ViewProxy from './view-proxy';
+import { CoreMethod } from './types/core';
 
 // This module should be controlled by the "workspace" which has the xi-core running
 // it is linked to a view inside of xi-core via a "ViewProxy"
@@ -49,9 +50,9 @@ export default class ViewController {
 
     this.view = createView(opts.type, this, {});
 
-    this.proxy.on('update', this._update.bind(this));
-    this.proxy.on('scroll_to', this._scrollTo.bind(this));
-    this.proxy.on('available_plugins', this._availablePlugins.bind(this));
+    this.proxy.on('update', this.update.bind(this));
+    this.proxy.on('scroll_to', this.scrollTo.bind(this));
+    this.proxy.on('available_plugins', this.availablePlugins.bind(this));
 
     this.updateViewport();
   }
@@ -62,18 +63,18 @@ export default class ViewController {
 
   /**
    * Sends the given method to xi-core.
-   * @param  {String} method The method to send.
+   * @param  {CoreMethod} method The method to send.
    */
-  doMethod(method: string): void {
-    this._edit(method);
+  public doMethod(method: CoreMethod): void {
+    this.edit(method);
   }
 
   /**
    * Sends the given string to xi-core to be inserted.
    * @param  {String} chars Given string.
    */
-  insert(chars: string): void {
-    this._edit('insert', { chars });
+  public insert(chars: string): void {
+    this.edit(CoreMethod.INSERT, { chars });
   }
 
   /**
@@ -81,7 +82,7 @@ export default class ViewController {
    * @param  {Object} event DOM MouseEvent.
    * @return {Array}        A [line, char] object of where the click occurred.
    */
-  click(event: any): [number, number] {
+  public doClick(event: any): [number, number] {
     if (!this.isFocused()) { this.focus(); }
     event.preventDefault();
 
@@ -90,7 +91,7 @@ export default class ViewController {
     const y = event.clientY - top;
 
     const [line, char] = this.posFromCoords(x, y, false);
-    this._click(line, char, 0, 0);
+    this.click(line, char, 0, 0);
 
     return [line, char];
   }
@@ -102,7 +103,7 @@ export default class ViewController {
    * @param  {Boolean} forRect Whether the click was using rectangular selections.
    * @return {Array}           A [line, char] object of the coordinates at the point.
    */
-  posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
+  public posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
 
@@ -115,21 +116,21 @@ export default class ViewController {
   /**
    * Trigger a render of the view.
    */
-  render(): void {
+  public render(): void {
     this.view.render();
   }
 
   /**
    * Remove focus from the view.
    */
-  blur(): void {
+  public blur(): void {
     this.wrapper.blur();
   }
 
   /**
    * Give focus to the view.
    */
-  focus(): void {
+  public focus(): void {
     this.wrapper.focus();
   }
 
@@ -137,7 +138,7 @@ export default class ViewController {
    * Checks if the view is focused.
    * @return {Boolean} Is the view focused?
    */
-  isFocused(): boolean {
+  public isFocused(): boolean {
     return this.hasFocus;
   }
 
@@ -145,7 +146,7 @@ export default class ViewController {
    * Returns the view's wrapper element.
    * @return {[type]} The outermost HTMLElement of the view.
    */
-  getWrapperElement(): HTMLElement {
+  public getWrapperElement(): HTMLElement {
     return this.wrapper;
   }
 
@@ -153,9 +154,9 @@ export default class ViewController {
    * Determine how many lines should render, and send this info to xi-core so it
    * knows how much information to give us.
    */
-  updateViewport(): void {
+  public updateViewport(): void {
     const { top, height } = this.view.getViewport();
-    this._edit('scroll', [top, height]);
+    this.edit(CoreMethod.SCROLL, [top, height]);
   }
 
   // Messages to xi-core -------------------------------------------------------
@@ -167,27 +168,27 @@ export default class ViewController {
    * @param  {Number} mod   The click modifier for xi-core.
    * @param  {Number} count This is the nth click.
    */
-  _click(line: number, char: number, mod: number, count: number): void {
-    this._edit('click', [line, char, mod, count]);
+  private click(line: number, char: number, mod: number, count: number): void {
+    this.edit(CoreMethod.CLICK, [line, char, mod, count]);
   }
 
   /**
    * Send drag information to xi-core.
-   * @param  {Number} line See `this._click()`.
-   * @param  {Number} char See `this._click()`.
-   * @param  {Number} mod  See `this._click()`.
+   * @param  {Number} line See `this.click()`.
+   * @param  {Number} char See `this.click()`.
+   * @param  {Number} mod  See `this.click()`.
    */
-  _drag(line: number, char: number, mod: number): void {
-    this._edit('drag', [line, char, mod]);
+  private drag(line: number, char: number, mod: number): void {
+    this.edit(CoreMethod.DRAG, [line, char, mod]);
   }
 
   /**
    * Convenience method for sending "edit" submethods through to the view.
-   * @param  {String} method The edit method to send to xi-core.
-   * @param  {Object} params The edit method's parameters.
+   * @param  {CoreMethod} method The edit method to send to xi-core.
+   * @param  {Object}     params The edit method's parameters.
    */
-  _edit(method: string, params: any = {}): void {
-    this.proxy.send('edit', { method, params });
+  private edit(method: CoreMethod, params: any = {}): void {
+    this.proxy.send(CoreMethod.EDIT, { method, params });
   }
 
   // Responses to xi-core's messages -------------------------------------------
@@ -196,7 +197,7 @@ export default class ViewController {
    * Called when xi-core requests an update on this view.
    * @param  {Object} params The update for the LineCache.
    */
-  _update(params: any): void {
+  private update(params: any): void {
     this.lineCache.applyUpdate(params.update);
     this.render();
   }
@@ -205,7 +206,7 @@ export default class ViewController {
    * Called when xi-core requests the view scroll to the given position.
    * @param  {Object} params Objecting containing "line" and "col".
    */
-  _scrollTo(params: any): void {
+  private scrollTo(params: any): void {
     this.view.scrollTo(params.line, params.col);
   }
 
@@ -213,7 +214,7 @@ export default class ViewController {
    * Called when xi-core send information regarding available plugins.
    * @param  {Object} params
    */
-  _availablePlugins(params: any): void {
+  private availablePlugins(params: any): void {
     console.log(params);
   }
 }

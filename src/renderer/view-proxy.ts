@@ -1,4 +1,5 @@
 import EventEmitter from '../utils/emitter';
+import { CoreMethod } from './types/core';
 
 /**
  * A proxy that listens/emits to events in regards to one xi view.
@@ -18,11 +19,11 @@ export default class ViewProxy extends EventEmitter {
 
   /**
    * Create the ViewProxy.
-   * @param  {Function} sendToCore Sends a message to the Core.
-   * @param  {Number}   id         This classes unique id.
-   * @param  {String}   viewId     The id of xi-core's corresponding view.
+   * @param  {Function}     sendToCore Sends a message to the Core.
+   * @param  {Number}       id         This classes unique id.
+   * @param  {CoreMethod}   viewId     The id of xi-core's corresponding view.
    */
-  constructor(sendToCore: (method: string, params: any) => void, id: number, viewId: string) {
+  constructor(sendToCore: (method: CoreMethod, params: any) => void, id: number, viewId: string) {
     super();
 
     this.id = id;
@@ -32,10 +33,10 @@ export default class ViewProxy extends EventEmitter {
 
   /**
    * Send a message back to xi-core's corresponding view.
-   * @param  {String} method The method to send.
-   * @param  {Object} params Method parameters.
+   * @param  {CoreMethod} method The method to send.
+   * @param  {Object}     params Method parameters.
    */
-  send(method: string, params: any = {}) {
+  send(method: CoreMethod, params: any = {}) {
     params.view_id = this.viewId;
     this.sendToCore(method, params);
   }

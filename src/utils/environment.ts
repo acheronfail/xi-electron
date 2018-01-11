@@ -1,5 +1,7 @@
-// @flow
 import * as path from 'path';
+
+// environment
+export const DEVMODE = /node_modules[\\/]electron[\\/]/.test(process.execPath);
 
 // project dirs
 export const PROJECT_ROOT = path.resolve(__dirname, '..', '..');

@@ -87,7 +87,6 @@ export default class LineCache {
    * @return {Boolean} Whether or not the line is empty.
    */
   isEmpty(): boolean {
-    // $FlowFixMe: Flow doesn't get that we check that `lines[0]` exists.
     return this.lines.length == 0 || (this.lines.length == 1 && (<Line>this.lines[0]).text == '');
   }
 

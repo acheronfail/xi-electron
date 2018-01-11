@@ -2,6 +2,7 @@ import * as cp from 'child_process';
 import EventEmitter from '../utils/emitter';
 import { XI_CORE_BIN, XI_PLUGIN_DIR } from '../utils/environment';
 import ViewProxy from './view-proxy';
+import { CoreMethod } from './types/core';
 
 /**
  * This is a class that manages xi-core. It creates ViewProxies which are simple
@@ -43,22 +44,14 @@ export class Core extends EventEmitter {
    * Public API
    */
 
-  // TODO: make a list (enum?) of all of xi-core's commands/methods, and then
-  // have them as args/consts/enums to the `send` command?
-  // e.g., Core.send('newView') or Core.send(Core.NEW_VIEW) ???
-  //
-  // Maybe I can use Flow's enums to limit input into this function?
-
-  //
-  // Returns `true` on success, `false` on error.
   /**
    * Serialise and send a message to xi-core.
-   * @param  {String} method The method to send.
+   * @param  {CoreMethod} method The method to send.
    * @param  {Object} params The method's parameters.
    * @param  {Object} rest   An optional object to extend the top request.
    * @return {Boolean}       Whether or not the message successfully sent.
    */
-  send(method: string, params: any = {}, rest: any = {}): boolean {
+  public send(method: CoreMethod, params: any = {}, rest: any = {}): boolean {
     const data = { method, params, ...rest };
     try {
       this.stdin().write(`${JSON.stringify(data)}\n`);
