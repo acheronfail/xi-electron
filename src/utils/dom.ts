@@ -1,7 +1,7 @@
 export function elt(
   tag: string,
   content?: string | HTMLElement[] | null,
-  className?: string,
+  className?: string | null,
   cssText?: string
 ): HTMLElement {
   const e = document.createElement(tag);

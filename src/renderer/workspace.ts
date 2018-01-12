@@ -15,7 +15,9 @@ let viewInstanceId = 0;
 /**
  * Configuration options for each Workspace.
  */
-export type WorkspaceOptions = {};
+export type WorkspaceOptions = {
+  viewType: ViewType
+};
 
 /**
  * Top parent class that controls everything.
@@ -38,7 +40,7 @@ export default class Workspace {
    * @param  {HTMLElement}      place Where to attach the workspace.
    * @param  {WorkspaceOptions} opts  Configuration options.
    */
-  constructor(place: HTMLElement, _opts: WorkspaceOptions) {
+  constructor(place: HTMLElement, opts: WorkspaceOptions) {
     this._controllers = [];
     this._wrapper = place.appendChild(elt('div', null, 'xi-workspace'));
 
@@ -49,7 +51,7 @@ export default class Workspace {
 
     // Create View objects whenever xi-core creates a view.
     Core.on(CoreMethod.NEW_VIEW, (proxy: ViewProxy) => {
-      const viewOptions = { type: ViewType.Canvas };
+      const viewOptions = { type: opts.viewType };
       this._controllers.push(new ViewController(this._wrapper, proxy, viewOptions));
     });
 

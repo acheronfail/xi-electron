@@ -1,7 +1,12 @@
 import * as path from 'path';
 import { app, BrowserWindow } from 'electron';
+import { enableLiveReload } from 'electron-compile';
+import { DEVMODE } from '../utils/environment';
 
-// TODO: live reload in devmode
+if (DEVMODE) {
+  enableLiveReload();
+}
+
 // TODO: menus
 // TODO: main proc
 

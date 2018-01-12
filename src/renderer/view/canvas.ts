@@ -53,18 +53,18 @@ export default class CanvasView implements View {
 
     this.resize();
 
-    this.metrics.on('update', () => this._updateViewport());
+    this.metrics.on('update', () => this.updateViewport());
   }
 
   // Calculates how many lines/chars fit in the canvas.
-  _updateViewport() {
+  private updateViewport() {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
     this.viewChars = Math.floor((this.canvas.width / charWidth) / this.devicePixelRatio);
     this.viewLines = Math.floor((this.canvas.height / lineHeight) / this.devicePixelRatio);
   }
 
-  resize() {
+  public resize() {
     const { width, height } = this.wrapper.getBoundingClientRect();
 
     this.canvas.width = width * this.devicePixelRatio;
@@ -73,14 +73,14 @@ export default class CanvasView implements View {
     this.canvas.style.height = `${height}px`;
     this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
 
-    this._updateViewport();
+    this.updateViewport();
     this.ctx.font = this.metrics.fontString();
     this.render();
   }
 
   // TODO: more sophisticated scrolling: ie, momentum scrolling, use native div
   // wrapper, scrollbars, etc
-  scrollTo(line: number, char: number) {
+  public scrollTo(line: number, char: number) {
     if (line < this.viewTop) {
       this.viewTop = line;
     } else if (line >= this.viewTop + this.viewLines) {
@@ -98,7 +98,7 @@ export default class CanvasView implements View {
 
   // Returns an object with measurements about the current viewport: "top" and
   // "height" are measured in lines, "left" and "width" in chars.
-  getViewport(): Viewport {
+  public getViewport(): Viewport {
     return {
       top:    this.viewTop,
       height: this.viewLines,
@@ -109,7 +109,7 @@ export default class CanvasView implements View {
 
   // Renders the document onto the canvas.
   // TODO: left/right scrolling
-  render() {
+  public render() {
     const baseline = this.metrics.baseline();
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();

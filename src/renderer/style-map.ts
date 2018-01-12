@@ -11,10 +11,11 @@ export class Range {
 }
 
 export const N_RESERVED_STYLES = 2;
-export const STYLES = {
-  SELECTION: 0,
-  HIGHLIGHT: 1,
-};
+export enum STYLES {
+  BLANK = -1,
+  SELECTION,
+  HIGHLIGHT,
+}
 
 export type StyleIdentifier = number;
 
@@ -31,9 +32,18 @@ export class StyleSpan {
    * @param  {String} text The text of the line.
    * @return {Array}       Generated StyleSpan array.
    */
-  static stylesFromRaw(raw: number[], _text: string): StyleSpan[] {
+  static stylesFromRaw(raw: number[], text: string): StyleSpan[] {
     const styles = [];
+    // Current position in the line.
     let pos = 0;
+
+    // Create a blank span for any unstyled text at the start of the line.
+    const firstStylePos = raw[0];
+    if (firstStylePos > pos) {
+      styles.push(new StyleSpan(new Range(0, firstStylePos)));
+    }
+
+    // Run over the style triplets and generate style spans for them.
     for (let i = 0; i < raw.length; i += 3) {
       const start = pos + raw[i];
       const end = start + raw[i + 1];
@@ -53,6 +63,12 @@ export class StyleSpan {
       styles.push(new StyleSpan(new Range(start, end - start), style));
       pos += end;
     }
+
+    // Create a blank span for any unstyled text at the end of the line.
+    if (pos < text.length) {
+      styles.push(new StyleSpan(new Range(pos, text.length)));
+    }
+
     return styles;
   }
 
@@ -61,5 +77,5 @@ export class StyleSpan {
    * @param  {Range}           range The range of the StyleSpan.
    * @param  {StyleIdentifier} style The style's type or identifier.
    */
-  constructor(public range: Range, public style: StyleIdentifier) {}
+  constructor(public range: Range, public style: StyleIdentifier = STYLES.BLANK) {}
 }

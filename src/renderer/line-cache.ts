@@ -1,4 +1,5 @@
 import { StyleSpan, N_RESERVED_STYLES } from './style-map';
+import EventEmitter from '../utils/emitter';
 
 /**
  * Represents a single line, including rendering information.
@@ -58,12 +59,17 @@ export class Line {
   containsReservedStyle(): boolean {
     return this.styles.every((span) => span.style < N_RESERVED_STYLES);
   }
+
+  toJSON(): { cursor: number[], styles: StyleSpan[] } {
+    const { cursor, styles } = this;
+    return { cursor, styles };
+  }
 }
 
 /**
  * Keeps a "window" (or cache) of a view which is inside xi-core.
  */
-export default class LineCache {
+export default class LineCache extends EventEmitter {
 
   // Amount of lines invalid before and after our valid window of cached lines.
   private nInvalidBefore: number = 0;
@@ -120,15 +126,16 @@ export default class LineCache {
       if (!op_type || !n) { return; }
 
       switch (op_type) {
-        case 'invalidate':
+        case 'invalidate': {
           if (newLines.length == 0) {
             newInvalidBefore += n;
           } else {
             newInvalidAfter += n;
           }
           break;
+        }
 
-        case 'ins':
+        case 'ins': {
           for (let i = 0; i < newInvalidAfter; ++i) { newLines.push(null); }
           newInvalidAfter = 0;
 
@@ -140,9 +147,10 @@ export default class LineCache {
             newLines.push(line);
           }
           break;
+        }
 
         case 'copy':
-        case 'update':
+        case 'update': {
           let nRemaining = n;
           if (oldIndex < this.nInvalidBefore) {
             let nInvalid = Math.min(n, this.nInvalidBefore - oldIndex);
@@ -169,7 +177,9 @@ export default class LineCache {
 
               let jsonIndex = n - nRemaining;
               for (let i = start; i < start + nCopy; ++i) {
-                newLines.push(Line.updateFromJSON(this.lines[i], lines[jsonIndex]));
+                const line = this.lines[i];
+                if (!line) { continue; }
+                newLines.push(Line.updateFromJSON(line.toJSON(), lines[jsonIndex]));
                 jsonIndex++;
               }
             }
@@ -184,16 +194,20 @@ export default class LineCache {
           }
           oldIndex += nRemaining;
           break;
-
-        case 'skip':
+        }
+        case 'skip': {
           oldIndex += n;
-        default:
+          break;
+        }
+        default: {
           console.error(`Unknown op type: "${op_type}".`);
+        }
       }
     }
     this.nInvalidBefore = newInvalidBefore;
     this.nInvalidAfter = newInvalidAfter;
     this.lines = newLines;
+    this.emit('update');
   }
 
   /**
