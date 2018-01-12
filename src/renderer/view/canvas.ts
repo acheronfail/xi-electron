@@ -1,6 +1,6 @@
 import { elt, on, clamp } from '../../utils/dom';
 import { STYLES } from '../style-map';
-import { COLORS } from '../theme';
+import { COLORS, getStyle } from '../theme';
 
 import { View, ViewOptions, Viewport } from './index';
 import ViewController from '../view-controller';
@@ -63,6 +63,7 @@ export default class CanvasView implements View {
     this.x = clamp(this.x + deltaX, 0, 0);
     this.y = clamp(this.y + deltaY, 0, Math.max(nLines * lineHeight - this.height, 0));
 
+    this.updateViewport();
     this.render();
   }
 
@@ -81,7 +82,6 @@ export default class CanvasView implements View {
     this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
 
     this.updateViewport();
-    this.ctx.font = this.metrics.fontString();
     this.render();
   }
 
@@ -129,18 +129,18 @@ export default class CanvasView implements View {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
 
-    // Clear canvas.
+    // Reset canvas.
+    this.ctx.font = this.metrics.fontString();
     this.ctx.fillStyle = COLORS.BACKGROUND;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // Get lines to draw and screen coords.
     const first = Math.floor(this.y / lineHeight);
-    const last = Math.ceil((this.y + this.canvas.height) / lineHeight);
+    const last = Math.ceil((this.y + this.height) / lineHeight);
+    const xDiff = this.x % charWidth;
     const yDiff = this.y % lineHeight;
 
-    this.lineCache.computeMissing(first, last).forEach((tuple) => {
-      console.log(`[TODO] Requesting missing: ${tuple[0]}..${tuple[1]}`);
-      // TODO: sendRpcAsync("request_lines", params: [f, l])
-    });
+    this.lineCache.computeMissing(first, last);
 
     const getLineData = (i: number) => ({
       x: 0,
@@ -183,9 +183,25 @@ export default class CanvasView implements View {
         this.ctx.fillRect((ch * charWidth), y, 2, lineHeight);
       });
 
-      // Draw text.
-      this.ctx.fillStyle = COLORS.FOREGROUND;
-      this.ctx.fillText(line.text, 0, y + baseline);
+      const textY = y + baseline;
+      line.styles.forEach((styleSpan) => {
+        const { style: styleId, range: { start, length } } = styleSpan;
+
+        const style = getStyle(styleId);
+        this.ctx.fillStyle = style.fg;
+        this.ctx.font = style.fontString(this.metrics);
+
+        const textX = charWidth * start;
+        this.ctx.fillText(line.text.substr(start, length), textX, textY);
+      });
     }
   }
 }
+
+const colors = {
+  '2': 'green',
+  '3': 'red',
+  '4': 'blue',
+  '5': 'black',
+  '6': 'orange',
+};

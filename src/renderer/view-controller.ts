@@ -43,12 +43,13 @@ export default class ViewController {
     on(this.wrapper, 'focus', () => this.hasFocus = true, false);
 
     this.lineCache = new LineCache();
+
     this.metrics = new FontMetrics(this.wrapper, {
       family: 'monospace',
       size: 20
     });
 
-    this.view = createView(opts.type, this, {});
+    this.view = createView(opts.type, this, opts);
 
     this.proxy.on('update', this.update.bind(this));
     this.proxy.on('scroll_to', this.scrollTo.bind(this));
@@ -215,6 +216,6 @@ export default class ViewController {
    * @param  {Object} params
    */
   private availablePlugins(params: any): void {
-    console.log(params);
+    // console.log(params);
   }
 }
