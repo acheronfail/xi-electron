@@ -30,10 +30,10 @@ export type WorkspaceOptions = {
 export default class Workspace {
 
   // References of all our child view controllers.
-  _controllers: ViewController[];
+  private controllers: ViewController[];
 
   // Wrapper top-level element.
-  _wrapper: HTMLElement;
+  public wrapper: HTMLElement;
 
   /**
    * Create the Workspace.
@@ -41,8 +41,8 @@ export default class Workspace {
    * @param  {WorkspaceOptions} opts  Configuration options.
    */
   constructor(place: HTMLElement, opts: WorkspaceOptions) {
-    this._controllers = [];
-    this._wrapper = place.appendChild(elt('div', null, 'xi-workspace'));
+    this.controllers = [];
+    this.wrapper = place.appendChild(elt('div', null, 'xi-workspace'));
 
     // All events are listened to on the window.
     on((<any>window), 'keydown', this.keyedInput.bind(this), false);
@@ -52,14 +52,13 @@ export default class Workspace {
     // Create View objects whenever xi-core creates a view.
     Core.on(CoreMethod.NEW_VIEW, (proxy: ViewProxy) => {
       const viewOptions = { type: opts.viewType };
-      this._controllers.push(new ViewController(this._wrapper, proxy, viewOptions));
+      this.controllers.push(new ViewController(this.wrapper, proxy, viewOptions));
     });
 
     // Initially create just one view.
-    // TODO: change build script
-    // TODO: remove
-    const p = '/Users/acheronfail/src/xi-electron-ts/src/xi-plugins/setup.py';
-    Core.send(CoreMethod.NEW_VIEW, { file_path: p }, { id: viewInstanceId++ });
+    // TODO: set file paths with frontend
+    const filePath = '/Users/acheronfail/src/xi-electron-ts/src/xi/plugins/setup.py';
+    Core.send(CoreMethod.NEW_VIEW, { file_path: filePath }, { id: viewInstanceId++ });
 
     // Attach unload handler to window.
     window.onbeforeunload = this.beforeUnload;
@@ -77,15 +76,15 @@ export default class Workspace {
    * Find the active ViewController (if any).
    * @return {ViewController} The active ViewController, or undefined.
    */
-  activeViewController(): ViewController | undefined {
-    return this._controllers.find((controller) => controller.isFocused());
+  public activeViewController(): ViewController | undefined {
+    return this.controllers.find((controller) => controller.isFocused());
   }
 
   /**
    * Called when the Workspace receives keyboard input ("keydown" or "keypress").
    * @param  {KeyboardEvent} event DOM KeyEvent.
    */
-  keyedInput(event: KeyboardEvent) {
+  private keyedInput(event: KeyboardEvent) {
     const controller = this.activeViewController();
     if (controller && execKey(controller, event)) {
       event.preventDefault();
@@ -98,8 +97,8 @@ export default class Workspace {
    *   TODO: drag events, click, dbl click, alt click, etc. do ALL THE EVENTS!
    * @param  {MouseEvent} event DOM MouseEvent.
    */
-  mousedown(event: MouseEvent) {
-    const controller = this._controllers.find((controller) => {
+  private mousedown(event: MouseEvent) {
+    const controller = this.controllers.find((controller) => {
       return controller.getWrapperElement().contains((<Node>event.target));
     });
     if (controller) {

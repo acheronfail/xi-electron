@@ -1,6 +1,6 @@
 import * as cp from 'child_process';
 import EventEmitter from '../utils/emitter';
-import { XI_CORE_BIN, XI_PLUGIN_DIR } from '../utils/environment';
+import { XI_CORE_BIN, XI_CORE_DIR } from '../utils/environment';
 import ViewProxy from './view-proxy';
 import { CoreMethod, CoreResponse } from './types/core';
 import { defineStyle } from './theme';
@@ -40,11 +40,10 @@ export class Core extends EventEmitter {
     this.stdout().on('data', this.eventFromCore.bind(this));
     this.stderr().on('data', this.errorFromCore.bind(this));
 
-    // TODO: set paths/dirs
-    const p = '/Users/acheronfail/src/xi-electron-ts/src/xi';
     this.send(CoreMethod.CLIENT_STARTED, {
-      client_extras_dir: p,
-      config_dir: p
+      client_extras_dir: XI_CORE_DIR,
+      // TODO: set config_dir
+      config_dir: XI_CORE_DIR
     });
   }
 
@@ -109,6 +108,7 @@ export class Core extends EventEmitter {
         case CoreResponse.PLUGIN_STARTED:
         case CoreResponse.THEME_CHANGED: {
           // TODO: respond to these
+          // TODO: get python plugins working
           // console.log(msg);
           break;
         }
@@ -160,8 +160,8 @@ export class Core extends EventEmitter {
 }
 
 // Export as a singleton.
-// XI_RPC_LOG
-const env = Object.assign({ XI_PLUGIN_DIR, RUST_BACKTRACE: 1 }, process.env);
+// TODO: XI_RPC_LOG ?
+const env = Object.assign({ RUST_BACKTRACE: 1 }, process.env);
 export default new Core(env);
 
 // Helpers ---------------------------------------------------------------------

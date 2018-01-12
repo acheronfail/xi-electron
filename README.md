@@ -57,10 +57,8 @@ Please! 🙏
 
 # TODO for `xi-electron`
 
+- [ ] figure out how to build small xi-core/xi-syntect-plugin libs??
 - [ ] make nice debugging tasks/configurations for vscode
-- [ ] lint code
-- [ ] create enums and convenience types for xi-editor's API
-- [ ] abstract keybindings into a service
 - [ ] re-factor to be more platform portable (hopefully generate nice libs for non-electron platforms)
 - [ ] add in gutters
     - [ ] line numbers
