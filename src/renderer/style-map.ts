@@ -61,7 +61,7 @@ export class StyleSpan {
       // }
 
       styles.push(new StyleSpan(new Range(start, end - start), style));
-      pos += end;
+      pos = end;
     }
 
     // Create a blank span for any unstyled text at the end of the line.

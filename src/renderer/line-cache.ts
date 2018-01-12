@@ -1,5 +1,6 @@
 import { StyleSpan, N_RESERVED_STYLES } from './style-map';
 import EventEmitter from '../utils/emitter';
+import { CoreMethod } from './types/core';
 
 /**
  * Represents a single line, including rendering information.
@@ -57,7 +58,7 @@ export class Line {
    * @return {Boolean} Whether or not it does contain a reserved style.
    */
   containsReservedStyle(): boolean {
-    return this.styles.every((span) => span.style < N_RESERVED_STYLES);
+    return this.styles.length > 0 && this.styles.some(({ style }) => style >= 0 && style < N_RESERVED_STYLES);
   }
 
   toJSON(): { cursor: number[], styles: StyleSpan[] } {
@@ -218,12 +219,12 @@ export default class LineCache extends EventEmitter {
    * @return {Array}        Array of [[startLine, endLine], ...] ranges.
    */
   computeMissing(first: number, last: number): Array<Array<number>> {
-    const result: Array<Array<number>> = [];
+    const ranges: Array<Array<number>> = [];
     last = Math.min(last, this.height());
 
     if (first >= last) {
       console.error(`compute missing called with first (${first}) >= last (${last})`);
-      return result;
+      return ranges;
     }
 
     for (let i = first; i < last; ++i) {
@@ -232,14 +233,20 @@ export default class LineCache extends EventEmitter {
         i >= (this.nInvalidBefore + this.lines.length) ||
         this.lines[i - this.nInvalidBefore] == null
       ) {
-        if (result.length == 0 || result[result.length - 1][1] != i) {
-          result.push([i, i + 1]);
+        if (ranges.length == 0 || ranges[ranges.length - 1][1] != i) {
+          ranges.push([i, i + 1]);
         } else {
-          result[result.length - 1][1] = i + 1;
+          ranges[ranges.length - 1][1] = i + 1;
         }
       }
     }
 
-    return result;
+    // Request missing lines.
+    ranges.forEach(([first, last]) => {
+      // TODO: should something be done in this case?
+      // this.emit(CoreMethod.REQUEST_LINES, [first, last]);
+    });
+
+    return ranges;
   }
 }

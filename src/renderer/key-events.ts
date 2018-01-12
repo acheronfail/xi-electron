@@ -87,7 +87,8 @@ export function execKey(viewController: ViewController, event: KeyboardEvent): b
       prefix += 'Alt+';
     }
 
-    const method = keyMap[normalizeKey(prefix + event.key)];
+    const shortcut = normalizeKey(prefix + event.key);
+    const method = keyMap[shortcut];
     if (method) {
       viewController.doMethod(method);
       return true;

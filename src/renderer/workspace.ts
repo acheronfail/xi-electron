@@ -56,7 +56,21 @@ export default class Workspace {
     });
 
     // Initially create just one view.
-    Core.send(CoreMethod.NEW_VIEW, {}, { id: viewInstanceId++ });
+    // TODO: change build script
+    // TODO: remove
+    const p = '/Users/acheronfail/src/xi-electron-ts/src/xi-plugins/setup.py';
+    Core.send(CoreMethod.NEW_VIEW, { file_path: p }, { id: viewInstanceId++ });
+
+    // Attach unload handler to window.
+    window.onbeforeunload = this.beforeUnload;
+  }
+
+  /**
+   * Perform cleanup before window is closed.
+   * @param event Event passed from window.onbeforeunload
+   */
+  public beforeUnload(_event: BeforeUnloadEvent) {
+    Core.close();
   }
 
   /**

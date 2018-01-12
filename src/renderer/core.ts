@@ -2,7 +2,8 @@ import * as cp from 'child_process';
 import EventEmitter from '../utils/emitter';
 import { XI_CORE_BIN, XI_PLUGIN_DIR } from '../utils/environment';
 import ViewProxy from './view-proxy';
-import { CoreMethod } from './types/core';
+import { CoreMethod, CoreResponse } from './types/core';
+import { defineStyle } from './theme';
 
 /**
  * This is a class that manages xi-core. It creates ViewProxies which are simple
@@ -38,6 +39,13 @@ export class Core extends EventEmitter {
     // Listen to its streams.
     this.stdout().on('data', this.eventFromCore.bind(this));
     this.stderr().on('data', this.errorFromCore.bind(this));
+
+    // TODO: set paths/dirs
+    const p = '/Users/acheronfail/src/xi-electron-ts/src/xi';
+    this.send(CoreMethod.CLIENT_STARTED, {
+      client_extras_dir: p,
+      config_dir: p
+    });
   }
 
   /**
@@ -62,6 +70,10 @@ export class Core extends EventEmitter {
     }
   }
 
+  public close() {
+    this.child.kill();
+  }
+
   /**
    * Private API
    */
@@ -76,17 +88,43 @@ export class Core extends EventEmitter {
    * @param {String} data Raw data emitted from xi-core's stdout.
    */
   private eventFromCore(raw: string) {
+    // TODO: refactor - switch?
+    // TODO: use message enum
     parseMessages(raw).forEach((msg) => {
 
-      // Returned after calling 'new_view'.
-      if (msg.result) {
+      if ('result' in msg) {
         this.proxies[msg.result] = new ViewProxy(this.proxySend, msg.id, msg.result);
         this.emit('new_view', this.proxies[msg.result]);
-      } else if (msg.method) {
-        this.proxies[msg.params.view_id].emit(msg.method, msg.params);
-      } else {
-        // TODO: throw an error here at some stage
-        console.warn('Unhandled message from core: ', msg);
+        return;
+      }
+
+      switch (msg.method) {
+        case CoreResponse.AVAILABLE_THEMES: {
+          // TODO: set/save theme + move logic elsewhere
+          this.send(CoreMethod.SET_THEME, { theme_name: 'base16-eighties.dark' });
+          break;
+        }
+        case CoreResponse.AVAILABLE_PLUGINS:
+        case CoreResponse.CONFIG_CHANGED:
+        case CoreResponse.PLUGIN_STARTED:
+        case CoreResponse.THEME_CHANGED: {
+          // TODO: respond to these
+          // console.log(msg);
+          break;
+        }
+        case CoreResponse.DEF_STYLE: {
+          defineStyle(msg.params);
+          break;
+        }
+        // Commands proxied through to Views.
+        case CoreResponse.SCROLL_TO:
+        case CoreResponse.UPDATE: {
+          this.proxies[msg.params.view_id].emit(msg.method, msg.params);
+          break;
+        }
+        default: {
+          console.warn('Unhandled message from core: ', msg);
+        }
       }
     });
   }
@@ -122,6 +160,7 @@ export class Core extends EventEmitter {
 }
 
 // Export as a singleton.
+// XI_RPC_LOG
 const env = Object.assign({ XI_PLUGIN_DIR, RUST_BACKTRACE: 1 }, process.env);
 export default new Core(env);
 

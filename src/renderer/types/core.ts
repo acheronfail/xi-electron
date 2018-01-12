@@ -2,6 +2,7 @@
 export enum CoreMethod {
     ADD_SELECTION_ABOVE                                = 'add_selection_above',
     CLICK                                              = 'click',
+    CLIENT_STARTED                                     = 'client_started',
     DELETE_BACKWARD                                    = 'delete_backward',
     DELETE_FORWARD                                     = 'delete_forward',
     DELETE_TO_BEGINNING_OF_LINE                        = 'delete_to_beginning_of_line',
@@ -39,11 +40,24 @@ export enum CoreMethod {
     PAGE_DOWN_AND_MODIFY_SELECTION                     = 'page_down_and_modify_selection',
     PAGE_UP_AND_MODIFY_SELECTION                       = 'page_up_and_modify_selection',
     REDO                                               = 'redo',
+    REQUEST_LINES                                      = 'request_lines',
     SCROLL                                             = 'scroll',
     SCROLL_PAGE_DOWN                                   = 'scroll_page_down',
     SCROLL_PAGE_UP                                     = 'scroll_page_up',
+    SET_THEME                                          = 'set_theme',
     SELECT_ALL                                         = 'select_all',
     TRANSPOSE                                          = 'transpose',
     UNDO                                               = 'undo',
     YANK                                               = 'yank',
+}
+
+export enum CoreResponse {
+    AVAILABLE_PLUGINS = 'available_plugins',
+    AVAILABLE_THEMES  = 'available_themes',
+    CONFIG_CHANGED    = 'config_changed',
+    DEF_STYLE         = 'def_style',
+    SCROLL_TO         = 'scroll_to',
+    PLUGIN_STARTED    = 'plugin_started',
+    THEME_CHANGED     = 'theme_changed',
+    UPDATE            = 'update',
 }

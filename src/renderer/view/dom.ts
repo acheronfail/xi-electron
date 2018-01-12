@@ -96,11 +96,7 @@ export default class DOMView implements View {
     const first = 0;
     const last = this.lineCache.lines.length;
 
-    // TODO: implement request mission
-    this.lineCache.computeMissing(first, last).forEach((tuple) => {
-      console.log(`[TODO] Requesting missing: ${tuple[0]}..${tuple[1]}`);
-      // TODO: sendRpcAsync("request_lines", params: [f, l])
-    });
+    this.lineCache.computeMissing(first, last);
 
     // TODO: only render currently visible lines, rather than every single one
     for (let i = first; i < last; ++i) {
@@ -162,6 +158,7 @@ class LineNode {
       default: {
         css = 'color: black';
         if (style > N_RESERVED_STYLES) {
+          css = 'color: green';
           console.log('this text has syntax highlighting');
         }
       }
