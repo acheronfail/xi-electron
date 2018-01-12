@@ -2,7 +2,7 @@ import Workspace from './workspace';
 import { DEVMODE } from '../utils/environment';
 import { ViewType } from './view/index';
 
-const opts = { viewType: ViewType.DOM };
+const opts = { viewType: ViewType.Canvas };
 const workspace = new Workspace(document.body, opts);
 
 if (DEVMODE) {

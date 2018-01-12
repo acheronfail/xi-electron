@@ -22,11 +22,21 @@ export type ListenerOptions = {
   passive: boolean
 } | boolean;
 
-export function on(el: HTMLElement, event: string, listener: () => void, opts: ListenerOptions = false): void {
+export function on(
+  el: HTMLElement,
+  event: string,
+  listener: (...args: any[]) => void,
+  opts: ListenerOptions = false
+): void {
   el.addEventListener(event, listener, opts);
 }
 
-export function off(el: HTMLElement, event: string, listener: () => void, opts: ListenerOptions = false): void {
+export function off(
+  el: HTMLElement,
+  event: string,
+  listener: (...args: any[]) => void,
+  opts: ListenerOptions = false
+): void {
   el.removeEventListener(event, listener, opts);
 }
 
@@ -37,4 +47,11 @@ export function removeChildren(el: HTMLElement): HTMLElement {
 
 export function removeChildrenAndAdd(parent: HTMLElement, el: HTMLElement): HTMLElement {
   return removeChildren(parent).appendChild(el);
+}
+
+export function clamp(value: number, min: number, max: number): number {
+  if (min > max) { throw new Error('min > max!'); }
+  if (value < min) { return min; }
+  if (value > max) { return max; }
+  return value;
 }

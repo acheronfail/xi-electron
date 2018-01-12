@@ -1,4 +1,4 @@
-import { elt } from '../../utils/dom';
+import { elt, on, clamp } from '../../utils/dom';
 import { STYLES } from '../style-map';
 import { COLORS } from '../theme';
 
@@ -28,13 +28,11 @@ export default class CanvasView implements View {
   // screens (retina).
   private devicePixelRatio: number = (window.devicePixelRatio || 1);
 
-  // The line at the top of the view, and character at the left.
-  private viewTop: number = 0;
-  private viewLeft: number = 0;
+  private x: number = 0;
+  private y: number = 0;
 
-  // How many lines/chars are visible in the view.
-  private viewLines: number = 0;
-  private viewChars: number = 0;
+  private width: number = 0;
+  private height: number = 0;
 
   constructor(controller: ViewController,  _opts: ViewOptions) {
     this.wrapper = controller.wrapper;
@@ -43,6 +41,7 @@ export default class CanvasView implements View {
 
     this.canvas = (<HTMLCanvasElement>this.wrapper.appendChild(elt('canvas')));
     this.canvas.style.display = 'block';
+    on(this.canvas, 'mousewheel', (event) => this.scrollCanvas(event), false);
 
     const ctx = this.canvas.getContext('2d');
     if (ctx) {
@@ -56,12 +55,20 @@ export default class CanvasView implements View {
     this.metrics.on('update', () => this.updateViewport());
   }
 
-  // Calculates how many lines/chars fit in the canvas.
-  private updateViewport() {
-    const charWidth = this.metrics.charWidth();
+  private scrollCanvas(event: MouseWheelEvent) {
+    const { deltaX, deltaY } = event;
+    const nLines = this.lineCache.lines.length;
     const lineHeight = this.metrics.lineHeight();
-    this.viewChars = Math.floor((this.canvas.width / charWidth) / this.devicePixelRatio);
-    this.viewLines = Math.floor((this.canvas.height / lineHeight) / this.devicePixelRatio);
+
+    this.x = clamp(this.x + deltaX, 0, 0);
+    this.y = clamp(this.y + deltaY, 0, Math.max(nLines * lineHeight - this.height, 0));
+
+    this.render();
+  }
+
+  private updateViewport() {
+    this.width = this.canvas.width / this.devicePixelRatio;
+    this.height = this.canvas.height / this.devicePixelRatio;
   }
 
   public resize() {
@@ -81,16 +88,22 @@ export default class CanvasView implements View {
   // TODO: more sophisticated scrolling: ie, momentum scrolling, use native div
   // wrapper, scrollbars, etc
   public scrollTo(line: number, char: number) {
-    if (line < this.viewTop) {
-      this.viewTop = line;
-    } else if (line >= this.viewTop + this.viewLines) {
-      this.viewTop = line - this.viewLines + 1;
+    const lineHeight = this.metrics.lineHeight();
+    const charWidth = this.metrics.charWidth();
+
+    const linePos = lineHeight * line;
+    const charPos = charWidth * char;
+
+    if (linePos < this.y) {
+      this.y = linePos;
+    } else if (linePos > this.y + this.height - lineHeight) {
+      this.y = linePos - this.height + lineHeight;
     }
 
-    if (char < this.viewLeft) {
-      this.viewLeft = char;
-    } else if (char >= this.viewLeft + this.viewChars) {
-      this.viewLeft = char - this.viewChars + 1;
+    if (charPos < this.x) {
+      this.x = charPos;
+    } else if (charPos > this.x + this.width - charWidth) {
+      this.x = charPos - this.width + charWidth;
     }
 
     this.render();
@@ -99,11 +112,13 @@ export default class CanvasView implements View {
   // Returns an object with measurements about the current viewport: "top" and
   // "height" are measured in lines, "left" and "width" in chars.
   public getViewport(): Viewport {
+    const charWidth = this.metrics.charWidth();
+    const lineHeight = this.metrics.lineHeight();
     return {
-      top:    this.viewTop,
-      height: this.viewLines,
-      left:   this.viewLeft,
-      width:  this.viewChars
+      top: Math.floor(this.y / lineHeight),
+      height: Math.floor((this.height + this.y) / lineHeight),
+      left: Math.floor(this.x / charWidth),
+      width: Math.floor((this.width + this.x) / charWidth),
     };
   }
 
@@ -118,20 +133,25 @@ export default class CanvasView implements View {
     this.ctx.fillStyle = COLORS.BACKGROUND;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    const first = this.viewTop;
-    const last = first + this.viewLines;
+    const first = Math.floor(this.y / lineHeight);
+    const last = Math.ceil((this.y + this.canvas.height) / lineHeight);
+    const yDiff = this.y % lineHeight;
 
     this.lineCache.computeMissing(first, last).forEach((tuple) => {
       console.log(`[TODO] Requesting missing: ${tuple[0]}..${tuple[1]}`);
       // TODO: sendRpcAsync("request_lines", params: [f, l])
     });
 
-    // First pass, for drawing background selections and search highlights.
-    for (let i = 0; i <= this.viewLines; ++i) {
-      const line = this.lineCache.get(first + i);
-      if (!line || !line.containsReservedStyle()) { continue; }
+    const getLineData = (i: number) => ({
+      x: 0,
+      y: lineHeight * i - yDiff,
+      line: this.lineCache.get(first + i)
+    });
 
-      const y = lineHeight * (i);
+    // First pass, for drawing background selections and search highlights.
+    for (let i = 0; i <= last; ++i) {
+      const { x, y, line } = getLineData(i);
+      if (!line || !line.containsReservedStyle()) { continue; }
 
       // Draw selection(s).
       this.ctx.fillStyle = COLORS.SELECTION;
@@ -153,11 +173,9 @@ export default class CanvasView implements View {
     }
 
     // Second pass, for actually rendering text.
-    for (let i = 0; i <= this.viewLines; ++i) {
-      const line = this.lineCache.get(first + i);
+    for (let i = 0; i <= last; ++i) {
+      const { x, y, line } = getLineData(i);
       if (!line) { continue; }
-
-      const y = lineHeight * (i);
 
       // Draw cursor(s).
       this.ctx.fillStyle = COLORS.CURSOR;
