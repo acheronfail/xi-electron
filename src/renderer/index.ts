@@ -6,9 +6,9 @@ const opts = { viewType: ViewType.DOM };
 const workspace = new Workspace(document.body, opts);
 
 if (DEVMODE) {
-  // tslint:disable-next-line
+  // Attach core and workspace to window for easy debugging.
   (<any>window).Core = require('./core').default;
   (<any>window).workspace = workspace;
-  // Show current view in body.
+  // Show current view in body for clarity.
   document.body.appendChild(document.createTextNode(`ViewType: ${opts.viewType}`));
 }

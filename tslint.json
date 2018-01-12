@@ -13,12 +13,14 @@
     "no-empty": true,
     "no-unused-expression": true,
     "no-use-before-declare": true,
-    "no-var-requires": true,
-    "no-require-imports": true,
-    "one-line": [true,
+    "no-var-requires": false,
+    "no-require-imports": false,
+    "one-line": [
+      true,
       "check-else",
       "check-whitespace",
-      "check-open-brace"],
+      "check-open-brace"
+    ],
     "quotemark": [
       true,
       "single",
@@ -26,7 +28,8 @@
     ],
     "semicolon": [true, "always"],
     "typedef-whitespace": [
-        true, {
+      true, 
+      {
         "call-signature": "nospace",
         "index-signature": "nospace",
         "parameter": "nospace",
