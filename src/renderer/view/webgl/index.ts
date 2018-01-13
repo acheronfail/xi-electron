@@ -43,6 +43,10 @@ export default class WebGLView implements View {
    */
   scrollTo(line: number, char: number): void {/* ... */ }
 
+  public posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
+    return [0, 0];
+  }
+
   /**
    * Get information about the currently visible viewport of the editor.
    * @return {Object} An object with measurements about the current viewport:

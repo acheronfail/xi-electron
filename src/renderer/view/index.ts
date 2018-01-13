@@ -45,6 +45,7 @@ export interface View {
   resize(): void;
   render(): void;
   scrollTo(line: number, char: number): void;
+  posFromCoords(x: number, y: number, _forect: boolean): [number, number];
   getViewport(): Viewport;
 }
 

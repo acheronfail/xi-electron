@@ -1,4 +1,4 @@
-import { elt, on } from '../utils/dom';
+import { elt, on, off } from '../utils/dom';
 import { execKey } from './key-events';
 import Core from './core';
 import ViewController from './view-controller';
@@ -98,11 +98,20 @@ export default class Workspace {
    * @param  {MouseEvent} event DOM MouseEvent.
    */
   private mousedown(event: MouseEvent) {
-    const controller = this.controllers.find((controller) => {
-      return controller.getWrapperElement().contains((<Node>event.target));
-    });
-    if (controller) {
-      controller.doClick(event);
-    }
+    const controller = this.controllers.find((c) => c.getWrapperElement().contains((<Node>event.target)));
+    if (!controller) { return; }
+
+    // Send click event through to ViewController.
+    controller.doClick(event);
+
+    // Listen for dragging events.
+    const onMove = (event: MouseEvent) => controller.doDrag(event);
+    const onUp = (event: MouseEvent) => {
+      off((<any>window), 'mousemove', onMove, false);
+      off((<any>window), 'mouseup', onUp, false);
+    };
+
+    on((<any>window), 'mousemove', onMove, false);
+    on((<any>window), 'mouseup', onUp, false);
   }
 }

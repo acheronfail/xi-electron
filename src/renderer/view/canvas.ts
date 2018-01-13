@@ -1,4 +1,5 @@
-import { elt, on, clamp } from '../../utils/dom';
+import { elt, on } from '../../utils/dom';
+import { clamp } from '../../utils/misc';
 import { STYLES } from '../style-map';
 import { COLORS, getStyle } from '../theme';
 
@@ -83,6 +84,23 @@ export default class CanvasView implements View {
 
     this.updateViewport();
     this.render();
+  }
+
+  /**
+   * Returns a [line, char] from the given coordinates.
+   * @param  {Number}  x       The x coordinate (relative to the view).
+   * @param  {Number}  y       The y coordinate (relative to the view).
+   * @param  {Boolean} forRect Whether the click was using rectangular selections.
+   * @return {Array}           A [line, char] object of the coordinates at the point.
+   */
+  public posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
+    const charWidth = this.metrics.charWidth();
+    const lineHeight = this.metrics.lineHeight();
+
+    const char = Math.round((this.x + x - (charWidth / 2)) / charWidth);
+    const line = Math.round((this.y + y - (lineHeight / 2)) / lineHeight);
+
+    return [line, char];
   }
 
   // TODO: more sophisticated scrolling: ie, momentum scrolling, use native div

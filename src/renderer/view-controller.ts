@@ -6,6 +6,7 @@ import { createView } from './view';
 import { View, ViewOptions } from './view';
 import ViewProxy from './view-proxy';
 import { CoreMethod } from './types/core';
+import { posIsClose, Point } from '../utils/misc';
 
 // This module should be controlled by the "workspace" which has the xi-core running
 // it is linked to a view inside of xi-core via a "ViewProxy"
@@ -78,6 +79,17 @@ export default class ViewController {
     this.edit(CoreMethod.INSERT, { chars });
   }
 
+  // Contains info about previous click history
+  private clicks: {
+    last: number,
+    count: number,
+    point: Point
+  } = {
+    last: Date.now(),
+    count: 1,
+    point: { x: 0, y: 0 }
+  };
+
   /**
    * Perform a "click" event on the view.
    * @param  {Object} event DOM MouseEvent.
@@ -87,31 +99,53 @@ export default class ViewController {
     if (!this.isFocused()) { this.focus(); }
     event.preventDefault();
 
+    const now = Date.now();
     const { left, top } = this.wrapper.getBoundingClientRect();
-    const x = event.clientX - left;
-    const y = event.clientY - top;
+    const point = {
+      x: event.clientX - left,
+      y: event.clientY - top,
+    };
 
-    const [line, char] = this.posFromCoords(x, y, false);
-    this.click(line, char, 0, 0);
+    if (now - this.clicks.last > 300) {
+      this.clicks = {
+        last: Date.now(),
+        count: 1,
+        point: point,
+      };
+    } else {
+      const wasClose = posIsClose(point, this.clicks.point);
+      if (wasClose) {
+        const { count } = this.clicks;
+        this.clicks.last = now;
+        this.clicks.count = count == 3 ? 1 : count + 1;
+        this.clicks.point = point;
+      }
+    }
+
+    // TOOD: get all different mods (enum?)
+    const mod = event.shiftKey ? 2 : 0;
+
+    const [line, char] = this.view.posFromCoords(point.x, point.y, false);
+    this.click(line, char, mod, this.clicks.count);
 
     return [line, char];
   }
 
   /**
-   * Returns a [line, char] from the given coordinates.
-   * @param  {Number}  x       The x coordinate (relative to the view).
-   * @param  {Number}  y       The y coordinate (relative to the view).
-   * @param  {Boolean} forRect Whether the click was using rectangular selections.
-   * @return {Array}           A [line, char] object of the coordinates at the point.
+   * doDrag
    */
-  public posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
-    const charWidth = this.metrics.charWidth();
-    const lineHeight = this.metrics.lineHeight();
+  public doDrag(event: MouseEvent) {
+    const { left, top } = this.wrapper.getBoundingClientRect();
+    const point = {
+      x: event.clientX - left,
+      y: event.clientY - top,
+    };
 
-    const line = Math.round((y - (lineHeight / 2)) / lineHeight);
-    const char = Math.round((x < 0 ? 0 : x) / charWidth);
+    // TOOD: get all different mods (enum?)
+    const mod = event.shiftKey ? 2 : 0;
 
-    return [line, char];
+    const [line, char] = this.view.posFromCoords(point.x, point.y, false);
+    this.drag(line, char, mod);
   }
 
   /**
