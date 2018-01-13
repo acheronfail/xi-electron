@@ -127,8 +127,6 @@ export class Core extends EventEmitter {
           console.warn('Unhandled message from core: ', msg);
         }
       }
-
-      console.log(msg);
     });
   }
 

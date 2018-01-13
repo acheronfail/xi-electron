@@ -59,6 +59,7 @@ export default class ViewController {
         if (entry.target == this.wrapper) {
           const { width, height } = entry.contentRect;
           this.view.resize(width, height);
+          this.updateViewport();
         }
       }
     });

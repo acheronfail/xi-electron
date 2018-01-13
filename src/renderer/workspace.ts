@@ -57,7 +57,7 @@ export default class Workspace {
 
     // Initially create just one view.
     // TODO: set file paths with frontend
-    const filePath = '/Users/acheronfail/src/xi-electron-ts/src/xi/plugins/setup.py';
+    const filePath = '/Users/acheronfail/src/xi-electron-ts/src/xi/plugins/spellcheck.py';
     Core.send(CoreMethod.NEW_VIEW, { file_path: filePath }, { id: viewInstanceId++ });
 
     // Attach unload handler to window.

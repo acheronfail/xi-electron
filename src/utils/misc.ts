@@ -14,3 +14,5 @@ const CLICK_THRESHOLD = 25;
 export function posIsClose(a: Point, b: Point): boolean {
     return Math.abs(a.x - b.x) < CLICK_THRESHOLD && Math.abs(a.y - b.y) < CLICK_THRESHOLD;
 }
+
+export const nDigits = (x: number) => (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;

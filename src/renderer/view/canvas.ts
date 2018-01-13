@@ -1,5 +1,5 @@
 import { elt, on } from '../../utils/dom';
-import { clamp } from '../../utils/misc';
+import { clamp, nDigits } from '../../utils/misc';
 import { STYLES } from '../style-map';
 import { COLORS, getStyle } from '../theme';
 
@@ -29,6 +29,8 @@ export default class CanvasView implements View {
   // screens (retina).
   private devicePixelRatio: number = (window.devicePixelRatio || 1);
 
+  // TODO: getters setters with ratios ?
+  // TODO: basically - make it so I don't have to worry about devicePixelRatio!
   private x: number = 0;
   private y: number = 0;
 
@@ -56,7 +58,7 @@ export default class CanvasView implements View {
 
   private scrollCanvas(event: MouseWheelEvent) {
     const { deltaX, deltaY } = event;
-    const nLines = this.lineCache.lines.length;
+    const nLines = 100;
     const lineHeight = this.metrics.lineHeight();
 
     // TODO: get max width ?
@@ -77,7 +79,8 @@ export default class CanvasView implements View {
     this.canvas.height = height * this.devicePixelRatio;
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
+    // this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
+    this.ctx.setTransform(this.devicePixelRatio, 0, 0, this.devicePixelRatio, 0, 0);
 
     this.updateViewport();
     this.render();
@@ -94,33 +97,34 @@ export default class CanvasView implements View {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
 
-    const char = Math.round((this.x + x - (charWidth / 2)) / charWidth);
-    const line = Math.round((this.y + y - (lineHeight / 2)) / lineHeight);
+    const char = Math.round(((this.x * this.devicePixelRatio) + x - (charWidth / 2)) / charWidth);
+    const line = Math.round(((this.y * this.devicePixelRatio) + y - (lineHeight / 2)) / lineHeight);
 
     return [line, char];
   }
 
-  // TODO: more sophisticated scrolling: ie, momentum scrolling, use native div
-  // wrapper, scrollbars, etc
+  // TODO: scroll margins
   public scrollTo(line: number, char: number) {
     const lineHeight = this.metrics.lineHeight();
     const charWidth = this.metrics.charWidth();
 
+    // TODO: this doesn't work!!!
     const linePos = lineHeight * line;
     const charPos = charWidth * char;
 
     if (linePos < this.y) {
       this.y = linePos;
-    } else if (linePos > this.y + this.height - lineHeight) {
+    } else if (linePos > (this.y * this.devicePixelRatio) + this.height - lineHeight) {
       this.y = linePos - this.height + lineHeight;
     }
 
     if (charPos < this.x) {
       this.x = charPos;
-    } else if (charPos > this.x + this.width - charWidth) {
+    } else if (charPos > (this.x * this.devicePixelRatio) + this.width - charWidth) {
       this.x = charPos - this.width + charWidth;
     }
 
+    this.updateViewport();
     this.render();
   }
 
@@ -139,6 +143,7 @@ export default class CanvasView implements View {
 
   // Renders the document onto the canvas.
   // TODO: left/right scrolling
+  // TODO: draw gutters
   public render() {
     const baseline = this.metrics.baseline();
     const charWidth = this.metrics.charWidth();
@@ -158,13 +163,18 @@ export default class CanvasView implements View {
     this.lineCache.computeMissing(first, last);
 
     const getLineData = (i: number) => ({
-      x: charWidth * i - xDiff,
-      y: lineHeight * i - yDiff,
+      x: (charWidth * i) - xDiff - this.x,
+      y: (lineHeight * i) - yDiff - this.y,
       line: this.lineCache.get(first + i)
     });
 
+    // TODO: make these constants configurable
+    const editorPadding = 5;
+    const gutterPadding = 20;
+    const gutterWidth = nDigits(last) * charWidth + gutterPadding;
+
     // First pass, for drawing background selections and search highlights.
-    for (let i = 0; i <= last; ++i) {
+    for (let i = first; i <= last; ++i) {
       const { x, y, line } = getLineData(i);
       if (!line || !line.containsReservedStyle()) { continue; }
 
@@ -172,8 +182,8 @@ export default class CanvasView implements View {
       this.ctx.fillStyle = COLORS.SELECTION;
       const selections = line.styles.filter((span) => span.style == STYLES.SELECTION);
       selections.forEach((span) => {
-        const start = span.range.start * charWidth;
-        const end = span.range.length * charWidth;
+        const start = span.range.start * charWidth + gutterWidth + editorPadding;
+        const end = span.range.length * charWidth + gutterWidth + editorPadding;
         this.ctx.fillRect(start, y, end, lineHeight);
       });
 
@@ -181,21 +191,22 @@ export default class CanvasView implements View {
       this.ctx.fillStyle = COLORS.HIGHLIGHT;
       const highlights = line.styles.filter((span) => span.style == STYLES.HIGHLIGHT);
       highlights.forEach((span) => {
-        const start = span.range.start * charWidth;
-        const end = span.range.length * charWidth;
+        const start = span.range.start * charWidth + gutterWidth + editorPadding;
+        const end = span.range.length * charWidth + gutterWidth + editorPadding;
         this.ctx.fillRect(start, y, end, lineHeight);
       });
     }
 
     // Second pass, for actually rendering text.
-    for (let i = 0; i <= last; ++i) {
+    this.ctx.save();
+    for (let i = first; i <= last; ++i) {
       const { x, y, line } = getLineData(i);
       if (!line) { continue; }
 
       // Draw cursor(s).
       this.ctx.fillStyle = COLORS.CURSOR;
       line.cursor.forEach((ch) => {
-        this.ctx.fillRect((ch * charWidth), y, 2, lineHeight);
+        this.ctx.fillRect((ch * charWidth) + gutterWidth + editorPadding, y, 2, lineHeight);
       });
 
       // Draw text.
@@ -207,9 +218,28 @@ export default class CanvasView implements View {
         this.ctx.fillStyle = style.fg;
         this.ctx.font = style.fontString(this.metrics);
 
-        const textX = charWidth * start;
+        const textX = charWidth * start + gutterWidth + editorPadding;
         this.ctx.fillText(line.text.substr(start, length), textX, textY);
       });
+    }
+    this.ctx.restore();
+
+    // Draw gutter background and vertical separator.
+    this.ctx.fillStyle = '#242424';
+    this.ctx.fillRect(0, 0, gutterWidth, this.height);
+    this.ctx.strokeStyle = '#5a5a5a';
+    this.ctx.beginPath();
+    this.ctx.moveTo(gutterWidth, 0);
+    this.ctx.lineTo(gutterWidth, this.height);
+    this.ctx.stroke();
+
+    // Third pass, draw the gutter.
+    this.ctx.fillStyle = '#5a5a5a';
+    for (let i = first; i <= last; ++i) {
+      const { line, y } = getLineData(i);
+      if (!line) { continue; }
+
+      this.ctx.fillText(`${i + 1}`, gutterPadding / 2, y + baseline);
     }
   }
 }
