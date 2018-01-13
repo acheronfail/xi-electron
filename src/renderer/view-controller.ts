@@ -6,7 +6,7 @@ import { createView } from './view';
 import { View, ViewOptions } from './view';
 import ViewProxy from './view-proxy';
 import { CoreMethod } from './types/core';
-import { posIsClose, Point } from '../utils/misc';
+import { posIsClose, Point, clamp } from '../utils/misc';
 
 // This module should be controlled by the "workspace" which has the xi-core running
 // it is linked to a view inside of xi-core via a "ViewProxy"
@@ -34,7 +34,7 @@ export default class ViewController {
    * @param {[type]}      opts  Configuration options.
    */
   constructor(place: HTMLElement, private proxy: ViewProxy, opts: ViewOptions) {
-    this.wrapper = place.appendChild(elt('div', null, 'xi-view'));
+    this.wrapper = place.appendChild(elt('div', null, 'xi-view', 'height: 100%; width: 100%'));
     this.wrapper.style.border = '1px solid #000';
     this.wrapper.style.overflow = 'hidden';
     this.wrapper.tabIndex = 0;
@@ -52,9 +52,23 @@ export default class ViewController {
 
     this.view = createView(opts.type, this, opts);
 
+    // Listen for resizes to the element with the new ResizeObserver feature.
+    type ResizeObserverEntry = any;
+    const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+      for (const entry of entries) {
+        if (entry.target == this.wrapper) {
+          const { width, height } = entry.contentRect;
+          this.view.resize(width, height);
+        }
+      }
+    });
+    ro.observe(this.wrapper);
+
+    const { width, height } = this.wrapper.getBoundingClientRect();
+    this.view.resize(width, height);
+
     this.proxy.on('update', this.update.bind(this));
     this.proxy.on('scroll_to', this.scrollTo.bind(this));
-    this.proxy.on('available_plugins', this.availablePlugins.bind(this));
 
     this.updateViewport();
   }
@@ -135,10 +149,10 @@ export default class ViewController {
    * doDrag
    */
   public doDrag(event: MouseEvent) {
-    const { left, top } = this.wrapper.getBoundingClientRect();
+    const { left, top, width, height } = this.wrapper.getBoundingClientRect();
     const point = {
-      x: event.clientX - left,
-      y: event.clientY - top,
+      x: clamp(event.clientX - left, 0, width),
+      y: clamp(event.clientY - top, 0, height),
     };
 
     // TOOD: get all different mods (enum?)
@@ -243,13 +257,5 @@ export default class ViewController {
    */
   private scrollTo(params: any): void {
     this.view.scrollTo(params.line, params.col);
-  }
-
-  /**
-   * Called when xi-core send information regarding available plugins.
-   * @param  {Object} params
-   */
-  private availablePlugins(params: any): void {
-    // console.log(params);
   }
 }

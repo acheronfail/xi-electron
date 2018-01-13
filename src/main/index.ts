@@ -14,7 +14,13 @@ let win: BrowserWindow | null = null;
 
 app.on('ready', async () => {
 
-  win = new BrowserWindow({ show: true });
+  win = new BrowserWindow({
+    show: true,
+    webPreferences: {
+      // Enable experimental features that we use: ResizeObserver
+      experimentalFeatures: true
+    }
+  });
   win.loadURL('file://' + path.join(__dirname, '..', 'pages', 'index.html'));
   win.on('close', () => win = null);
 

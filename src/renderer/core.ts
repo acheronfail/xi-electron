@@ -90,18 +90,19 @@ export class Core extends EventEmitter {
     // TODO: refactor - switch?
     // TODO: use message enum
     parseMessages(raw).forEach((msg) => {
-
+      // A new view was created if `msg.result` is set.
       if ('result' in msg) {
         this.proxies[msg.result] = new ViewProxy(this.proxySend, msg.id, msg.result);
         this.emit('new_view', this.proxies[msg.result]);
         return;
       }
 
+      // Otherwise respond to other messages.
       switch (msg.method) {
         case CoreResponse.AVAILABLE_THEMES: {
           // TODO: set/save theme + move logic elsewhere
           this.send(CoreMethod.SET_THEME, { theme_name: 'base16-eighties.dark' });
-          break;
+          return;
         }
         case CoreResponse.AVAILABLE_PLUGINS:
         case CoreResponse.CONFIG_CHANGED:
@@ -110,22 +111,24 @@ export class Core extends EventEmitter {
           // TODO: respond to these
           // TODO: get python plugins working
           // console.log(msg);
-          break;
+          return;
         }
         case CoreResponse.DEF_STYLE: {
           defineStyle(msg.params);
-          break;
+          return;
         }
         // Commands proxied through to Views.
         case CoreResponse.SCROLL_TO:
         case CoreResponse.UPDATE: {
           this.proxies[msg.params.view_id].emit(msg.method, msg.params);
-          break;
+          return;
         }
         default: {
           console.warn('Unhandled message from core: ', msg);
         }
       }
+
+      console.log(msg);
     });
   }
 
@@ -133,8 +136,8 @@ export class Core extends EventEmitter {
    * Called when we get events from xi-core's `stderr` stream.
    * @param {String} data Raw data emitted from xi-core's stderr.
    */
-  private errorFromCore(data: string) {
-    console.error(`Error from core: "${data.toString()}"`);
+  private errorFromCore(data: Buffer) {
+    console.log(`${data}`);
   }
 
   /**

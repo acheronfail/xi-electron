@@ -42,8 +42,8 @@ export type Viewport = {
  * Interface for each view.
  */
 export interface View {
-  resize(): void;
   render(): void;
+  resize(width: number, height: number): void;
   scrollTo(line: number, char: number): void;
   posFromCoords(x: number, y: number, _forect: boolean): [number, number];
   getViewport(): Viewport;

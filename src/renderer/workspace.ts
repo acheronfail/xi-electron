@@ -42,7 +42,7 @@ export default class Workspace {
    */
   constructor(place: HTMLElement, opts: WorkspaceOptions) {
     this.controllers = [];
-    this.wrapper = place.appendChild(elt('div', null, 'xi-workspace'));
+    this.wrapper = place.appendChild(elt('div', null, 'xi-workspace', 'height: 100%; width: 100%'));
 
     // All events are listened to on the window.
     on((<any>window), 'keydown', this.keyedInput.bind(this), false);
@@ -106,7 +106,7 @@ export default class Workspace {
 
     // Listen for dragging events.
     const onMove = (event: MouseEvent) => controller.doDrag(event);
-    const onUp = (event: MouseEvent) => {
+    const onUp = (_event: MouseEvent) => {
       off((<any>window), 'mousemove', onMove, false);
       off((<any>window), 'mouseup', onUp, false);
     };

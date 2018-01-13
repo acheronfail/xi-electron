@@ -51,8 +51,6 @@ export default class CanvasView implements View {
       throw new Error('Could not get CanvasRenderingContext2D');
     }
 
-    this.resize();
-
     this.metrics.on('update', () => this.updateViewport());
   }
 
@@ -61,6 +59,7 @@ export default class CanvasView implements View {
     const nLines = this.lineCache.lines.length;
     const lineHeight = this.metrics.lineHeight();
 
+    // TODO: get max width ?
     this.x = clamp(this.x + deltaX, 0, 0);
     this.y = clamp(this.y + deltaY, 0, Math.max(nLines * lineHeight - this.height, 0));
 
@@ -73,9 +72,7 @@ export default class CanvasView implements View {
     this.height = this.canvas.height / this.devicePixelRatio;
   }
 
-  public resize() {
-    const { width, height } = this.wrapper.getBoundingClientRect();
-
+  public resize(width: number, height: number) {
     this.canvas.width = width * this.devicePixelRatio;
     this.canvas.height = height * this.devicePixelRatio;
     this.canvas.style.width = `${width}px`;
@@ -161,7 +158,7 @@ export default class CanvasView implements View {
     this.lineCache.computeMissing(first, last);
 
     const getLineData = (i: number) => ({
-      x: 0,
+      x: charWidth * i - xDiff,
       y: lineHeight * i - yDiff,
       line: this.lineCache.get(first + i)
     });
@@ -201,6 +198,7 @@ export default class CanvasView implements View {
         this.ctx.fillRect((ch * charWidth), y, 2, lineHeight);
       });
 
+      // Draw text.
       const textY = y + baseline;
       line.styles.forEach((styleSpan) => {
         const { style: styleId, range: { start, length } } = styleSpan;
@@ -215,11 +213,3 @@ export default class CanvasView implements View {
     }
   }
 }
-
-const colors = {
-  '2': 'green',
-  '3': 'red',
-  '4': 'blue',
-  '5': 'black',
-  '6': 'orange',
-};
