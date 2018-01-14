@@ -35,20 +35,25 @@ export type ViewOptions = {
  * Information about the current viewport. Measured in lines and characters.
  */
 export type Viewport = {
-  lineStart: number, // Topmost line number.
-  lineEnd: number, // How many lines fit in the window (fully).
-  charStart: number, // Leftmost character position.
-  charEnd: number  // How many characters fit in the window (fully).
+  lineStart: number,
+  lineEnd: number,
+  charStart: number,
+  charEnd: number
 };
 
 /**
  * Interface for each view.
  */
 export interface View {
+  // Called when the view requires a re-render.
   render(): void;
+  // Called whenever the view controller's wrapper element resizes.
   resize(width: number, height: number): void;
+  // Scrolls the view to the given `line, char` position.
   scrollTo(line: number, char: number): void;
+  // Return the `line, char` at the given `x, y` coordinate.
   posFromCoords(x: number, y: number, _forect: boolean): [number, number];
+  // Get details of the visible lines in the current viewport.
   getViewport(): Viewport;
 }
 
@@ -60,8 +65,5 @@ export interface View {
  * @return {View}                      The newly created view.
  */
 export function createView(type: ViewType, controller: ViewController, opts: ViewOptions): View {
-  // NOTE: we just default to canvas view for now, since it's the only
-  // implemented one at the moment.
-  const View = Views[type] || CanvasView;
-  return new View(controller, opts);
+  return new (Views[type])(controller, opts);
 }

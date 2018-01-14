@@ -52,7 +52,7 @@ export default class CanvasView implements View {
   private gutterPadding: [number, number] = [20, 0];
 
   // Whether to scroll past the end of the document or not.
-  private scrollPastEnd: boolean = true;
+  private scrollPastEnd: boolean = false;
 
   // The character length of the longest line of the editor.
   // HACK: need to find a better way of getting the longest line, right now we just update it

@@ -5,13 +5,18 @@ import ViewProxy from './view-proxy';
 import { CoreMethod, CoreResponse } from './types/core';
 import { defineStyle } from './theme';
 
+export type CoreOptions = {
+  env?: { [key: string]: string | number },
+  configDir?: string,
+};
+
 /**
  * This is a class that manages xi-core. It creates ViewProxies which are simple
  * emitters that link xi-core's internal views with out actual ViewControllers.
  * It is also responsible for encoding/decoding messages to and from xi-core, and
  * managing the spawned process.
  */
-export class Core extends EventEmitter {
+export default class Core extends EventEmitter {
 
   // The spawned child process.
   private child: cp.ChildProcess;
@@ -23,13 +28,13 @@ export class Core extends EventEmitter {
    * Create the class.
    * @param  {Object} env The environment map to use when spawning xi-core.
    */
-  constructor(env: { [key: string]: string | number } = {}) {
+  constructor(opts: CoreOptions) {
     super();
 
     this.proxies = {};
 
     // Spawn xi-core.
-    this.child = cp.spawn(XI_CORE_BIN, [], { env });
+    this.child = cp.spawn(XI_CORE_BIN, [], { env: opts.env || {} });
     this.child.on('close', this.coreClosed.bind(this));
 
     // Receive messages from xi-core as text.
@@ -42,8 +47,7 @@ export class Core extends EventEmitter {
 
     this.send(CoreMethod.CLIENT_STARTED, {
       client_extras_dir: XI_CORE_DIR,
-      // TODO: set config_dir
-      config_dir: XI_CORE_DIR
+      config_dir: opts.configDir || XI_CORE_DIR
     });
   }
 
@@ -159,11 +163,6 @@ export class Core extends EventEmitter {
     this.send(method, params);
   }
 }
-
-// Export as a singleton.
-// TODO: XI_RPC_LOG ?
-const env = Object.assign({ RUST_BACKTRACE: 1 }, process.env);
-export default new Core(env);
 
 // Helpers ---------------------------------------------------------------------
 

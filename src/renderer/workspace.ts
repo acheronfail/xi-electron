@@ -1,9 +1,9 @@
 import { elt, on, off } from '../utils/dom';
 import { execKey } from './key-events';
-import Core from './core';
+import Core, { CoreOptions } from './core';
 import ViewController from './view-controller';
 import ViewProxy from './view-proxy';
-import { ViewType } from './view';
+import { ViewOptions } from './view';
 import { CoreMethod } from './types/core';
 
 /**
@@ -16,7 +16,9 @@ let viewInstanceId = 0;
  * Configuration options for each Workspace.
  */
 export type WorkspaceOptions = {
-  viewType: ViewType
+  filePath?: string,
+  coreOptions: CoreOptions,
+  viewOptions: ViewOptions
 };
 
 /**
@@ -29,11 +31,14 @@ export type WorkspaceOptions = {
  */
 export default class Workspace {
 
+  // Wrapper top-level element.
+  public wrapper: HTMLElement;
+
   // References of all our child view controllers.
   private controllers: ViewController[];
 
-  // Wrapper top-level element.
-  public wrapper: HTMLElement;
+  // This workspace's handle to xi-core (as a ChildProcess).
+  private core: Core;
 
   /**
    * Create the Workspace.
@@ -49,16 +54,16 @@ export default class Workspace {
     on((<any>window), 'keypress', this.keyedInput.bind(this), false);
     on((<any>window), 'mousedown', this.mousedown.bind(this), false);
 
+    // Instantiate xi-core.
+    this.core = new Core(opts.coreOptions);
+
     // Create View objects whenever xi-core creates a view.
-    Core.on(CoreMethod.NEW_VIEW, (proxy: ViewProxy) => {
-      const viewOptions = { type: opts.viewType };
-      this.controllers.push(new ViewController(this.wrapper, proxy, viewOptions));
+    this.core.on(CoreMethod.NEW_VIEW, (proxy: ViewProxy) => {
+      this.controllers.push(new ViewController(this.wrapper, proxy, opts.viewOptions));
     });
 
     // Initially create just one view.
-    // TODO: set file paths with frontend
-    const filePath = '/Users/acheronfail/src/xi-electron-ts/src/xi/plugins/xi_plugin/cache.py';
-    Core.send(CoreMethod.NEW_VIEW, { file_path: filePath }, { id: viewInstanceId++ });
+    this.core.send(CoreMethod.NEW_VIEW, { file_path: opts.filePath }, { id: viewInstanceId++ });
 
     // Attach unload handler to window.
     window.onbeforeunload = this.beforeUnload;
@@ -69,7 +74,8 @@ export default class Workspace {
    * @param event Event passed from window.onbeforeunload
    */
   public beforeUnload(_event: BeforeUnloadEvent) {
-    Core.close();
+    // TODO: confirm before closing if there are unsaved changes
+    this.core.close();
   }
 
   /**

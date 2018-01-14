@@ -53,6 +53,7 @@ export default class ViewController {
     this.view = createView(opts.type, this, opts);
 
     // Listen for resizes to the element with the new ResizeObserver feature.
+    // TODO: add typings for ResizeObserver API.
     type ResizeObserverEntry = any;
     const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
