@@ -72,15 +72,20 @@ export default class DOMView implements View {
     this.scrollContainer.scrollLeft = charWidth * char;
   }
 
+  /**
+   * Returns a [line, char] from the given coordinates.
+   * @param  {Number}  x       The x coordinate (relative to the view).
+   * @param  {Number}  y       The y coordinate (relative to the view).
+   * @param  {Boolean} forRect Whether the click was using rectangular selections.
+   * @return {Array}           A [line, char] object of the coordinates at the point.
+   */
   public posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
     return [0, 0];
   }
 
   /**
    * Get information about the currently visible viewport of the editor.
-   * @return {Object} An object with measurements about the current viewport:
-   *                  "top" and "height" are measured in lines, "left" and
-   *                  "width" in chars.
+   * @return {Object} An object with measurements about the current viewport.
    */
   public getViewport(): Viewport {
     const lineHeight = this.metrics.lineHeight();
@@ -92,7 +97,9 @@ export default class DOMView implements View {
     };
   }
 
-  // Renders the document.
+  /**
+   * Renders the document into the DOM.
+   */
   public render(): void {
     // Empty previous lines
     removeChildren(this.lineContainer);

@@ -25,7 +25,10 @@ export enum ViewType {
  * Configuration options for Views.
  */
 export type ViewOptions = {
-  type: ViewType
+  type: ViewType,
+  editorPadding?: [number, number],
+  gutterPadding?: [number, number],
+  scrollPastEnd?: boolean,
 };
 
 /**
