@@ -3,6 +3,10 @@ _A front-end for the xi-editor built with modern web technologies._
 
 NOTE: This is still a WIP!
 
+## Demo
+
+![canvas renderer](./doc/canvas.png)
+
 ## Goals of this Repo
 
 * Make a front-end for [`xi-editor`](https://github.com/google/xi-editor) that is consistent across platforms
