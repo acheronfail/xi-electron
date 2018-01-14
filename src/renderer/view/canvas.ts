@@ -53,7 +53,7 @@ export default class CanvasView implements View {
       throw new Error('Could not get CanvasRenderingContext2D');
     }
 
-    this.metrics.on('update', () => this.updateViewport());
+    // this.metrics.on('update', () => this.render());
     this.lineCache.on('update', () => {
       const charWidth = this.metrics.charWidth();
       this.gutterChars = nDigits(this.lineCache.height());
@@ -74,19 +74,13 @@ export default class CanvasView implements View {
     this.x = clamp(this.x + deltaX, 0, Math.max(nChars * charWidth, 0));
     this.y = clamp(this.y + deltaY, 0, Math.max(((nLines - 1) * lineHeight) / 2, 0));
 
-    // FIXME: the values of deltaX & deltaY are relative to the browsers dpi - ie, the devicePixelRatio
-    // so, that's the reason they're out of whack below...
+    // FIXME: the value of deltaY are relative to the browsers dpi - ie, the devicePixelRatio
+    // so, that's the reason it's out of whack below...
 
     // TODO: send scroll event to core! (currently via controller - re-factor func names)
     this.controller.updateViewport();
 
-    this.updateViewport();
     this.render();
-  }
-
-  private updateViewport() {
-    this.width = this.canvas.width / this.scale;
-    this.height = this.canvas.height / this.scale;
   }
 
   public resize(width: number, height: number) {
@@ -96,7 +90,8 @@ export default class CanvasView implements View {
     this.canvas.style.height = `${height}px`;
     this.ctx.scale(this.scale, this.scale);
 
-    this.updateViewport();
+    this.width = this.canvas.width / this.scale;
+    this.height = this.canvas.height / this.scale;
     this.render();
   }
 
@@ -140,7 +135,6 @@ export default class CanvasView implements View {
       this.x = charPos + this.gutterWidth + charWidth - this.width;
     }
 
-    this.updateViewport();
     this.render();
   }
 
