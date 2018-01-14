@@ -54,6 +54,11 @@ export default class CanvasView implements View {
     }
 
     this.metrics.on('update', () => this.updateViewport());
+    this.lineCache.on('update', () => {
+      const charWidth = this.metrics.charWidth();
+      this.gutterChars = nDigits(this.lineCache.height());
+      this.gutterWidth = this.gutterChars * charWidth + this.gutterPadding;
+    });
   }
 
   private scrollCanvas(event: MouseWheelEvent) {
@@ -84,7 +89,6 @@ export default class CanvasView implements View {
     this.height = this.canvas.height / this.scale;
   }
 
-  // TODO: add in this.scale ??
   public resize(width: number, height: number) {
     this.canvas.width = width * this.scale;
     this.canvas.height = height * this.scale;
@@ -107,7 +111,7 @@ export default class CanvasView implements View {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
 
-    // FIXME: ratio!
+    // FIXME: ratio!?
     const char = Math.round(((x + this.x) - this.gutterWidth - (charWidth / 2)) / charWidth);
     const line = Math.round(((y + (this.y * this.scale)) - (lineHeight / 2)) / lineHeight);
 
@@ -122,7 +126,7 @@ export default class CanvasView implements View {
     const linePos = lineHeight * line;
     const charPos = charWidth * char;
 
-    // FIXME: TODO: WHAT: why is it only for `y` values ???
+    // FIXME: TODO: WHAT: why is it `this.scale` applies only for `y` values ???
 
     if (linePos < (this.y * this.scale)) {  // FIXME: ratio!
       this.y = linePos / this.scale;  // FIXME: ratio!
@@ -140,8 +144,7 @@ export default class CanvasView implements View {
     this.render();
   }
 
-  // Returns an object with measurements about the current viewport: "top" and
-  // "height" are measured in lines, "left" and "width" in chars.
+  // Returns an object with measurements about the current viewport.
   public getViewport(): Viewport {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
@@ -153,18 +156,18 @@ export default class CanvasView implements View {
     };
   }
 
-  // Renders the document onto the canvas.
-  // TODO: left/right scrolling
+  private gutterChars: number = 0;
 
   // TODO: make these constants configurable
   private gutterWidth: number = 0;
   private editorPadding: number = 5;
   private gutterPadding: number = 20;
 
-  // HACK: need to find a better way of getting the longest line, right now we just save it whenever
-  // we render
+  // HACK: need to find a better way of getting the longest line, right now we just update it
+  // whenever we render... (also won't decrease it longest line changes)
   private nChars: number = 0;
 
+  // Renders the document onto the canvas.
   public render() {
     const baseline = this.metrics.baseline();
     const charWidth = this.metrics.charWidth();
@@ -176,22 +179,23 @@ export default class CanvasView implements View {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Get lines to draw and screen coords.
-    const first = Math.floor(this.y / lineHeight);
-    const last = Math.ceil((this.y + this.height) / lineHeight);
+    const firstLine = Math.floor(this.y / lineHeight);
+    const lastLine = Math.ceil((this.y + this.height) / lineHeight);
     const yDiff = this.y % lineHeight;
-    const { editorPadding, gutterPadding } = this;
-    const gutterWidth = this.gutterWidth = nDigits(last) * charWidth + gutterPadding;
+    const { editorPadding, gutterPadding, gutterWidth } = this;
     const xOffset = gutterWidth + editorPadding - this.x;
+    const firstChar = Math.floor(this.x / charWidth);
+    const lastChar = Math.ceil((this.width - xOffset) / charWidth);
 
-    this.lineCache.computeMissing(first, last);
+    this.lineCache.computeMissing(firstLine, lastLine);
 
     const getLineData = (i: number) => ({
       y: (lineHeight * i) - yDiff - this.y,
-      line: this.lineCache.get(first + i)
+      line: this.lineCache.get(firstLine + i)
     });
 
     // First pass, for drawing background selections and search highlights.
-    for (let i = first; i <= last; ++i) {
+    for (let i = firstLine; i <= lastLine; ++i) {
       const { line, y } = getLineData(i);
       if (!line || !line.containsReservedStyle()) { continue; }
 
@@ -211,33 +215,59 @@ export default class CanvasView implements View {
     }
 
     // Second pass, for actually rendering text.
-    // TODO: currently draws the whole horizontal line, irrespective of viewport/scrol position
     this.ctx.save();
-    for (let i = first; i <= last; ++i) {
+    for (let i = firstLine; i <= lastLine; ++i) {
       const { line, y } = getLineData(i);
       if (!line) { continue; }
 
-      // TODO: bit of a hack atm, will need to reset when longest line is shortened...
+      // FIXME: TODO: bit of a hack atm, will need to reset when longest line is shortened...
       this.nChars = Math.max(this.nChars, line.text.length);
 
       // Draw cursor(s).
+      // TODO: blinking cursors, potential solutions:
+      //      - partially invalidate lines?
+      //      - introduce tiling and re-draw dirty tiles?
+      //      - have another transparent canvas on top for selections/highlights/cursors? *
       this.ctx.fillStyle = COLORS.CURSOR;
       line.cursor.forEach((ch) => {
         this.ctx.fillRect((ch * charWidth) + xOffset, y, 2, lineHeight);
       });
 
       // Draw text.
+      // TODO: batch similar font styles (across lines) because switching the canvas state is expensive
       const textY = y + baseline;
-      line.styles.forEach((styleSpan) => {
-        const { style: styleId, range: { start, length } } = styleSpan;
+      for (let i = 0; i < line.styles.length; ++i) {
+        const { style: styleId, range: { start, length } } = line.styles[i];
+        if (start + length < firstChar) { continue; }
+        if (start > lastChar) { break; }
 
         const style = getStyle(styleId);
         this.ctx.fillStyle = style.fg;
         this.ctx.font = style.fontString(this.metrics);
 
-        const textX = (charWidth * start) + xOffset;
-        this.ctx.fillText(line.text.substr(start, length), textX, textY);
-      });
+        let a = start;
+        let b = length;
+        let textX = (charWidth * start) + xOffset;
+
+        // Clip start of text.
+        if (start < firstChar) {
+          const diff = firstChar - start;
+          a = firstChar;
+          b -= diff;
+          textX = (charWidth * firstChar) + xOffset;
+        }
+
+        // Clip end of text.
+        if (start + length > lastChar) {
+          const diff = start + length - lastChar;
+          b -= diff;
+        }
+
+        const text = line.text.substr(a, b);
+        if (text.length > 0) {
+          this.ctx.fillText(text, textX, textY);
+        }
+      }
     }
     this.ctx.restore();
 
@@ -252,11 +282,14 @@ export default class CanvasView implements View {
 
     // Third pass, draw the gutter.
     this.ctx.fillStyle = '#5a5a5a';
-    for (let i = first; i <= last; ++i) {
+    for (let i = firstLine; i <= lastLine; ++i) {
       const { line, y } = getLineData(i);
       if (!line) { continue; }
 
-      this.ctx.fillText(`${first + i + 1}`, gutterPadding / 2, y + baseline);
+      // Right-align gutter text.
+      let text = `${firstLine + i + 1}`;
+      text = ' '.repeat(this.gutterChars - text.length) + text;
+      this.ctx.fillText(text, gutterPadding / 2, y + baseline);
     }
   }
 }
