@@ -55,10 +55,10 @@ export default class WebGLView implements View {
    */
   getViewport(): Viewport {
     return {
-      top: 0,
-      height: 0,
-      left: 0,
-      width: 0
+      lineStart: 0,
+      lineEnd: 0,
+      charStart: 0,
+      charEnd: 0
     };
   }
 

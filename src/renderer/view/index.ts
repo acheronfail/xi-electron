@@ -32,10 +32,10 @@ export type ViewOptions = {
  * Information about the current viewport. Measured in lines and characters.
  */
 export type Viewport = {
-  top:    number, // Topmost line number.
-  height: number, // How many lines fit in the window (fully).
-  left:   number, // Leftmost character position.
-  width:  number  // How many characters fit in the window (fully).
+  lineStart: number, // Topmost line number.
+  lineEnd: number, // How many lines fit in the window (fully).
+  charStart: number, // Leftmost character position.
+  charEnd: number  // How many characters fit in the window (fully).
 };
 
 /**

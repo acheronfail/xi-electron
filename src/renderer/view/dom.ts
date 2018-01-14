@@ -85,10 +85,10 @@ export default class DOMView implements View {
   public getViewport(): Viewport {
     const lineHeight = this.metrics.lineHeight();
     return {
-      top: Math.floor(this.scrollContainer.scrollTop / lineHeight),
-      height: Math.ceil(this.scrollContainer.clientHeight / lineHeight),
-      left: Math.floor(this.scrollContainer.scrollLeft / lineHeight),
-      width: Math.ceil(this.scrollContainer.clientWidth / lineHeight)
+      lineStart: Math.floor(this.scrollContainer.scrollTop / lineHeight),
+      lineEnd: Math.ceil(this.scrollContainer.clientHeight / lineHeight),
+      charStart: Math.floor(this.scrollContainer.scrollLeft / lineHeight),
+      charEnd: Math.ceil(this.scrollContainer.clientWidth / lineHeight)
     };
   }
 

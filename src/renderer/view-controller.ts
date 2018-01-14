@@ -205,8 +205,8 @@ export default class ViewController {
    * knows how much information to give us.
    */
   public updateViewport(): void {
-    const { top, height } = this.view.getViewport();
-    this.edit(CoreMethod.SCROLL, [top, height]);
+    const { lineStart, lineEnd } = this.view.getViewport();
+    this.edit(CoreMethod.SCROLL, [lineStart, lineEnd]);
   }
 
   // Messages to xi-core -------------------------------------------------------

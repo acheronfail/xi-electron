@@ -27,17 +27,17 @@ export default class CanvasView implements View {
 
   // Pixel ratio of the canvas. Used to render canvas appropriately on hi-def
   // screens (retina).
-  private devicePixelRatio: number = (window.devicePixelRatio || 1);
+  private scale: number = (window.devicePixelRatio || 1);
 
   // TODO: getters setters with ratios ?
-  // TODO: basically - make it so I don't have to worry about devicePixelRatio!
+  // TODO: basically - make it so I don't have to worry about devicePixelRatio?
   private x: number = 0;
   private y: number = 0;
 
   private width: number = 0;
   private height: number = 0;
 
-  constructor(controller: ViewController,  _opts: ViewOptions) {
+  constructor(private controller: ViewController,  _opts: ViewOptions) {
     this.wrapper = controller.wrapper;
     this.metrics = controller.metrics;
     this.lineCache = controller.lineCache;
@@ -57,30 +57,40 @@ export default class CanvasView implements View {
   }
 
   private scrollCanvas(event: MouseWheelEvent) {
-    const { deltaX, deltaY } = event;
-    const nLines = 100;
+    let { deltaX, deltaY } = event;
+    // TODO: get max width ? currently this is a bit of a hack with `this.nChars`...
+    const { charStart, charEnd } = this.getViewport();
+    const nChars = this.nChars - (charEnd - charStart);
+
+    const nLines = this.lineCache.height();
+    const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
 
-    // TODO: get max width ?
-    this.x = clamp(this.x + deltaX, 0, 0);
-    this.y = clamp(this.y + deltaY, 0, Math.max(nLines * lineHeight - this.height, 0));
+    this.x = clamp(this.x + deltaX, 0, Math.max(nChars * charWidth, 0));
+    this.y = clamp(this.y + deltaY, 0, Math.max(((nLines - 1) * lineHeight) / 2, 0));
+
+    // FIXME: the values of deltaX & deltaY are relative to the browsers dpi - ie, the devicePixelRatio
+    // so, that's the reason they're out of whack below...
+
+    // TODO: send scroll event to core! (currently via controller - re-factor func names)
+    this.controller.updateViewport();
 
     this.updateViewport();
     this.render();
   }
 
   private updateViewport() {
-    this.width = this.canvas.width / this.devicePixelRatio;
-    this.height = this.canvas.height / this.devicePixelRatio;
+    this.width = this.canvas.width / this.scale;
+    this.height = this.canvas.height / this.scale;
   }
 
+  // TODO: add in this.scale ??
   public resize(width: number, height: number) {
-    this.canvas.width = width * this.devicePixelRatio;
-    this.canvas.height = height * this.devicePixelRatio;
+    this.canvas.width = width * this.scale;
+    this.canvas.height = height * this.scale;
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    // this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
-    this.ctx.setTransform(this.devicePixelRatio, 0, 0, this.devicePixelRatio, 0, 0);
+    this.ctx.scale(this.scale, this.scale);
 
     this.updateViewport();
     this.render();
@@ -97,31 +107,33 @@ export default class CanvasView implements View {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
 
-    const char = Math.round(((this.x * this.devicePixelRatio) + x - (charWidth / 2)) / charWidth);
-    const line = Math.round(((this.y * this.devicePixelRatio) + y - (lineHeight / 2)) / lineHeight);
+    // FIXME: ratio!
+    const char = Math.round(((x + this.x) - this.gutterWidth - (charWidth / 2)) / charWidth);
+    const line = Math.round(((y + (this.y * this.scale)) - (lineHeight / 2)) / lineHeight);
 
     return [line, char];
   }
 
   // TODO: scroll margins
   public scrollTo(line: number, char: number) {
-    const lineHeight = this.metrics.lineHeight();
     const charWidth = this.metrics.charWidth();
+    const lineHeight = this.metrics.lineHeight();
 
-    // TODO: this doesn't work!!!
     const linePos = lineHeight * line;
     const charPos = charWidth * char;
 
-    if (linePos < this.y) {
-      this.y = linePos;
-    } else if (linePos > (this.y * this.devicePixelRatio) + this.height - lineHeight) {
-      this.y = linePos - this.height + lineHeight;
+    // FIXME: TODO: WHAT: why is it only for `y` values ???
+
+    if (linePos < (this.y * this.scale)) {  // FIXME: ratio!
+      this.y = linePos / this.scale;  // FIXME: ratio!
+    } else if (linePos > (this.y * this.scale) + this.height - lineHeight) { // FIXME: ratio!
+      this.y = (linePos - this.height + lineHeight) / this.scale; // FIXME: ratio!
     }
 
     if (charPos < this.x) {
       this.x = charPos;
-    } else if (charPos > (this.x * this.devicePixelRatio) + this.width - charWidth) {
-      this.x = charPos - this.width + charWidth;
+    } else if (charPos > this.x + this.width - this.gutterWidth - charWidth) {
+      this.x = charPos + this.gutterWidth + charWidth - this.width;
     }
 
     this.updateViewport();
@@ -134,16 +146,25 @@ export default class CanvasView implements View {
     const charWidth = this.metrics.charWidth();
     const lineHeight = this.metrics.lineHeight();
     return {
-      top: Math.floor(this.y / lineHeight),
-      height: Math.floor((this.height + this.y) / lineHeight),
-      left: Math.floor(this.x / charWidth),
-      width: Math.floor((this.width + this.x) / charWidth),
+      lineStart: Math.floor((this.y * this.scale) / lineHeight),
+      lineEnd: Math.floor((this.height + (this.y * this.scale)) / lineHeight),
+      charStart: Math.floor((this.x * this.scale) / charWidth),
+      charEnd: Math.floor((this.width - this.gutterWidth + (this.x * this.scale)) / charWidth),
     };
   }
 
   // Renders the document onto the canvas.
   // TODO: left/right scrolling
-  // TODO: draw gutters
+
+  // TODO: make these constants configurable
+  private gutterWidth: number = 0;
+  private editorPadding: number = 5;
+  private gutterPadding: number = 20;
+
+  // HACK: need to find a better way of getting the longest line, right now we just save it whenever
+  // we render
+  private nChars: number = 0;
+
   public render() {
     const baseline = this.metrics.baseline();
     const charWidth = this.metrics.charWidth();
@@ -157,56 +178,52 @@ export default class CanvasView implements View {
     // Get lines to draw and screen coords.
     const first = Math.floor(this.y / lineHeight);
     const last = Math.ceil((this.y + this.height) / lineHeight);
-    const xDiff = this.x % charWidth;
     const yDiff = this.y % lineHeight;
+    const { editorPadding, gutterPadding } = this;
+    const gutterWidth = this.gutterWidth = nDigits(last) * charWidth + gutterPadding;
+    const xOffset = gutterWidth + editorPadding - this.x;
 
     this.lineCache.computeMissing(first, last);
 
     const getLineData = (i: number) => ({
-      x: (charWidth * i) - xDiff - this.x,
       y: (lineHeight * i) - yDiff - this.y,
       line: this.lineCache.get(first + i)
     });
 
-    // TODO: make these constants configurable
-    const editorPadding = 5;
-    const gutterPadding = 20;
-    const gutterWidth = nDigits(last) * charWidth + gutterPadding;
-
     // First pass, for drawing background selections and search highlights.
     for (let i = first; i <= last; ++i) {
-      const { x, y, line } = getLineData(i);
+      const { line, y } = getLineData(i);
       if (!line || !line.containsReservedStyle()) { continue; }
 
       // Draw selection(s).
       this.ctx.fillStyle = COLORS.SELECTION;
       const selections = line.styles.filter((span) => span.style == STYLES.SELECTION);
-      selections.forEach((span) => {
-        const start = span.range.start * charWidth + gutterWidth + editorPadding;
-        const end = span.range.length * charWidth + gutterWidth + editorPadding;
-        this.ctx.fillRect(start, y, end, lineHeight);
+      selections.forEach(({ range: { start, length } }) => {
+        this.ctx.fillRect((charWidth * start) + xOffset, y, charWidth * length, lineHeight);
       });
 
       // Draw highlight(s).
       this.ctx.fillStyle = COLORS.HIGHLIGHT;
       const highlights = line.styles.filter((span) => span.style == STYLES.HIGHLIGHT);
-      highlights.forEach((span) => {
-        const start = span.range.start * charWidth + gutterWidth + editorPadding;
-        const end = span.range.length * charWidth + gutterWidth + editorPadding;
-        this.ctx.fillRect(start, y, end, lineHeight);
+      highlights.forEach(({ range: { start, length } }) => {
+        this.ctx.fillRect((charWidth * start) + xOffset, y, charWidth * length, lineHeight);
       });
     }
 
     // Second pass, for actually rendering text.
+    // TODO: currently draws the whole horizontal line, irrespective of viewport/scrol position
     this.ctx.save();
     for (let i = first; i <= last; ++i) {
-      const { x, y, line } = getLineData(i);
+      const { line, y } = getLineData(i);
       if (!line) { continue; }
+
+      // TODO: bit of a hack atm, will need to reset when longest line is shortened...
+      this.nChars = Math.max(this.nChars, line.text.length);
 
       // Draw cursor(s).
       this.ctx.fillStyle = COLORS.CURSOR;
       line.cursor.forEach((ch) => {
-        this.ctx.fillRect((ch * charWidth) + gutterWidth + editorPadding, y, 2, lineHeight);
+        this.ctx.fillRect((ch * charWidth) + xOffset, y, 2, lineHeight);
       });
 
       // Draw text.
@@ -218,7 +235,7 @@ export default class CanvasView implements View {
         this.ctx.fillStyle = style.fg;
         this.ctx.font = style.fontString(this.metrics);
 
-        const textX = charWidth * start + gutterWidth + editorPadding;
+        const textX = (charWidth * start) + xOffset;
         this.ctx.fillText(line.text.substr(start, length), textX, textY);
       });
     }
@@ -239,7 +256,7 @@ export default class CanvasView implements View {
       const { line, y } = getLineData(i);
       if (!line) { continue; }
 
-      this.ctx.fillText(`${i + 1}`, gutterPadding / 2, y + baseline);
+      this.ctx.fillText(`${first + i + 1}`, gutterPadding / 2, y + baseline);
     }
   }
 }
