@@ -1,6 +1,6 @@
 import { elt, removeChildren } from '../../utils/dom';
-import { STYLES, StyleSpan, N_RESERVED_STYLES } from '../style-map';
-import { COLORS } from '../theme';
+import { StyleSpan, N_RESERVED_STYLES } from '../style-map';
+import { COLORS } from '../style-map';
 
 import { View, ViewOptions, Viewport } from './index';
 import ViewController from '../view-controller';

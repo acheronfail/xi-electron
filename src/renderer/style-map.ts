@@ -1,23 +1,67 @@
+import FontMetrics from './view/font-metrics';
+import { DEVMODE } from '../utils/environment';
+import { colorFromARBG } from '../utils/misc';
+
+// TODO: color/embolden gutter line number in active line
+// TODO: find a place for theming the frontend
+export const COLORS = {
+  CURSOR: '#AAAAAA',
+  BACKGROUND: '#2e2e2e',
+  FOREGROUND: '#ffffff',
+};
+
 /**
- * Simple range class.
+ * Simple wrapper class for a style defined by the xi-syntect-plugin.
  */
-export class Range {
-  /**
-   * Create the class.
-   * @param  {Number} start  Starting index.
-   * @param  {Number} length Length of range.
-   */
-  constructor(public start: number = 0, public length: number = 0) {}
+export class Style {
+  constructor(
+    public fg: string,
+    public bg: string,
+    public weight: number | string = 'normal',
+    public italic: boolean = false,
+    public underline: boolean = false,
+  ) { }
+
+  // TODO: will have to manually implement underlines in the canvas view!
+  fontString(metrics: FontMetrics) {
+    return `${this.italic ? 'italic' : ''} ${this.weight} ${metrics.fontString()}`;
+  }
+
+  isReservedStyle(): boolean {
+    return this.isSelection() || this.isHighlight();
+  }
+
+  isSelection(): boolean {
+    return this === DefinedStyles[0];
+  }
+
+  isHighlight(): boolean {
+    return this === DefinedStyles[1];
+  }
 }
 
+/**
+ * The styles for the editor - xi-core reserves numbers below `N_RESERVED_STYLES` for selection
+ * and highlights, etc.
+ */
 export const N_RESERVED_STYLES = 2;
-export enum STYLES {
-  BLANK = -1,
-  SELECTION,
-  HIGHLIGHT,
-}
+export const DefinedStyles: Style[] = [
+  new Style('', 'rgba(135, 135, 135, 0.25)'),
+  new Style('', 'rgba(255, 215, 0, 0.5)'),
+];
 
-export type StyleIdentifier = number;
+// Reserve DefinedStyles[-1] for a default style.
+DefinedStyles[-1] = new Style('white', '');
+export const defineStyle = (params: any) => {
+  const { id, fg_color, bg_color, italic, weight, underline } = params;
+  DefinedStyles[id] = new Style(
+    colorFromARBG(fg_color),
+    colorFromARBG(bg_color),
+    weight,
+    italic,
+    underline
+  );
+};
 
 /**
  * A basic type representing a range of text and and a style identifier.
@@ -47,7 +91,7 @@ export class StyleSpan {
     for (let i = 0; i < raw.length; i += 3) {
       const start = pos + raw[i];
       const end = start + raw[i + 1];
-      const style = raw[i + 2];
+      const styleId = raw[i + 2];
 
       // // TODO: offsets and utf16 ???
       // // SWIFT from xi-mac:
@@ -60,7 +104,7 @@ export class StyleSpan {
       //     out.append(StyleSpan(range: NSMakeRange(startIx, endIx - startIx), style: style))
       // }
 
-      styles.push(new StyleSpan(new Range(start, end - start), style));
+      styles.push(new StyleSpan(new Range(start, end - start), DefinedStyles[styleId]));
       pos = end;
     }
 
@@ -77,5 +121,22 @@ export class StyleSpan {
    * @param  {Range}           range The range of the StyleSpan.
    * @param  {StyleIdentifier} style The style's type or identifier.
    */
-  constructor(public range: Range, public style: StyleIdentifier = STYLES.BLANK) {}
+  constructor(public range: Range, public style: Style = DefinedStyles[-1]) {}
+}
+
+/**
+ * Simple range class.
+ */
+export class Range {
+  /**
+   * Create the class.
+   * @param  {Number} start  Starting index.
+   * @param  {Number} length Length of range.
+   */
+  constructor(public start: number = 0, public length: number = 0) { }
+}
+
+// Expose `DefinedStyles` in devmode.
+if (DEVMODE) {
+  (<any>window).DefinedStyles = DefinedStyles;
 }

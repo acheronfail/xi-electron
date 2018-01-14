@@ -25,9 +25,15 @@ export enum ViewType {
  * Configuration options for Views.
  */
 export type ViewOptions = {
+  // Which view type to use.
   type: ViewType,
-  editorPadding?: [number, number],
+  // Whether or not to draw the gutter.
+  drawGutter?: boolean,
+  // Gutter padding: [x, y].
   gutterPadding?: [number, number],
+  // Editor padding: [x, y]
+  editorPadding?: [number, number],
+  // Whether or not the view should scroll past the end of the document.
   scrollPastEnd?: boolean,
 };
 

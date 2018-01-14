@@ -1,6 +1,5 @@
 import { elt } from '../../../utils/dom';
-import { STYLES } from '../../style-map';
-import { COLORS } from '../../theme';
+import { STYLES, COLORS } from '../../style-map';
 
 import { View, ViewOptions, Viewport } from '../index';
 import ViewController from '../../view-controller';

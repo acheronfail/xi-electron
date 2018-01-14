@@ -58,7 +58,7 @@ export class Line {
    * @return {Boolean} Whether or not it does contain a reserved style.
    */
   containsReservedStyle(): boolean {
-    return this.styles.length > 0 && this.styles.some(({ style }) => style >= 0 && style < N_RESERVED_STYLES);
+    return this.styles.length > 0 && this.styles.some(({ style }) => style.isReservedStyle());
   }
 
   toJSON(): { cursor: number[], styles: StyleSpan[] } {

@@ -121,3 +121,8 @@ export default class Workspace {
     on((<any>window), 'mouseup', onUp, false);
   }
 }
+
+/**
+ * Current thoughts...
+ *  - should cut/copy/paste be implemented in the frontend or backend?
+ */

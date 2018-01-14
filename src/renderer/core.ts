@@ -3,7 +3,7 @@ import EventEmitter from '../utils/emitter';
 import { XI_CORE_BIN, XI_CORE_DIR } from '../utils/environment';
 import ViewProxy from './view-proxy';
 import { CoreMethod, CoreResponse } from './types/core';
-import { defineStyle } from './theme';
+import { defineStyle } from './style-map';
 
 export type CoreOptions = {
   env?: { [key: string]: string | number },

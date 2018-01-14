@@ -1,4 +1,6 @@
-// The allowed messages we can send to xi-core.
+/**
+ * An enum of the messages we can send to xi-core.
+ */
 export enum CoreMethod {
     ADD_SELECTION_ABOVE                                = 'add_selection_above',
     CLICK                                              = 'click',
@@ -51,6 +53,9 @@ export enum CoreMethod {
     YANK                                               = 'yank',
 }
 
+/**
+ * An enum of the responses we may receive from xi-core.
+ */
 export enum CoreResponse {
     AVAILABLE_PLUGINS = 'available_plugins',
     AVAILABLE_THEMES  = 'available_themes',

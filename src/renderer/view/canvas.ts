@@ -1,7 +1,6 @@
 import { elt, on } from '../../utils/dom';
 import { clamp, nDigits } from '../../utils/misc';
-import { STYLES } from '../style-map';
-import { COLORS, getStyle } from '../theme';
+import { COLORS } from '../style-map';
 
 import { View, ViewOptions, Viewport } from './index';
 import ViewController from '../view-controller';
@@ -54,6 +53,9 @@ export default class CanvasView implements View {
   // Whether to scroll past the end of the document or not.
   private scrollPastEnd: boolean = false;
 
+  // Whether or not to draw the gutter.
+  private drawGutter: boolean = true;
+
   // The character length of the longest line of the editor.
   // HACK: need to find a better way of getting the longest line, right now we just update it
   // whenever we render... (also won't decrease it longest line changes)
@@ -65,7 +67,7 @@ export default class CanvasView implements View {
     this.lineCache = controller.lineCache;
 
     // Apply custom options.
-    ['gutterPadding', 'editorPadding', 'scrollPastEnd'].forEach((key) => {
+    ['drawGutter', 'gutterPadding', 'editorPadding', 'scrollPastEnd'].forEach((key) => {
       if (opts[key]) {
         this[key] = opts[key];
       }
@@ -95,9 +97,13 @@ export default class CanvasView implements View {
 
   // Measures the size of the gutter.
   private measureGutter() {
-    const charWidth = this.metrics.charWidth();
-    this.gutterChars = nDigits(this.lineCache.height());
-    this.gutterWidth = this.gutterChars * charWidth + this.gutterPadding[0];
+    if (this.drawGutter) {
+      const charWidth = this.metrics.charWidth();
+      this.gutterChars = nDigits(this.lineCache.height());
+      this.gutterWidth = this.gutterChars * charWidth + this.gutterPadding[0];
+    } else {
+      this.gutterWidth = 0;
+    }
   }
 
   // Smoothly scrolls the canvas after MouseWheelEvents.
@@ -246,18 +252,22 @@ export default class CanvasView implements View {
       if (!line || !line.containsReservedStyle()) { continue; }
 
       // Draw selection(s).
-      this.ctx.fillStyle = COLORS.SELECTION;
-      const selections = line.styles.filter((span) => span.style == STYLES.SELECTION);
-      selections.forEach(({ range: { start, length } }) => {
-        this.ctx.fillRect((charWidth * start) + xOffset, y, charWidth * length, lineHeight);
-      });
+      const selections = line.styles.filter((span) => span.style.isSelection());
+      if (selections.length) {
+        this.ctx.fillStyle = selections[0].style.bg;
+        selections.forEach(({ range: { start, length } }) => {
+          this.ctx.fillRect((charWidth * start) + xOffset, y, charWidth * length, lineHeight);
+        });
+      }
 
       // Draw highlight(s).
-      this.ctx.fillStyle = COLORS.HIGHLIGHT;
-      const highlights = line.styles.filter((span) => span.style == STYLES.HIGHLIGHT);
-      highlights.forEach(({ range: { start, length } }) => {
-        this.ctx.fillRect((charWidth * start) + xOffset, y, charWidth * length, lineHeight);
-      });
+      const highlights = line.styles.filter((span) => span.style.isHighlight());
+      if (highlights.length) {
+        this.ctx.fillStyle = highlights[0].style.bg;
+        highlights.forEach(({ range: { start, length } }) => {
+          this.ctx.fillRect((charWidth * start) + xOffset, y, charWidth * length, lineHeight);
+        });
+      }
     }
 
     // Second pass, for actually rendering text.
@@ -284,11 +294,10 @@ export default class CanvasView implements View {
       // switching the canvas state can be expensive.
       const textY = y + baseline;
       for (let i = 0; i < line.styles.length; ++i) {
-        const { style: styleId, range: { start, length } } = line.styles[i];
+        const { style, range: { start, length } } = line.styles[i];
         if (start + length < firstChar) { continue; }
         if (start > lastChar) { break; }
 
-        const style = getStyle(styleId);
         this.ctx.fillStyle = style.fg;
         this.ctx.font = style.fontString(this.metrics);
 
@@ -317,6 +326,8 @@ export default class CanvasView implements View {
       }
     }
     this.ctx.restore();
+
+    if (!this.drawGutter) { return; }
 
     // Draw gutter background and vertical separator.
     this.ctx.fillStyle = '#242424';
