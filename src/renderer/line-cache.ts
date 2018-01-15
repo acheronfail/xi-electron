@@ -7,11 +7,49 @@ import { CoreMethod } from './types/core';
  */
 export class Line {
 
-  public text: string;
+  public cursors: number[] = [];
+  public styles: StyleSpan[] = [];
 
-  public styles: StyleSpan[];
+  public utf8ToChIndices: number[] = [];
+  public chTo8Indices: number[] = [];
 
-  public cursor: number[];
+  public utf16ToChIndices: number[] = [];
+  public chTo16Indices: number[] = [];
+
+  constructor(public text: string, utf8Styles: number[], cursors: number[]) {
+    let pos = 0, pos8 = 0, pos16 = 0;
+    for (const ch of text) {
+      let codePoint = (<number>ch.codePointAt(0));
+
+      this.utf8ToChIndices[pos8] = pos;
+      this.chTo8Indices.push(pos8);
+      if (codePoint < 0x80) {
+        pos8 += 1;
+      } else if (codePoint < 0x800) {
+        pos8 += 2;
+      } else if (codePoint < 0x10000) {
+        pos8 += 3;
+      } else if (codePoint < 0x110000) {
+        pos8 += 4;
+      } else {
+        throw new Error('Char cannot be represented in JS (replace?)');
+      }
+
+      this.utf16ToChIndices[pos16] = pos;
+      this.chTo16Indices.push(pos16);
+      pos16 += ch.length;
+
+      pos++;
+    }
+
+    this.utf8ToChIndices[pos8] = pos;
+    this.chTo8Indices.push(pos8);
+    this.utf16ToChIndices[pos16] = pos;
+    this.chTo16Indices.push(pos16);
+
+    this.cursors = cursors.map(x => this.utf8ToChIndices[x]);
+    this.styles = StyleSpan.stylesFromRaw(this.utf8ToChIndices, utf8Styles, pos);
+  }
 
   /**
    * Create a line from the given JSON object (from xi-core).
@@ -19,15 +57,8 @@ export class Line {
    * @return {Line}        Newly created Line class.
    */
   public static fromJSON(data: { text: string, cursor: number[], styles: number[] }): Line {
-    const { text, cursor, styles } = data;
-    const line = new Line();
-    line.text = text;
-    line.cursor = cursor || [];
-    if (styles) {
-      line.styles = StyleSpan.stylesFromRaw(styles, text);
-    } else {
-      line.styles = [];
-    }
+    const { text = '', cursor = [], styles = [] } = data;
+    const line = new Line(text, styles, cursor);
     return line;
   }
 
@@ -66,6 +97,8 @@ export class Line {
     return { cursor, styles };
   }
 }
+
+window.line = Line;
 
 /**
  * Keeps a "window" (or cache) of a view which is inside xi-core.

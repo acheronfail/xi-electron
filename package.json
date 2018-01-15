@@ -58,7 +58,8 @@
     "electron-compile": "^6.4.2",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^5.0.0",
-    "tslib": "^1.4.0"
+    "tslib": "^1.4.0",
+    "utfstring": "^2.0.0"
   },
   "devDependencies": {
     "@types/electron-devtools-installer": "^2.0.2",

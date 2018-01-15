@@ -285,7 +285,7 @@ export default class CanvasView implements View {
       //      - introduce tiling and re-draw dirty tiles?
       //      - have another transparent canvas on top for selections/highlights/cursors? *
       this.ctx.fillStyle = COLORS.CURSOR;
-      line.cursor.forEach((ch) => {
+      line.cursors.forEach((ch) => {
         this.ctx.fillRect((ch * charWidth) + xOffset, y, 2, lineHeight);
       });
 
@@ -301,25 +301,11 @@ export default class CanvasView implements View {
         this.ctx.fillStyle = style.fg;
         this.ctx.font = style.fontString(this.metrics);
 
-        let a = start;
-        let b = length;
-        let textX = (charWidth * start) + xOffset;
+        let a = Math.max(firstChar, start);
+        let b = Math.min(lastChar, start + length);
+        let textX = (charWidth * a) + xOffset;
 
-        // Clip start of text.
-        if (start < firstChar) {
-          const diff = firstChar - start;
-          a = firstChar;
-          b -= diff;
-          textX = (charWidth * firstChar) + xOffset;
-        }
-
-        // Clip end of text.
-        if (start + length > lastChar) {
-          const diff = start + length - lastChar;
-          b -= diff;
-        }
-
-        const text = line.text.substr(a, b);
+        const text = line.text.substring(line.chTo16Indices[a], line.chTo16Indices[b]);
         if (text.length > 0) {
           this.ctx.fillText(text, textX, textY);
         }

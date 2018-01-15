@@ -3,7 +3,7 @@ import { DEVMODE } from '../utils/environment';
 import { colorFromARBG } from '../utils/misc';
 
 // TODO: color/embolden gutter line number in active line
-// TODO: find a place for theming the frontend
+// TODO: find a place/method for theming the frontend
 export const COLORS = {
   CURSOR: '#AAAAAA',
   BACKGROUND: '#2e2e2e',
@@ -15,6 +15,7 @@ export const COLORS = {
  */
 export class Style {
   constructor(
+    private id: number,
     public fg: string,
     public bg: string,
     public weight: number | string = 'normal',
@@ -23,21 +24,14 @@ export class Style {
   ) { }
 
   // TODO: will have to manually implement underlines in the canvas view!
+  // TODO: and obviously will need to implement complete font for WebGL
   fontString(metrics: FontMetrics) {
     return `${this.italic ? 'italic' : ''} ${this.weight} ${metrics.fontString()}`;
   }
 
-  isReservedStyle(): boolean {
-    return this.isSelection() || this.isHighlight();
-  }
-
-  isSelection(): boolean {
-    return this === DefinedStyles[0];
-  }
-
-  isHighlight(): boolean {
-    return this === DefinedStyles[1];
-  }
+  isSelection(): boolean { return this === DefinedStyles[STYLE_SELECTION]; }
+  isHighlight(): boolean { return this === DefinedStyles[STYLE_HIGHLIGHT]; }
+  isReservedStyle(): boolean { return this.id < N_RESERVED_STYLES; }
 }
 
 /**
@@ -45,16 +39,19 @@ export class Style {
  * and highlights, etc.
  */
 export const N_RESERVED_STYLES = 2;
+export const STYLE_SELECTION = 0;
+export const STYLE_HIGHLIGHT = 1;
 export const DefinedStyles: Style[] = [
-  new Style('', 'rgba(135, 135, 135, 0.25)'),
-  new Style('', 'rgba(255, 215, 0, 0.5)'),
+  new Style(STYLE_SELECTION, '', 'rgba(135, 135, 135, 0.25)'),
+  new Style(STYLE_HIGHLIGHT, '', 'rgba(255, 215, 0, 0.5)'),
 ];
 
 // Reserve DefinedStyles[-1] for a default style.
-DefinedStyles[-1] = new Style('white', '');
+DefinedStyles[-1] = new Style(-1, 'white', '');
 export const defineStyle = (params: any) => {
   const { id, fg_color, bg_color, italic, weight, underline } = params;
   DefinedStyles[id] = new Style(
+    id,
     colorFromARBG(fg_color),
     colorFromARBG(bg_color),
     weight,
@@ -76,41 +73,42 @@ export class StyleSpan {
    * @param  {String} text The text of the line.
    * @return {Array}       Generated StyleSpan array.
    */
-  static stylesFromRaw(raw: number[], text: string): StyleSpan[] {
+  static stylesFromRaw(utf8ToChIndices: number[], utf8Styles: number[], charLength: number): StyleSpan[] {
     const styles = [];
+
     // Current position in the line.
-    let pos = 0;
+    let pos = 0, pos8 = 0;
 
     // Create a blank span for any unstyled text at the start of the line.
-    const firstStylePos = raw[0];
-    if (firstStylePos > pos) {
-      styles.push(new StyleSpan(new Range(0, firstStylePos)));
+    if (utf8Styles.length) {
+      const firstStylePos = utf8ToChIndices[utf8Styles[0]];
+      if (firstStylePos > pos) {
+        styles.push(new StyleSpan(new Range(0, firstStylePos)));
+      }
     }
 
     // Run over the style triplets and generate style spans for them.
-    for (let i = 0; i < raw.length; i += 3) {
-      const start = pos + raw[i];
-      const end = start + raw[i + 1];
-      const styleId = raw[i + 2];
+    for (let i = 0; i < utf8Styles.length; i += 3) {
+      const start8 = pos8 + utf8Styles[i];
+      const end8 = start8 + utf8Styles[i + 1];
+      const styleId = utf8Styles[i + 2];
 
-      // // TODO: offsets and utf16 ???
-      // // SWIFT from xi-mac:
-      // let startIx = utf8_offset_to_utf16(text, start)
-      // let endIx = utf8_offset_to_utf16(text, end)
-      // if startIx < 0 || endIx < startIx {
-      //     //FIXME: how should we be doing error handling?
-      //     print("malformed style array for line:", text, raw)
-      // } else {
-      //     out.append(StyleSpan(range: NSMakeRange(startIx, endIx - startIx), style: style))
-      // }
+      const start = utf8ToChIndices[start8];
+      const end = utf8ToChIndices[end8];
+
+      if (start == undefined || end == undefined || end < start) {
+        // TODO: how should we do error handling?
+        console.error('bad offsets');
+      }
 
       styles.push(new StyleSpan(new Range(start, end - start), DefinedStyles[styleId]));
+      pos8 = end8;
       pos = end;
     }
 
     // Create a blank span for any unstyled text at the end of the line.
-    if (pos < text.length) {
-      styles.push(new StyleSpan(new Range(pos, text.length)));
+    if (pos < charLength) {
+      styles.push(new StyleSpan(new Range(pos, charLength - pos)));
     }
 
     return styles;
