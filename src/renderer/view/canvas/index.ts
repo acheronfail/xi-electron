@@ -252,13 +252,8 @@ export default class CanvasView implements View {
     this.ctx.fillStyle = COLORS.BACKGROUND;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Get lines to draw and screen coords.
-    const firstChar = Math.floor(this.x / asciiWidth);
-    const lastChar = Math.floor((this.width - xOffset) / asciiWidth);
-    const firstLine = Math.floor(this.y / lineHeight);
-    const lastLine = Math.floor((this.y + this.height) / lineHeight);
-
-    this.lineCache.computeMissing(firstLine, lastLine);
+    const { lineStart, lineEnd, charStart, charEnd } = this.getViewport();
+    this.lineCache.computeMissing(lineStart, lineEnd);
 
     const getLineData = (i: number) => ({
       y: (lineHeight * i) - this.y,
@@ -266,7 +261,7 @@ export default class CanvasView implements View {
     });
 
     // First pass, for drawing background selections and search highlights.
-    for (let i = firstLine; i <= lastLine; ++i) {
+    for (let i = lineStart; i <= lineEnd; ++i) {
       const { line, y } = getLineData(i);
       if (!line || !line.containsReservedStyle()) { continue; }
 
@@ -299,7 +294,7 @@ export default class CanvasView implements View {
 
     // Second pass, for actually rendering text.
     this.ctx.save();
-    for (let i = firstLine; i <= lastLine; ++i) {
+    for (let i = lineStart; i <= lineEnd; ++i) {
       const { line, y } = getLineData(i);
       if (!line) { continue; }
 
@@ -323,14 +318,14 @@ export default class CanvasView implements View {
       const textY = y + baseline;
       for (let i = 0; i < line.styles.length; ++i) {
         const { style, range: { start, length } } = line.styles[i];
-        if (style.isReservedStyle() || start + length < firstChar) { continue; }
-        if (start > lastChar) { break; }
+        if (style.isReservedStyle() || start + length < charStart) { continue; }
+        if (start > charEnd) { break; }
 
         this.ctx.fillStyle = style.fg;
         this.ctx.font = style.fontString(this.metrics);
 
-        const a = line.chTo16Indices[Math.max(firstChar, start)];
-        const b = line.chTo16Indices[Math.min(lastChar, start + length)];
+        const a = line.chTo16Indices[Math.max(charStart, start)];
+        const b = line.chTo16Indices[Math.min(charEnd, start + length)];
         const textX = this.metrics.textWidth(line.text.substring(0, a)) + xOffset;
 
         const text = line.text.substring(a, b);
@@ -354,7 +349,7 @@ export default class CanvasView implements View {
 
     // Third pass, draw the gutter.
     this.ctx.fillStyle = '#5a5a5a';
-    for (let i = firstLine; i <= lastLine; ++i) {
+    for (let i = lineStart; i <= lineEnd; ++i) {
       const { line, y } = getLineData(i);
       if (!line) { continue; }
 
