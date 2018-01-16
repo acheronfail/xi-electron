@@ -1,0 +1,3 @@
+[submodule "xi-editor"]
+	path = xi-editor
+	url = git@github.com:google/xi-editor.git
