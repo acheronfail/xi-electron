@@ -10,7 +10,7 @@ export default class DOMView implements View {
   render() {/**/}
   resize(_width: number, _height: number) {/**/}
   scrollTo(line: number, char: number): void {/**/}
-  posFromCoords(x: number, y: number, _forRect: boolean): [number, number] { return [0, 0]; }
+  posFromCoords(x: number, y: number): [number, number] { return [0, 0]; }
   getViewport(): Viewport { return { lineStart: 0, lineEnd: 0, charStart: 0, charEnd: 0 }; }
 }
 

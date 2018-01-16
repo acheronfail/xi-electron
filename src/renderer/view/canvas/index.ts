@@ -1,4 +1,4 @@
-import { elt, on } from '../../../utils/dom';
+import { elt, on, off } from '../../../utils/dom';
 import { clamp, nDigits } from '../../../utils/misc';
 import { COLORS } from '../../style-map';
 
@@ -161,30 +161,35 @@ export default class CanvasView implements View {
    * Returns a [line, char] from the given coordinates.
    * @param  {Number}  x       The x coordinate (relative to the view).
    * @param  {Number}  y       The y coordinate (relative to the view).
-   * @param  {Boolean} forRect Whether the click was using rectangular selections.
    * @return {Array}           A [line, char] object of the coordinates at the point.
    */
-  public posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
-    const asciiWidth = this.metrics.asciiWidth();
-    const lineHeight = this.metrics.lineHeight();
-
+  public posFromCoords(x: number, y: number): [number, number] {
     // FIXME: ratio!?
+    const lineHeight = this.metrics.lineHeight();
     const lineNo = Math.round(((y + (this.y * this.scale)) - (lineHeight / 2)) / lineHeight);
-
-    // FIXME: BAD: this is a VERY quick and dirty approach - bad time complexity - should use a
-    // binary search (and should also cache character positions/widths so that is plausible).
     const line = this.lineCache.get(lineNo);
-    if (!line) { return [0, 0]; } // TODO: handle no line? will that ever happen here?
-
-    const xOffset = this.x - this.gutterWidth;
-    for (let last = 0, i = 1; i < line.text.length; ++i) {
-      const width = this.metrics.textWidth(line.text.substring(0, i)) - xOffset;
-      if (last < x && x < width) {
-        return [lineNo, line.chTo8Indices[i - 1]];
-      }
-      last = width;
+    if (!line) {
+      throw new Error(`Failed to find line at [x, y]: [${x}, ${y}]`);
     }
 
+    // Account for horizontal scroll and gutter.
+    x += this.x - this.gutterWidth;
+
+    // Search from left to right (computing character widths as we go) and find the `x` position.
+    // There are better ways to do this (caching character positions in each line, having a B-Tree
+    // structure (see CodeMirror), etc) but we'll wait and see if xi-core handles these cases before
+    // spending too much time implementing an optimisation that may be overruled by xi-core.
+    let left = 0, pos = 0;
+    for (const ch of line.text) {
+      const charWidth = this.metrics.textWidth(ch);
+      if (left < x && x < (left + charWidth)) {
+        return [lineNo, line.chTo8Indices[pos]];
+      }
+      left += charWidth;
+      pos += 1;
+    }
+
+    // Position wasn't found, return the last character position in the line.
     return [lineNo, line.chTo8Indices[line.chTo8Indices.length - 1]];
   }
 

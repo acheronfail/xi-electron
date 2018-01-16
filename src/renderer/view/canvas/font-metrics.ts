@@ -25,13 +25,14 @@ export default class FontMetrics extends EventEmitter {
   // Cached value for baseline.
   private cachedBaseline: number;
 
-  private cachedWidths: { [char: string]: number } = {};
-
   // Cached value for character width.
   private cachedAsciiWidth: number;
 
   // Cached value for line height.
   private cachedLineHeight: number;
+
+  private cachedWidths: { [char: string]: number } = {};
+  private ctx: CanvasRenderingContext2D;
 
   /**
    * Create a FontMetrics instance.
@@ -45,6 +46,15 @@ export default class FontMetrics extends EventEmitter {
     this.measure.style.position = 'absolute';
     this.measure.style.whiteSpace = 'nowrap';
     this.measure.style.visibility = 'hidden';
+
+    const canvas = (<HTMLCanvasElement>elt('canvas'));
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      this.ctx = ctx;
+      this.ctx.font = this.fontString();
+    } else {
+      throw new Error('Could not get CanvasRenderingContext2D');
+    }
 
     this.update(opts);
   }
@@ -61,7 +71,15 @@ export default class FontMetrics extends EventEmitter {
     if (opts.family) { this.familyValue = opts.family; }
     if (opts.size) { this.sizeValue = opts.size; }
 
-    this.measure.style.font = `${this.sizeValue}px ${this.familyValue}`;
+    const fontString = this.fontString();
+    this.ctx.font = this.measure.style.font = fontString;
+
+    // Purge cached values which are now inaccurate.
+    this.cachedWidths = {};
+    if (this.cachedBaseline != null) { this.baseline(true); }
+    if (this.cachedAsciiWidth != null) { this.asciiWidth(true); }
+    if (this.cachedLineHeight != null) { this.lineHeight(true); }
+
     this.emit('update');
   }
 
@@ -151,15 +169,12 @@ export default class FontMetrics extends EventEmitter {
     return this.cachedBaseline = span.offsetTop + span.offsetHeight;
   }
 
+  // TODO: support different styles
   public computeTextWidth(char: string) {
-    const canvas = (<HTMLCanvasElement>elt('canvas'));
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.font = this.fontString();
-      return ctx.measureText(char).width;
-    }
-
-    return this.cachedAsciiWidth;
+    if (this.cachedWidths[char] != null) { return this.cachedWidths[char]; }
+    const width = this.ctx.measureText(char).width;
+    this.cachedWidths[char] = width;
+    return width;
   }
 
   /**

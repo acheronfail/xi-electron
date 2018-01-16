@@ -58,7 +58,7 @@ export interface View {
   // Scrolls the view to the given `line, char` position.
   scrollTo(line: number, char: number): void;
   // Return the `line, char` at the given `x, y` coordinate.
-  posFromCoords(x: number, y: number, _forect: boolean): [number, number];
+  posFromCoords(x: number, y: number): [number, number];
   // Get details of the visible lines in the current viewport.
   getViewport(): Viewport;
 }
