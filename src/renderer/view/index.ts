@@ -63,6 +63,10 @@ export interface View {
   getViewport(): Viewport;
 }
 
+export interface FontMetrics {
+  fontString(): string;
+}
+
 /**
  * Creates and returns a View of the given type.
  * @param  {ViewType} type             The view type.
@@ -70,6 +74,7 @@ export interface View {
  * @param  {Object} opts               Configuration options for the view.
  * @return {View}                      The newly created view.
  */
-export function createView(type: ViewType, controller: ViewController, opts: ViewOptions): View {
-  return new (Views[type])(controller, opts);
+export function createView(controller: ViewController, opts: ViewOptions): View {
+  const View = Views[opts.type];
+  return new View(controller, opts);
 }

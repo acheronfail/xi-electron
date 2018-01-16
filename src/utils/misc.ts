@@ -1,5 +1,3 @@
-import * as UTFString from 'utfstring';
-
 export function clamp(value: number, min: number, max: number): number {
   if (min > max) { throw new Error('min > max!'); }
   if (value < min) { return min; }
@@ -26,14 +24,3 @@ export const colorFromARBG = (argb: number) => {
   const b = argb & 0xff;
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
-
-const utf8OffsetToUTF16 = (str: string, index: number): number => {
-  debugger;
-  return UTFString.findByteIndex(str, index);
-};
-window.utf8OffsetToUTF16 = utf8OffsetToUTF16;
-
-let s = '# abc你好吗？';
-console.log(UTFString.length(s));
-// for (let i = 0; i < 10; ++i) console.log(utf8OffsetToUTF16(s, i), s[i]);
-// console.log(s.length);

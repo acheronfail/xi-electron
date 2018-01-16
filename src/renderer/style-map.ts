@@ -1,4 +1,4 @@
-import FontMetrics from './view/font-metrics';
+import { FontMetrics } from './view';
 import { DEVMODE } from '../utils/environment';
 import { colorFromARBG } from '../utils/misc';
 
@@ -38,9 +38,9 @@ export class Style {
  * The styles for the editor - xi-core reserves numbers below `N_RESERVED_STYLES` for selection
  * and highlights, etc.
  */
-export const N_RESERVED_STYLES = 2;
 export const STYLE_SELECTION = 0;
 export const STYLE_HIGHLIGHT = 1;
+export const N_RESERVED_STYLES = 2;
 export const DefinedStyles: Style[] = [
   new Style(STYLE_SELECTION, '', 'rgba(135, 135, 135, 0.25)'),
   new Style(STYLE_HIGHLIGHT, '', 'rgba(255, 215, 0, 0.5)'),
@@ -66,20 +66,20 @@ export const defineStyle = (params: any) => {
 export class StyleSpan {
 
   /**
-   * Given a line of text and an array of style values, generate an array of
-   * StyleSpans.
-   *   See https://github.com/google/xi-editor/blob/protocol_doc/doc/update.md
-   * @param  {Array}  raw  Array (sorted in 3-length-tuples) of spans.
-   * @param  {String} text The text of the line.
-   * @return {Array}       Generated StyleSpan array.
+   * Create an array of StyleSpans with offset mappings from the parent Line class. The core sends
+   * us these offsets as utf8 so we need to convert to character positions in order to more easily
+   * render the text. See https://github.com/google/xi-editor/blob/protocol_doc/doc/update.md
+   * @param utf8ToChIndices Sparse array mapping utf8 to character position indices
+   * @param utf8Styles Raw utf8 offsets from xi-core
+   * @param charLength Amount of characters in the given line of text
    */
-  static stylesFromRaw(utf8ToChIndices: number[], utf8Styles: number[], charLength: number): StyleSpan[] {
+  static stylesFromCore(utf8ToChIndices: number[], utf8Styles: number[], charLength: number): StyleSpan[] {
     const styles = [];
 
-    // Current position in the line.
+    // Current character position and utf8 offset in the line.
     let pos = 0, pos8 = 0;
 
-    // Create a blank span for any unstyled text at the start of the line.
+    // Create a blank span for any unstyled characters at the start of the line.
     if (utf8Styles.length) {
       const firstStylePos = utf8ToChIndices[utf8Styles[0]];
       if (firstStylePos > pos) {
@@ -106,7 +106,7 @@ export class StyleSpan {
       pos = end;
     }
 
-    // Create a blank span for any unstyled text at the end of the line.
+    // Create a blank span for any unstyled characters at the end of the line.
     if (pos < charLength) {
       styles.push(new StyleSpan(new Range(pos, charLength - pos)));
     }
@@ -119,7 +119,7 @@ export class StyleSpan {
    * @param  {Range}           range The range of the StyleSpan.
    * @param  {StyleIdentifier} style The style's type or identifier.
    */
-  constructor(public range: Range, public style: Style = DefinedStyles[-1]) {}
+  constructor(public range: Range, public style: Style = DefinedStyles[-1]) { }
 }
 
 /**

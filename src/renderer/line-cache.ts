@@ -1,25 +1,36 @@
-import { StyleSpan, N_RESERVED_STYLES } from './style-map';
+import { StyleSpan } from './style-map';
 import EventEmitter from '../utils/emitter';
-import { CoreMethod } from './types/core';
 
 /**
  * Represents a single line, including rendering information.
  */
 export class Line {
 
+  // The cursor(s) that are on the current line (as character positions).
   public cursors: number[] = [];
+
+  // A list of StyleSpans for the current line.
   public styles: StyleSpan[] = [];
 
+  // Mappings of utf8 offsets to character position offsets (for interfacing with xi-core).
   public utf8ToChIndices: number[] = [];
   public chTo8Indices: number[] = [];
 
+  // Mappings of utf16 offsets to character position offsets (JavaScript uses utf16 under the hood
+  // so we need to know these offsets for rendering).
   public utf16ToChIndices: number[] = [];
   public chTo16Indices: number[] = [];
 
+  /**
+   * Create a new line - we need to convert the utf8 offsets we receive from xi-core here as well.
+   * @param text The line text
+   * @param utf8Styles The style-triplets from xi-core (as utf8 offsets)
+   * @param cursors The positions of the cursors (also utf8 offsets)
+   */
   constructor(public text: string, utf8Styles: number[], cursors: number[]) {
     let pos = 0, pos8 = 0, pos16 = 0;
     for (const ch of text) {
-      let codePoint = (<number>ch.codePointAt(0));
+      const codePoint = (<number>ch.codePointAt(0));
 
       this.utf8ToChIndices[pos8] = pos;
       this.chTo8Indices.push(pos8);
@@ -32,14 +43,16 @@ export class Line {
       } else if (codePoint < 0x110000) {
         pos8 += 4;
       } else {
-        throw new Error('Char cannot be represented in JS (replace?)');
+        // TODO: replace char with \uFFFD (unicode replacement character) - that way we don't need
+        // to throw here
+        throw new Error('Char cannot be represented in JS.');
       }
 
       this.utf16ToChIndices[pos16] = pos;
       this.chTo16Indices.push(pos16);
       pos16 += ch.length;
 
-      pos++;
+      pos += 1;
     }
 
     this.utf8ToChIndices[pos8] = pos;
@@ -47,8 +60,8 @@ export class Line {
     this.utf16ToChIndices[pos16] = pos;
     this.chTo16Indices.push(pos16);
 
-    this.cursors = cursors.map(x => this.utf8ToChIndices[x]);
-    this.styles = StyleSpan.stylesFromRaw(this.utf8ToChIndices, utf8Styles, pos);
+    this.cursors = cursors.map((x) => this.utf8ToChIndices[x]);
+    this.styles = StyleSpan.stylesFromCore(this.utf8ToChIndices, utf8Styles, pos);
   }
 
   /**
@@ -71,7 +84,7 @@ export class Line {
   public static updateFromJSON(data: { cursor: number[], styles: StyleSpan[] }, line?: Line, ): Line | null {
     const { cursor, styles } = data;
     if (!line) { return null; }
-    if (cursor) { line.cursor = cursor; }
+    if (cursor) { line.cursors = cursor; }
     if (styles) { line.styles = styles; }
     return line;
   }
@@ -81,7 +94,7 @@ export class Line {
    * @return {Boolean} Whether or not it does contain a cursor.
    */
   containsCursor(): boolean {
-    return this.cursor.length > 0;
+    return this.cursors.length > 0;
   }
 
   /**
@@ -93,12 +106,10 @@ export class Line {
   }
 
   toJSON(): { cursor: number[], styles: StyleSpan[] } {
-    const { cursor, styles } = this;
-    return { cursor, styles };
+    const { cursors, styles } = this;
+    return { cursor: cursors, styles };
   }
 }
-
-window.line = Line;
 
 /**
  * Keeps a "window" (or cache) of a view which is inside xi-core.

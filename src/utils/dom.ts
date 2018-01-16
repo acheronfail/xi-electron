@@ -45,6 +45,12 @@ export function removeChildren(el: HTMLElement): HTMLElement {
   return el;
 }
 
-export function removeChildrenAndAdd(parent: HTMLElement, el: HTMLElement): HTMLElement {
-  return removeChildren(parent).appendChild(el);
+export function removeChildrenAndAdd(parent: HTMLElement, el: HTMLElement | HTMLElement[]): HTMLElement {
+  if (Array.isArray(el)) {
+    removeChildren(parent);
+    el.forEach((e) => parent.appendChild(e));
+    return parent;
+  } else {
+    return removeChildren(parent).appendChild(el);
+  }
 }

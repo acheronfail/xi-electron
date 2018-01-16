@@ -59,7 +59,7 @@ export default class Workspace {
 
     // Create View objects whenever xi-core creates a view.
     this.core.on(CoreMethod.NEW_VIEW, (proxy: ViewProxy) => {
-      this.controllers.push(new ViewController(this.wrapper, proxy, opts.viewOptions));
+      this.controllers.push(new ViewController(this, proxy, opts.viewOptions));
     });
 
     // Initially create just one view.

@@ -1,5 +1,5 @@
-import { elt, removeChildrenAndAdd } from '../../utils/dom';
-import EventEmitter from '../../utils/emitter';
+import { elt, removeChildrenAndAdd, removeChildren } from '../../../utils/dom';
+import EventEmitter from '../../../utils/emitter';
 
 export type FontOptions = {
   family?: string,
@@ -25,8 +25,10 @@ export default class FontMetrics extends EventEmitter {
   // Cached value for baseline.
   private cachedBaseline: number;
 
+  private cachedWidths: { [char: string]: number } = {};
+
   // Cached value for character width.
-  private cachedCharWidth: number;
+  private cachedAsciiWidth: number;
 
   // Cached value for line height.
   private cachedLineHeight: number;
@@ -60,11 +62,6 @@ export default class FontMetrics extends EventEmitter {
     if (opts.size) { this.sizeValue = opts.size; }
 
     this.measure.style.font = `${this.sizeValue}px ${this.familyValue}`;
-
-    this.computeBaseline();
-    this.computeCharWidth();
-    this.computeLineHeight();
-
     this.emit('update');
   }
 
@@ -73,19 +70,30 @@ export default class FontMetrics extends EventEmitter {
    * @param  {Boolean} force Whether to force a recalculation.
    * @return {Number}        The font's baseline (in pixels).
    */
-  public baseline(force: boolean = false) {
+  public baseline(force: boolean = false): number {
     if (!force && this.cachedBaseline != null) { return this.cachedBaseline; }
     return this.computeBaseline();
   }
 
   /**
-   * Get the width of a (monospace) character.
+   * Get the width of the given character.
+   * @param  {String}  char  The desired char.
    * @param  {Boolean} force Whether to force a recalculation.
    * @return {Number}        The character width (in pixels).
    */
-  public charWidth(force: boolean = false) {
-    if (!force && this.cachedCharWidth != null) { return this.cachedCharWidth; }
-    return this.computeCharWidth();
+  public textWidth(char: string, force: boolean = false): number {
+    if (!force && this.cachedWidths[char] != null) { return this.cachedWidths[char]; }
+    return this.computeTextWidth(char);
+  }
+
+  /**
+   * Get the width of a (monospace) ascii character.
+   * @param  {Boolean} force Whether to force a recalculation.
+   * @return {Number}        The character width (in pixels).
+   */
+  public asciiWidth(force: boolean = false): number {
+    if (!force && this.cachedAsciiWidth != null) { return this.cachedAsciiWidth; }
+    return this.computeAsciiWidth();
   }
 
   /**
@@ -93,7 +101,7 @@ export default class FontMetrics extends EventEmitter {
    * @param  {Boolean} force Whether to force a recalculation.
    * @return {Number}        The line height (in pixels).
    */
-  public lineHeight(force: boolean = false) {
+  public lineHeight(force: boolean = false): number {
     if (!force && this.cachedLineHeight != null) { return this.cachedLineHeight; }
     return this.computeLineHeight();
   }
@@ -103,7 +111,7 @@ export default class FontMetrics extends EventEmitter {
    * https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font
    * @return {String} A CSS font value of the given font.
    */
-  public fontString() {
+  public fontString(): string {
     return `${this.sizeValue}px ${this.familyValue}`;
   }
 
@@ -111,7 +119,7 @@ export default class FontMetrics extends EventEmitter {
    * Get the current font family.
    * @return {String} The font family.
    */
-  public family() {
+  public family(): string {
     return this.familyValue;
   }
 
@@ -143,11 +151,22 @@ export default class FontMetrics extends EventEmitter {
     return this.cachedBaseline = span.offsetTop + span.offsetHeight;
   }
 
+  public computeTextWidth(char: string) {
+    const canvas = (<HTMLCanvasElement>elt('canvas'));
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.font = this.fontString();
+      return ctx.measureText(char).width;
+    }
+
+    return this.cachedAsciiWidth;
+  }
+
   /**
    * Calculate the character width of a given font.
    * @return {Number} Value in pixels.
    */
-  private computeCharWidth() {
+  private computeAsciiWidth() {
     const anchor = elt('span', 'x'.repeat(10));
     const pre = elt('pre', [anchor]);
 
@@ -156,7 +175,7 @@ export default class FontMetrics extends EventEmitter {
     const rect = anchor.getBoundingClientRect(),
           width = (rect.right - rect.left) / 10;
 
-    if (width > 2) { this.cachedCharWidth = width; }
+    if (width > 2) { this.cachedAsciiWidth = width; }
     return width || 10;
   }
 
@@ -177,5 +196,22 @@ export default class FontMetrics extends EventEmitter {
     const height = pre.offsetHeight / 50;
     if (height > 3) { this.cachedLineHeight = height; }
     return height || 1;
+  }
+
+  private computeTextHeight() {
+    const span = elt('span', 'Hg', null, `font-family: ${this.familyValue}`);
+    const div = elt('div', null, null, 'display: inline-block; width: 1px; height: 0');
+
+    removeChildrenAndAdd(this.measure, [span, div]);
+    const result = { ascent: 0, descent: 0, height: 0 };
+
+    div.style.verticalAlign = 'baseline';
+    result.ascent = div.getBoundingClientRect().top - span.getBoundingClientRect().top;
+
+    div.style.verticalAlign = 'bottom';
+    result.height = div.getBoundingClientRect().top - span.getBoundingClientRect().top;
+
+    result.descent = result.height - result.ascent;
+    return result;
   }
 }

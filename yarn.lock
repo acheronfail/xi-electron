@@ -5622,10 +5622,6 @@ utf8-byte-length@^1.0.1:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/utf8-byte-length/-/utf8-byte-length-1.0.4.tgz#f45f150c4c66eee968186505ab93fcbb8ad6bf61"
 
-utfstring@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/utfstring/-/utfstring-2.0.0.tgz#b331f7351e9be1c46334cc7518826cda3b44242a"
-
 util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"

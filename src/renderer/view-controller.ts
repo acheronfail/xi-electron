@@ -1,5 +1,5 @@
 import { elt, on } from '../utils/dom';
-import FontMetrics from './view/font-metrics';
+import Workspace from './workspace';
 import LineCache from './line-cache';
 import { createView } from './view';
 
@@ -18,9 +18,6 @@ export default class ViewController {
   // Line cache of the view inside xi-core.
   public lineCache: LineCache;
 
-  // FontMetrics.
-  public metrics: FontMetrics;
-
   // Actual view which manages drawing of the editor.
   private view: View;
 
@@ -33,8 +30,8 @@ export default class ViewController {
    * @param {ViewProxy}   proxy This ViewController's ViewProxy.
    * @param {[type]}      opts  Configuration options.
    */
-  constructor(place: HTMLElement, private proxy: ViewProxy, opts: ViewOptions) {
-    this.wrapper = place.appendChild(elt('div', null, 'xi-view', 'height: 100%; width: 100%'));
+  constructor(private workspace: Workspace, private proxy: ViewProxy, opts: ViewOptions) {
+    this.wrapper = workspace.wrapper.appendChild(elt('div', null, 'xi-view', 'height: 100%; width: 100%'));
     this.wrapper.style.border = '1px solid #000';
     this.wrapper.style.overflow = 'hidden';
     this.wrapper.tabIndex = 0;
@@ -45,12 +42,7 @@ export default class ViewController {
 
     this.lineCache = new LineCache();
 
-    this.metrics = new FontMetrics(this.wrapper, {
-      family: 'monospace',
-      size: 20
-    });
-
-    this.view = createView(opts.type, this, opts);
+    this.view = createView(this, opts);
 
     // Listen for resizes to the element with the new ResizeObserver feature.
     // TODO: add typings for ResizeObserver API.
