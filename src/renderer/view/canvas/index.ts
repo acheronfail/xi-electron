@@ -326,34 +326,32 @@ export default class CanvasView implements View {
     }
     this.ctx.restore();
 
-    if (!this.drawGutter) { return; }
+    if (this.drawGutter) {
+      // Draw gutter background and vertical separator.
+      this.ctx.fillStyle = '#242424';
+      this.ctx.fillRect(0, 0, gutterWidth, this.height);
+      this.ctx.strokeStyle = '#5a5a5a';
+      this.ctx.beginPath();
+      this.ctx.moveTo(gutterWidth, 0);
+      this.ctx.lineTo(gutterWidth, this.height);
+      this.ctx.stroke();
 
-    // Draw gutter background and vertical separator.
-    this.ctx.fillStyle = '#242424';
-    this.ctx.fillRect(0, 0, gutterWidth, this.height);
-    this.ctx.strokeStyle = '#5a5a5a';
-    this.ctx.beginPath();
-    this.ctx.moveTo(gutterWidth, 0);
-    this.ctx.lineTo(gutterWidth, this.height);
-    this.ctx.stroke();
+      // Third pass, draw the gutter.
+      this.ctx.fillStyle = '#5a5a5a';
+      for (let i = lineStart; i <= lineEnd; ++i) {
+        const { line, y } = getLineData(i);
+        if (!line) { continue; }
 
-    // Third pass, draw the gutter.
-    this.ctx.fillStyle = '#5a5a5a';
-    for (let i = lineStart; i <= lineEnd; ++i) {
-      const { line, y } = getLineData(i);
-      if (!line) { continue; }
-
-      // Right-align gutter text.
-      let text = `${i + 1}`;
-      text = ' '.repeat(this.gutterChars - text.length) + text;
-      this.ctx.fillText(text, gutterPadding[0] / 2, y + baseline);
+        // Right-align gutter text by prepending whitespace.
+        const text = `${i + 1}`.padStart(this.gutterChars, ' ');
+        this.ctx.fillText(text, gutterPadding[0] / 2, y + baseline);
+      }
     }
   }
 }
 
 /**
  * TODO:
- *  - perform line width searching/indexing with better time complexity
  *  - implement blinking cursors
  *  - find a better way to get the longest line in editor
  *  - invalidate parts of the canvas, to decrease load
