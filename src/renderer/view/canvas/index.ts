@@ -115,9 +115,9 @@ export default class CanvasView implements View {
   private scrollCanvas(event: MouseWheelEvent) {
     let { deltaX, deltaY } = event;
     const { charStart, charEnd, lineStart, lineEnd } = this.getViewport();
+
     // TODO: how to get max width? currently this is a bit of a hack with `this.nChars`...
     const nChars = this.nChars + (charStart - charEnd);
-
     let nLines;
     if (this.scrollPastEnd) {
       nLines = this.lineCache.height();
@@ -128,10 +128,8 @@ export default class CanvasView implements View {
     const asciiWidth = this.metrics.asciiWidth();
     const lineHeight = this.metrics.lineHeight();
 
-    // FIXME: the value of deltaY are relative to the browsers dpi - ie, the devicePixelRatio
-    // so, that's the reason it's out of whack below...
     this.x = clamp(this.x + deltaX, 0, Math.max(nChars * asciiWidth, 0));
-    this.y = clamp(this.y + deltaY, 0, Math.max(((nLines - 1) * lineHeight) / 2, 0));
+    this.y = clamp(this.y + deltaY, 0, Math.max((nLines - 1) * lineHeight, 0));
 
     // Send scroll event to inform xi-core of our current viewport.
     this.controller.updateViewport();
@@ -150,10 +148,10 @@ export default class CanvasView implements View {
     this.canvas.height = height * this.scale;
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    this.ctx.scale(this.scale, this.scale);
+     this.ctx.scale(this.scale, this.scale);
 
-    this.width = this.canvas.width / this.scale;
-    this.height = this.canvas.height / this.scale;
+    this.width = width;
+    this.height = height;
     this.render();
   }
 
@@ -164,9 +162,8 @@ export default class CanvasView implements View {
    * @return {Array}           A [line, char] object of the coordinates at the point.
    */
   public posFromCoords(x: number, y: number): [number, number] {
-    // FIXME: ratio!?
     const lineHeight = this.metrics.lineHeight();
-    const lineNo = Math.round(((y + (this.y * this.scale)) - (lineHeight / 2)) / lineHeight);
+    const lineNo = Math.round(((y + this.y) - (lineHeight / 2)) / lineHeight);
     const line = this.lineCache.get(lineNo);
     if (!line) {
       throw new Error(`Failed to find line at [x, y]: [${x}, ${y}]`);
@@ -206,12 +203,10 @@ export default class CanvasView implements View {
     const linePos = lineHeight * line;
     const charPos = asciiWidth * char;
 
-    // FIXME: TODO: WHAT: why is it that `this.scale` applies only for `y` values?
-
-    if (linePos < (this.y * this.scale)) {  // FIXME: ratio!
-      this.y = linePos / this.scale;  // FIXME: ratio!
-    } else if (linePos > (this.y * this.scale) + this.height - lineHeight) { // FIXME: ratio!
-      this.y = (linePos - this.height + lineHeight) / this.scale; // FIXME: ratio!
+    if (linePos < this.y) {
+      this.y = linePos;
+    } else if (linePos > this.y + this.height - lineHeight) {
+      this.y = linePos - this.height + lineHeight;
     }
 
     if (charPos < this.x) {
@@ -230,11 +225,12 @@ export default class CanvasView implements View {
   public getViewport(): Viewport {
     const asciiWidth = this.metrics.asciiWidth();
     const lineHeight = this.metrics.lineHeight();
+    const xOffset = this.gutterWidth - this.editorPadding[0];
     return {
-      lineStart: Math.floor((this.y * this.scale) / lineHeight),
-      lineEnd: Math.floor((this.height + (this.y * this.scale)) / lineHeight),
-      charStart: Math.floor((this.x * this.scale) / asciiWidth),
-      charEnd: Math.floor((this.width - this.gutterWidth + (this.x * this.scale)) / asciiWidth),
+      lineStart: Math.floor(this.y / lineHeight),
+      lineEnd: Math.floor((this.height + this.y) / lineHeight),
+      charStart: Math.floor(this.x / asciiWidth),
+      charEnd: Math.floor((this.width + this.x - xOffset) / asciiWidth),
     };
   }
 
@@ -249,7 +245,7 @@ export default class CanvasView implements View {
     const xOffset = gutterWidth + editorPadding[0] - this.x;
 
     // Reset canvas.
-    // TODO: at some stage in the future we should employ a tiling approach. Only draw tiles, cache
+    // TODO: at some stage in the future we could employ a tiling approach. Only draw tiles, cache
     // their contents, and invalidate/redraw them only when necessary. This way we only redraw what's
     // necessary rather than triggering a redraw each and every render.
     this.ctx.font = this.metrics.fontString();
@@ -258,15 +254,15 @@ export default class CanvasView implements View {
 
     // Get lines to draw and screen coords.
     const firstChar = Math.floor(this.x / asciiWidth);
-    const lastChar = Math.ceil((this.width - xOffset) / asciiWidth);
+    const lastChar = Math.floor((this.width - xOffset) / asciiWidth);
     const firstLine = Math.floor(this.y / lineHeight);
-    const lastLine = Math.ceil((this.y + this.height) / lineHeight);
+    const lastLine = Math.floor((this.y + this.height) / lineHeight);
 
     this.lineCache.computeMissing(firstLine, lastLine);
 
     const getLineData = (i: number) => ({
-      y: (lineHeight * i) - (this.y % lineHeight) - this.y,
-      line: this.lineCache.get(firstLine + i)
+      y: (lineHeight * i) - this.y,
+      line: this.lineCache.get(i)
     });
 
     // First pass, for drawing background selections and search highlights.
@@ -363,7 +359,7 @@ export default class CanvasView implements View {
       if (!line) { continue; }
 
       // Right-align gutter text.
-      let text = `${firstLine + i + 1}`;
+      let text = `${i + 1}`;
       text = ' '.repeat(this.gutterChars - text.length) + text;
       this.ctx.fillText(text, gutterPadding[0] / 2, y + baseline);
     }
@@ -376,7 +372,6 @@ export default class CanvasView implements View {
  *  - implement blinking cursors
  *  - find a better way to get the longest line in editor
  *  - invalidate parts of the canvas, to decrease load
- *  - simplify calculations with `this.scale`
- *    - introduce custom dpi scaling? (https://github.com/niklasvh/html2canvas/pull/1087/files)
+ *  - introduce custom dpi scaling? (https://github.com/niklasvh/html2canvas/pull/1087/files)
  *  - when `metrics` are updated, get current scrollTo pos then `scrollTo` and `render`
  */
