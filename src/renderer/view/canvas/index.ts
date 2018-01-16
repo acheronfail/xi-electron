@@ -1,10 +1,10 @@
 import { elt, on, off } from '../../../utils/dom';
 import { clamp, nDigits } from '../../../utils/misc';
-import { COLORS } from '../../style-map';
+import { COLORS, StyleSpan } from '../../style-map';
 
 import { View, ViewOptions, Viewport } from '../index';
 import ViewController from '../../view-controller';
-import LineCache from '../../line-cache';
+import LineCache, { Line } from '../../line-cache';
 import FontMetrics from './font-metrics';
 
 export default class CanvasView implements View {
@@ -178,7 +178,7 @@ export default class CanvasView implements View {
     // spending too much time implementing an optimisation that may be overruled by xi-core.
     let left = 0, pos = 0;
     for (const ch of line.text) {
-      const charWidth = this.metrics.textWidth(ch);
+      const charWidth = this.metrics.charWidth(ch);
       if (left < x && x < (left + charWidth)) {
         return [lineNo, line.chTo8Indices[pos]];
       }
@@ -239,7 +239,6 @@ export default class CanvasView implements View {
    */
   public render() {
     const baseline = this.metrics.baseline();
-    const asciiWidth = this.metrics.asciiWidth();
     const lineHeight = this.metrics.lineHeight();
     const { editorPadding, gutterPadding, gutterWidth } = this;
     const xOffset = gutterWidth + editorPadding[0] - this.x;
@@ -265,31 +264,22 @@ export default class CanvasView implements View {
       const { line, y } = getLineData(i);
       if (!line || !line.containsReservedStyle()) { continue; }
 
-      // Draw selection(s).
-      const selections = line.styles.filter((span) => span.style.isSelection());
-      if (selections.length) {
-        this.ctx.fillStyle = selections[0].style.bg;
-        selections.forEach(({ range: { start, length } }) => {
-          const a = line.chTo16Indices[start];
-          const b = line.chTo16Indices[start + length];
-          const beforeTextWidth = this.metrics.textWidth(line.text.substring(0, a));
-          const textWidth = this.metrics.textWidth(line.text.substring(a, b));
-          this.ctx.fillRect(beforeTextWidth + xOffset, y, textWidth, lineHeight);
-        });
-      }
+      // Draw selection(s) and highlight(s).
+      const renderBlock = (styleSpans: StyleSpan[]) => {
+        if (styleSpans.length) {
+          this.ctx.fillStyle = styleSpans[0].style.bg;
+          styleSpans.forEach(({ range: { start, length } }) => {
+            const a = line.chTo16Indices[start];
+            const b = line.chTo16Indices[start + length];
+            const beforeTextWidth = this.metrics.stringWidth(line.text.substring(0, a));
+            const textWidth = this.metrics.stringWidth(line.text.substring(a, b));
+            this.ctx.fillRect(beforeTextWidth + xOffset, y, textWidth, lineHeight);
+          });
+        }
+      };
 
-      // Draw highlight(s).
-      const highlights = line.styles.filter((span) => span.style.isHighlight());
-      if (highlights.length) {
-        this.ctx.fillStyle = highlights[0].style.bg;
-        highlights.forEach(({ range: { start, length } }) => {
-          const a = line.chTo16Indices[start];
-          const b = line.chTo16Indices[start + length];
-          const beforeTextWidth = this.metrics.textWidth(line.text.substring(0, a));
-          const textWidth = this.metrics.textWidth(line.text.substring(a, b));
-          this.ctx.fillRect(beforeTextWidth + xOffset, y, textWidth, lineHeight);
-        });
-      }
+      renderBlock(line.styles.filter((span) => span.style.isSelection()));
+      renderBlock(line.styles.filter((span) => span.style.isHighlight()));
     }
 
     // Second pass, for actually rendering text.
@@ -308,7 +298,7 @@ export default class CanvasView implements View {
       //      - have another transparent canvas on top for selections/highlights/cursors? *
       this.ctx.fillStyle = COLORS.CURSOR;
       line.cursors.forEach((ch) => {
-        const textWidth = this.metrics.textWidth(line.text.substring(0, line.chTo16Indices[ch]));
+        const textWidth = this.metrics.stringWidth(line.text.substring(0, line.chTo16Indices[ch]));
         this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
       });
 
@@ -326,7 +316,7 @@ export default class CanvasView implements View {
 
         const a = line.chTo16Indices[Math.max(charStart, start)];
         const b = line.chTo16Indices[Math.min(charEnd, start + length)];
-        const textX = this.metrics.textWidth(line.text.substring(0, a)) + xOffset;
+        const textX = this.metrics.stringWidth(line.text.substring(0, a)) + xOffset;
 
         const text = line.text.substring(a, b);
         if (text.length > 0) {

@@ -99,9 +99,23 @@ export default class FontMetrics extends EventEmitter {
    * @param  {Boolean} force Whether to force a recalculation.
    * @return {Number}        The character width (in pixels).
    */
-  public textWidth(char: string, force: boolean = false): number {
+  public charWidth(char: string, force: boolean = false): number {
+    if (char.length > 1) { throw new Error('Cannot pass a multi-character string to `charWidth`!'); }
     if (!force && this.cachedWidths[char] != null) { return this.cachedWidths[char]; }
-    return this.computeTextWidth(char);
+    return this.computeCharWidth(char);
+  }
+
+  /**
+   * Calculate the width of the given string - reading character widths from the cache.
+   * @param {String} str The string to measure.
+   * @return {Number}    The string's width (in pixels).
+   */
+  public stringWidth(str: string): number {
+    let width = 0;
+    for (const ch of str) {
+      width += this.charWidth(ch);
+    }
+    return width;
   }
 
   /**
@@ -170,7 +184,7 @@ export default class FontMetrics extends EventEmitter {
   }
 
   // TODO: support different styles
-  public computeTextWidth(char: string) {
+  public computeCharWidth(char: string) {
     if (this.cachedWidths[char] != null) { return this.cachedWidths[char]; }
     const width = this.ctx.measureText(char).width;
     this.cachedWidths[char] = width;
