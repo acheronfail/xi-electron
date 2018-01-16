@@ -198,7 +198,7 @@ export default class FontMetrics extends EventEmitter {
     return height || 1;
   }
 
-  private computeTextHeight() {
+  private computeTextHeight(): { ascent: number, descent: number, height: number } {
     const span = elt('span', 'Hg', null, `font-family: ${this.familyValue}`);
     const div = elt('div', null, null, 'display: inline-block; width: 1px; height: 0');
 

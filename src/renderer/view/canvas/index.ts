@@ -274,8 +274,10 @@ export default class CanvasView implements View {
       if (selections.length) {
         this.ctx.fillStyle = selections[0].style.bg;
         selections.forEach(({ range: { start, length } }) => {
-          const beforeTextWidth = this.metrics.textWidth(line.text.substring(0, start));
-          const textWidth = this.metrics.textWidth(line.text.substr(start, length));
+          const a = line.chTo16Indices[start];
+          const b = line.chTo16Indices[start + length];
+          const beforeTextWidth = this.metrics.textWidth(line.text.substring(0, a));
+          const textWidth = this.metrics.textWidth(line.text.substring(a, b));
           this.ctx.fillRect(beforeTextWidth + xOffset, y, textWidth, lineHeight);
         });
       }
@@ -285,8 +287,10 @@ export default class CanvasView implements View {
       if (highlights.length) {
         this.ctx.fillStyle = highlights[0].style.bg;
         highlights.forEach(({ range: { start, length } }) => {
-          const beforeTextWidth = this.metrics.textWidth(line.text.substring(0, start));
-          const textWidth = this.metrics.textWidth(line.text.substr(start, length));
+          const a = line.chTo16Indices[start];
+          const b = line.chTo16Indices[start + length];
+          const beforeTextWidth = this.metrics.textWidth(line.text.substring(0, a));
+          const textWidth = this.metrics.textWidth(line.text.substring(a, b));
           this.ctx.fillRect(beforeTextWidth + xOffset, y, textWidth, lineHeight);
         });
       }
@@ -308,7 +312,7 @@ export default class CanvasView implements View {
       //      - have another transparent canvas on top for selections/highlights/cursors? *
       this.ctx.fillStyle = COLORS.CURSOR;
       line.cursors.forEach((ch) => {
-        const textWidth = this.metrics.textWidth(line.text.substring(0, ch));
+        const textWidth = this.metrics.textWidth(line.text.substring(0, line.chTo16Indices[ch]));
         this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
       });
 

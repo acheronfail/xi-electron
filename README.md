@@ -25,9 +25,12 @@ To build and run `xi-electron` you'll need to have [NodeJS](https://nodejs.org) 
 To get started, clone this repo, then run:
 
 ```bash
+> git clone https://github.com/acheronfail/xi-electron
 > cd xi-electron
 > git submodule update --init
 > yarn          # or: npm install
+
+# To run xi-electron in dev mode:
 > yarn make     # or: npm run make
 
 # If you just want to run in dev mode then run:
