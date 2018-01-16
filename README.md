@@ -22,7 +22,7 @@ The main motivation for this repo is to experiment and profile the speeds and pe
 
 To build and run `xi-electron` you'll need to have [NodeJS](https://nodejs.org) installed (Node version 6 or greater) as well as `Git`.
 
-To get started, clone this repo, then run:
+To get started:
 
 ```bash
 > git clone https://github.com/acheronfail/xi-electron
@@ -30,7 +30,7 @@ To get started, clone this repo, then run:
 > git submodule update --init
 > yarn          # or: npm install
 
-# To run xi-electron in dev mode:
+# To build xi-electron into an application:
 > yarn make     # or: npm run make
 
 # If you just want to run in dev mode then run:
