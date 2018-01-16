@@ -1,7 +1,0 @@
-xcuserdata/
-.DS_Store
-build/
-
-*.pyc
-__pycache__
-.cache/

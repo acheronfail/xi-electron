@@ -1,3 +1,0 @@
-# YAML mandates that tabs aren't used for indentation
-translate_tabs_to_spaces = true
-tab_size = 2
