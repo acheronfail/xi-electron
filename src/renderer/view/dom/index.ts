@@ -5,7 +5,7 @@ import { View, ViewOptions, Viewport } from '../index';
 import ViewController from '../../view-controller';
 import LineCache, { Line } from '../../line-cache';
 
-// TODO:
+// UNIMPLEMENTED:
 export default class DOMView implements View {
   constructor() {/**/}
   render() {/**/}
@@ -14,6 +14,9 @@ export default class DOMView implements View {
   posFromCoords(x: number, y: number): [number, number] { return [0, 0]; }
   getViewport(): Viewport { return { lineStart: 0, lineEnd: 0, charStart: 0, charEnd: 0 }; }
 }
+
+// NOTE: there have been some significant API changes, so we're commenting out the old DOM renderer.
+// We'll begin working on it very soon to get it to work with the new structure.
 
 /**
  * A View built by using the DOM.
