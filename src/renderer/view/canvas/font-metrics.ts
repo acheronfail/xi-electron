@@ -100,7 +100,6 @@ export default class FontMetrics extends EventEmitter {
    * @return {Number}        The character width (in pixels).
    */
   public charWidth(char: string, force: boolean = false): number {
-    if (char.length > 1) { throw new Error('Cannot pass a multi-character string to `charWidth`!'); }
     if (!force && this.cachedWidths[char] != null) { return this.cachedWidths[char]; }
     return this.computeCharWidth(char);
   }

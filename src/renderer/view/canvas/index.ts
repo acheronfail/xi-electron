@@ -111,13 +111,20 @@ export default class CanvasView implements View {
     }
   }
 
-  // Smoothly scrolls the canvas after MouseWheelEvents.
+  /**
+   * Smoothly scrolls the canvas after MouseWheelEvents.
+   * @param event The mouse wheel event on the canvas.
+   */
   private scrollCanvas(event: MouseWheelEvent) {
     let { deltaX, deltaY } = event;
     const { charStart, charEnd, lineStart, lineEnd } = this.getViewport();
 
+    // NOTE: this currently doesn't tale into account unicode widths, since we don't know the max
+    // width of the editor. Adding a value of 5 is intended to give some right padding when
+    // scrolling horizontally.
     // TODO: how to get max width? currently this is a bit of a hack with `this.nChars`...
-    const nChars = this.nChars + (charStart - charEnd);
+    const nChars = this.nChars + Math.ceil(charStart - charEnd) + 5;
+
     let nLines;
     if (this.scrollPastEnd) {
       nLines = this.lineCache.height();
@@ -219,7 +226,9 @@ export default class CanvasView implements View {
   }
 
   /**
-   * Get information about the currently visible viewport of the editor.
+   * Get basic information about the currently visible viewport of the editor. This isn't an
+   * accurate calculation since is just uses monospace widths to measure - but from what I can tell
+   * xi-core just does this too at the moment.
    * @return {Object} An object with measurements about the current viewport.
    */
   public getViewport(): Viewport {
@@ -242,6 +251,7 @@ export default class CanvasView implements View {
     const lineHeight = this.metrics.lineHeight();
     const { editorPadding, gutterPadding, gutterWidth } = this;
     const xOffset = gutterWidth + editorPadding[0] - this.x;
+    const xViewportEnd = this.width + this.x - xOffset;
 
     // Reset canvas.
     // TODO: at some stage in the future we could employ a tiling approach. Only draw tiles, cache
@@ -251,7 +261,7 @@ export default class CanvasView implements View {
     this.ctx.fillStyle = COLORS.BACKGROUND;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    const { lineStart, lineEnd, charStart, charEnd } = this.getViewport();
+    const { lineStart, lineEnd } = this.getViewport();
     this.lineCache.computeMissing(lineStart, lineEnd);
 
     const getLineData = (i: number) => ({
@@ -303,23 +313,49 @@ export default class CanvasView implements View {
       });
 
       // Draw text.
-      // NOTE: batching similar font styles (across all lines) may increase performance because
-      // switching the canvas state can be expensive.
+      let posX = 0;
       const textY = y + baseline;
       for (let i = 0; i < line.styles.length; ++i) {
         const { style, range: { start, length } } = line.styles[i];
-        if (style.isReservedStyle() || start + length < charStart) { continue; }
-        if (start > charEnd) { break; }
+        if (posX > xViewportEnd) { break; }
+        if (style.isReservedStyle()) { continue; }
 
-        this.ctx.fillStyle = style.fg;
-        this.ctx.font = style.fontString(this.metrics);
+        let a = start;
+        let b = start + length;
+        const span = line.text.substring(line.chTo16Indices[a], line.chTo16Indices[b]);
+        let foundStart = false;
+        let pos = 0;
+        let textX = 0;
+        for (const ch of span) {
+          const charWidth = this.metrics.charWidth(ch);
+          // Find the first character that is inside the viewport (if any).
+          if (!foundStart) {
+            if (posX + charWidth > this.x) {
+              foundStart = true;
+              textX = posX + xOffset;
+            } else {
+              a += 1;
+            }
+          }
 
-        const a = line.chTo16Indices[Math.max(charStart, start)];
-        const b = line.chTo16Indices[Math.min(charEnd, start + length)];
-        const textX = this.metrics.stringWidth(line.text.substring(0, a)) + xOffset;
+          // Find the last character that is inside the viewport (if any).
+          if (posX > xViewportEnd) {
+            b -= length - pos;
+            break;
+          }
 
-        const text = line.text.substring(a, b);
+          posX += charWidth;
+          pos += 1;
+        }
+
+        // Skip style since it's not in the visible range.
+        if (posX < this.x) { continue; }
+
+        // Render the text with correct styling.
+        const text = line.text.substring(line.chTo16Indices[a], line.chTo16Indices[b]);
         if (text.length > 0) {
+          this.ctx.fillStyle = style.fg;
+          this.ctx.font = style.fontString(this.metrics);
           this.ctx.fillText(text, textX, textY);
         }
       }
