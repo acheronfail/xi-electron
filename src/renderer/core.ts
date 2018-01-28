@@ -1,4 +1,4 @@
-import * as cp from 'child_process';
+import * as execa from 'execa';
 import EventEmitter from '../utils/emitter';
 import { XI_CORE_BIN, XI_CORE_DIR } from '../utils/environment';
 import ViewProxy from './view-proxy';
@@ -34,7 +34,7 @@ export default class Core extends EventEmitter {
     this.proxies = {};
 
     // Spawn xi-core.
-    this.child = cp.spawn(XI_CORE_BIN, [], { env: opts.env || {} });
+    this.child = execa(XI_CORE_BIN, [], { env: opts.env || {} });
     this.child.on('close', this.coreClosed.bind(this));
 
     // Receive messages from xi-core as text.
