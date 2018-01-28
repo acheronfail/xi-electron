@@ -155,7 +155,7 @@ export default class CanvasView implements View {
     this.canvas.height = height * this.scale;
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-     this.ctx.scale(this.scale, this.scale);
+    this.ctx.scale(this.scale, this.scale);
 
     this.width = width;
     this.height = height;
