@@ -1650,10 +1650,6 @@ diff@^3.2.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.4.0.tgz#b1d85507daf3964828de54b37d0d73ba67dda56c"
 
-dirutils@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/dirutils/-/dirutils-0.1.1.tgz#8aff9e1a4afbad23cd942342a4b1b9684d27ffc2"
-
 dom-serializer@0, dom-serializer@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-0.1.0.tgz#073c697546ce0780ce23be4a28e293e40bc30c82"
