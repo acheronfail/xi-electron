@@ -31,9 +31,14 @@ export default class DOMView implements View {
       size: 20
     });
 
+    this.lines = elt('div', null, 'lines', 'min-height: 1px; cursor: text;');
+    this.mover = elt('div', [this.lines], 'mover', 'position: relative');
+    this.sizer = elt('div', [this.mover], 'sizer', `
+      position: relative;
+      border-right: 30px solid transparent;
+    `);
     this.wrapper.style.background = COLORS.BACKGROUND;
-
-    this.scroller = controller.wrapper.appendChild(elt('div', null, 'scroller', `
+    this.scroller = controller.wrapper.appendChild(elt('div', [this.sizer], 'scroller', `
       overflow: scroll !important;
       /* 30px is the magic margin used to hide the element's real scrollbars */
       /* See overflow: hidden in .CodeMirror */
@@ -42,12 +47,6 @@ export default class DOMView implements View {
       position: relative;
     `));
     on(this.scroller, 'scroll', (event) => this.onScroll(event), { capture: false, passive: true });
-    this.sizer = this.scroller.appendChild(elt('div', null, 'sizer', `
-      position: relative;
-      border-right: 30px solid transparent;
-    `));
-    this.mover = this.sizer.appendChild(elt('div', null, 'mover', 'position: relative'));
-    this.lines = this.mover.appendChild(elt('div', null, 'lines', 'min-height: 1px; cursor: text;'));
 
     this.lineCache.on('update', () => this.updateViewport());
   }
