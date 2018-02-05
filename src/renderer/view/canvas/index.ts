@@ -299,6 +299,7 @@ export default class CanvasView implements View {
       if (!line) { continue; }
 
       // FIXME: TODO: bit of a hack atm, will need to reset when longest line is shortened...
+      // See https://github.com/google/xi-editor/issues/479
       this.nChars = Math.max(this.nChars, line.text.length);
 
       // Draw cursor(s).

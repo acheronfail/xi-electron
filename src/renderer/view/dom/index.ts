@@ -1,187 +1,170 @@
-import { elt, removeChildren } from '../../../utils/dom';
+import { elt, removeChildren, on } from '../../../utils/dom';
 import { StyleSpan, N_RESERVED_STYLES, COLORS } from '../../style-map';
 
 import { View, ViewOptions, Viewport } from '../index';
 import ViewController from '../../view-controller';
 import LineCache, { Line } from '../../line-cache';
-
-// UNIMPLEMENTED:
-export default class DOMView implements View {
-  constructor() {/**/}
-  render() {/**/}
-  resize(_width: number, _height: number) {/**/}
-  scrollTo(line: number, char: number): void {/**/}
-  posFromCoords(x: number, y: number): [number, number] { return [0, 0]; }
-  getViewport(): Viewport { return { lineStart: 0, lineEnd: 0, charStart: 0, charEnd: 0 }; }
-}
-
-// NOTE: there have been some significant API changes, so we're commenting out the old DOM renderer.
-// We'll begin working on it very soon to get it to work with the new structure.
+import FontMetrics from './font-metrics';
 
 /**
- * A View built by using the DOM.
+ * A view built using the Document Object Model.
+ * The scrolling mechanism takes inspiration from CodeMirror.
+ * See http://marijnhaverbeke.nl/blog/a-pathological-scrolling-model.html
  */
-// export default class DOMView implements View {
+export default class DOMView implements View {
 
-//   // Wrapper element.
-//   private wrapper: HTMLElement;
+  private wrapper: HTMLElement;
+  private sizer: HTMLElement;
+  private scroller: HTMLElement;
+  private lines: HTMLElement;
+  private mover: HTMLElement;
 
-//   // Scroll container.
-//   private scrollContainer: HTMLElement;
+  private metrics: FontMetrics;
+  private lineCache: LineCache;
 
-//   // Line container.
-//   private lineContainer: HTMLElement;
+  constructor(private controller: ViewController, _opts: ViewOptions) {
+    this.wrapper = controller.wrapper;
+    this.lineCache = controller.lineCache;
 
-//   // Parent ViewController's LineCache.
-//   private lineCache: LineCache;
+    this.metrics = new FontMetrics(this.wrapper, {
+      family: 'monospace',
+      size: 20
+    });
 
-//   /**
-//    * Create the view.
-//    * @param  {ViewController} controller Parent ViewController.
-//    * @param  {FontMetrics}    metrics    Font measurements.
-//    * @param  {ViewOptions}    opts       Configuration options.
-//    */
-//   constructor(controller: ViewController,  _opts: ViewOptions) {
-//     this.wrapper = controller.wrapper;
-//     this.lineCache = controller.lineCache;
+    this.wrapper.style.background = COLORS.BACKGROUND;
 
-//     this.scrollContainer = this.wrapper.appendChild(elt('div', null, null, 'height: 300px; overflow: scroll'));
-//     this.lineContainer = this.scrollContainer.appendChild(elt('div'));
+    this.scroller = controller.wrapper.appendChild(elt('div', null, 'scroller', `
+      overflow: scroll !important;
+      /* 30px is the magic margin used to hide the element's real scrollbars */
+      /* See overflow: hidden in .CodeMirror */
+      margin-bottom: -30px; margin-right: -30px;
+      padding-bottom: 30px;
+      position: relative;
+    `));
+    on(this.scroller, 'scroll', (event) => this.onScroll(event), { capture: false, passive: true });
+    this.sizer = this.scroller.appendChild(elt('div', null, 'sizer', `
+      position: relative;
+      border-right: 30px solid transparent;
+    `));
+    this.mover = this.sizer.appendChild(elt('div', null, 'mover', 'position: relative'));
+    this.lines = this.mover.appendChild(elt('div', null, 'lines', 'min-height: 1px; cursor: text;'));
 
-//     this.lineCache.on('update', () => this.updateViewport());
-//     // this.metrics.on('update', () => this.updateViewport());
-//   }
+    this.lineCache.on('update', () => this.updateViewport());
+  }
 
-//   private getInnerHeight(): number {
-//     const lineHeight = this.metrics.lineHeight();
-//     const nLines = this.lineCache.lines.length;
-//     return lineHeight * nLines;
-//   }
+  /**
+   * Private API
+   */
 
-//   private updateViewport() {
-//     this.lineContainer.style.height = `${this.getInnerHeight()}px`;
-//   }
+  private updateViewport(): void {
+    this.sizer.style.height = `${this.calculateTotalHeight()}px`;
+  }
 
-//   /**
-//    * Called whenever the view is resized.
-//    */
-//   public resize(): void {/* TODO */}
+  private calculateTotalHeight(): number {
+    const { lineStart, lineEnd } = this.getViewport();
+    const visibleLines = lineEnd - lineStart;
+    return this.metrics.lineHeight() * (this.lineCache.height() + visibleLines - 2);
+  }
 
-//   /**
-//    * Scrolls so that the given "line" and "char" are visible in the view.
-//    * @param  {number} line Line number.
-//    * @param  {number} char Column number.
-//    */
-//   public scrollTo(line: number, char: number): void {
-//     const charWidth = this.metrics.charWidth();
-//     const lineHeight = this.metrics.lineHeight();
-//     this.scrollContainer.scrollTop = lineHeight * line;
-//     this.scrollContainer.scrollLeft = charWidth * char;
-//   }
+  private onScroll(_event: MouseWheelEvent): void {
+    this.controller.updateViewport();
+    this.render();
+  }
 
-//   /**
-//    * Returns a [line, char] from the given coordinates.
-//    * @param  {Number}  x       The x coordinate (relative to the view).
-//    * @param  {Number}  y       The y coordinate (relative to the view).
-//    * @param  {Boolean} forRect Whether the click was using rectangular selections.
-//    * @return {Array}           A [line, char] object of the coordinates at the point.
-//    */
-//   public posFromCoords(x: number, y: number, _forRect: boolean): [number, number] {
-//     return [0, 0];
-//   }
+  /**
+   * View API
+   */
 
-//   /**
-//    * Get information about the currently visible viewport of the editor.
-//    * @return {Object} An object with measurements about the current viewport.
-//    */
-//   public getViewport(): Viewport {
-//     const lineHeight = this.metrics.lineHeight();
-//     return {
-//       lineStart: Math.floor(this.scrollContainer.scrollTop / lineHeight),
-//       lineEnd: Math.ceil(this.scrollContainer.clientHeight / lineHeight),
-//       charStart: Math.floor(this.scrollContainer.scrollLeft / lineHeight),
-//       charEnd: Math.ceil(this.scrollContainer.clientWidth / lineHeight)
-//     };
-//   }
+  public resize(width: number, height: number): void {
+    this.scroller.style.width = `${width}px`;
+    this.scroller.style.height = `${height}px`;
 
-//   /**
-//    * Renders the document into the DOM.
-//    */
-//   public render(): void {
-//     // Empty previous lines
-//     removeChildren(this.lineContainer);
+    this.render();
+  }
 
-//     const first = 0;
-//     const last = this.lineCache.lines.length;
+  public scrollTo(line: number, char: number): void {
+    this.sizer.scrollTop = this.metrics.lineHeight() * line;
+    this.sizer.scrollLeft = this.metrics.asciiWidth() * char;
+  }
 
-//     this.lineCache.computeMissing(first, last);
+  public posFromCoords(x: number, y: number): [number, number] {
+    return [0, 0];
+  }
 
-//     // TODO: only render currently visible lines, rather than every single one
-//     for (let i = first; i < last; ++i) {
-//       const line = this.lineCache.get(i);
-//       if (!line) { continue; }
+  public getViewport(): Viewport {
+    const asciiWidth = this.metrics.asciiWidth();
+    const lineHeight = this.metrics.lineHeight();
+    // TODO: gutter and offsets
+    const xOffset = 0; // this.gutterWidth - this.editorPadding[0];
+    const { scrollTop, scrollLeft, clientHeight, clientWidth } = this.scroller;
+    return {
+      lineStart: Math.floor(scrollTop / lineHeight),
+      lineEnd: Math.floor((scrollTop + clientHeight) / lineHeight),
+      charStart: Math.floor(scrollLeft / asciiWidth),
+      charEnd: Math.floor((clientWidth + scrollLeft - xOffset) / asciiWidth),
+    };
+  }
 
-//       const lineNode = new LineNode(line, this.metrics);
-//       this.lineContainer.appendChild(lineNode.element);
-//     }
-//   }
-// }
+  public render(): void {
+    // Empty container.
+    removeChildren(this.lines);
 
-// class LineNode {
-//   public element: HTMLPreElement;
+    let { lineStart, lineEnd } = this.getViewport();
+    this.lineCache.computeMissing(lineStart, lineEnd);
 
-//   private charWidth: number;
-//   private lineHeight: number;
+    // Push mover forward as we scroll.
+    this.mover.style.top = `${lineStart * this.metrics.lineHeight()}px`;
 
-//   constructor(public line: Line, metrics: FontMetrics) {
-//     this.charWidth = metrics.charWidth();
-//     this.lineHeight = metrics.lineHeight();
-//     this.element = (<HTMLPreElement>elt('pre', null, null, `position: relative;
-//                                                             margin: 0;
-//                                                             font: ${metrics.fontString()}`));
+    for (let i = lineStart; i < lineEnd + 1; ++i) {
+      const line = this.lineCache.get(i);
+      if (!line) { continue; }
 
-//     // Build DOM cursors.
-//     line.cursor.forEach((char) => {
-//       this.element.appendChild(this.createCursor(char));
-//     });
+      const lineNode = new LineNode(line, this.metrics);
+      this.lines.appendChild(lineNode.element);
+    }
+  }
+}
 
-//     // Build DOM spans from StyleSpans.
-//     line.styles.forEach((styleSpan) => {
-//       this.element.appendChild(this.nodeFromStyleSpan(styleSpan));
-//     });
-//   }
+/**
+ * Represents a line in the DOM editor.
+ */
+class LineNode {
+  public element: HTMLPreElement;
 
-//   createCursor(char: number): HTMLElement {
-//     return elt('div', null, null, `position: absolute;
-//                                    border: 1px solid ${COLORS.CURSOR};
-//                                    height: ${this.lineHeight}px;
-//                                    left: ${this.charWidth * char}px`);
-//   }
+  private asciiWidth: number;
+  private lineHeight: number;
 
-//   nodeFromStyleSpan(styleSpan: StyleSpan): HTMLSpanElement {
-//     const { style, range: { start, length } } = styleSpan;
+  constructor(public line: Line, private metrics: FontMetrics) {
+    this.asciiWidth = this.metrics.asciiWidth();
+    this.lineHeight = this.metrics.lineHeight();
+    this.element = (<HTMLPreElement>elt('pre', null, null, `position: relative;
+                                                            margin: 0;
+                                                            font: ${this.metrics.fontString()}`));
 
-//     // TODO: better way of styling (probably use classes)...
-//     let css = '';
-//     switch (style) {
-//       case STYLES.SELECTION: {
-//         css = `background-color: ${COLORS.SELECTION}`;
-//         break;
-//       }
-//       case STYLES.HIGHLIGHT: {
-//         css = `background-color: ${COLORS.HIGHLIGHT}`;
-//         break;
-//       }
+    // Build DOM cursors.
+    line.cursors.forEach((char) => {
+      this.element.appendChild(this.createCursor(char));
+    });
 
-//       default: {
-//         css = 'color: black';
-//         if (style > N_RESERVED_STYLES) {
-//           css = 'color: green';
-//           console.log('this text has syntax highlighting');
-//         }
-//       }
-//     }
+    // Build DOM spans from StyleSpans.
+    line.styles.forEach((styleSpan) => {
+      this.element.appendChild(this.nodeFromStyleSpan(styleSpan));
+    });
+  }
 
-//     return elt('span', this.line.text.substr(start, length), null, css);
-//   }
-// }
+  createCursor(char: number): HTMLElement {
+    return elt('div', null, null, `position: absolute;
+                                   border: 1px solid ${COLORS.CURSOR};
+                                   height: ${this.lineHeight}px;
+                                   left: ${this.asciiWidth * char}px`);
+  }
+
+  nodeFromStyleSpan(styleSpan: StyleSpan): HTMLSpanElement {
+    const { style, range: { start, length } } = styleSpan;
+    const css = `
+      font: ${style.fontString(this.metrics)};
+      color: ${style.fg};
+    `;
+    return elt('span', this.line.text.substr(start, length), null, css);
+  }
+}
