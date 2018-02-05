@@ -1,4 +1,4 @@
-import { elt, removeChildren, on } from '../../../utils/dom';
+import { elt, removeChildren, on, off } from '../../../utils/dom';
 import { StyleSpan, N_RESERVED_STYLES, COLORS } from '../../style-map';
 
 import { View, ViewOptions, Viewport } from '../index';
@@ -31,14 +31,21 @@ export default class DOMView implements View {
       size: 20
     });
 
-    this.lines = elt('div', null, 'lines', 'min-height: 1px; cursor: text;');
+    this.wrapper.style.background = COLORS.BACKGROUND;
+    this.wrapper.style.overflow = 'hidden';
+
+    this.lines = elt('div', null, 'lines', `
+      min-height: 1px;
+      cursor: text;
+    `);
     this.mover = elt('div', [this.lines], 'mover', 'position: relative');
     this.sizer = elt('div', [this.mover], 'sizer', `
       position: relative;
+      box-sizing: content-box;
       border-right: 30px solid transparent;
     `);
-    this.wrapper.style.background = COLORS.BACKGROUND;
     this.scroller = controller.wrapper.appendChild(elt('div', [this.sizer], 'scroller', `
+      box-sizing: content-box;
       overflow: scroll !important;
       /* 30px is the magic margin used to hide the element's real scrollbars */
       /* See overflow: hidden in .CodeMirror */
@@ -46,7 +53,7 @@ export default class DOMView implements View {
       padding-bottom: 30px;
       position: relative;
     `));
-    on(this.scroller, 'scroll', (event) => this.onScroll(event), { capture: false, passive: true });
+    on(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
 
     this.lineCache.on('update', () => this.updateViewport());
   }
@@ -56,18 +63,28 @@ export default class DOMView implements View {
    */
 
   private updateViewport(): void {
+    this.lines.style.marginBottom = `${this.scroller.clientHeight}px`;
     this.sizer.style.height = `${this.calculateTotalHeight()}px`;
   }
 
   private calculateTotalHeight(): number {
-    const { lineStart, lineEnd } = this.getViewport();
-    const visibleLines = lineEnd - lineStart;
-    return this.metrics.lineHeight() * (this.lineCache.height() + visibleLines - 2);
+    return this.metrics.lineHeight() * this.lineCache.height();
   }
 
-  private onScroll(_event: MouseWheelEvent): void {
-    this.controller.updateViewport();
-    this.render();
+  private onScroll = (_event: MouseWheelEvent): void => {
+    if (this.scroller.clientHeight) {
+      this.controller.updateViewport();
+
+      // HACK: This is a shameless hack in order to stop an infinite loop from
+      // occurring. When `line.lines` has a margin applied to it (for it to
+      // scroll past the end) it, it triggers a scroll event on the scroller,
+      // thereby calling this listener again ... and so on ... and so on ...
+      off(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
+      this.render();
+      setTimeout(() => {
+        on(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
+      });
+    }
   }
 
   /**
@@ -137,7 +154,12 @@ class LineNode {
     this.asciiWidth = this.metrics.asciiWidth();
     this.lineHeight = this.metrics.lineHeight();
     this.element = (<HTMLPreElement>elt('pre', null, null, `position: relative;
+                                                            border-width: 0;
+                                                            border-radius: 0;
+                                                            word-wrap: normal;
                                                             margin: 0;
+                                                            z-index: 2;
+                                                            font-variant-ligatures: contextual;
                                                             font: ${this.metrics.fontString()}`));
 
     // Build DOM cursors.

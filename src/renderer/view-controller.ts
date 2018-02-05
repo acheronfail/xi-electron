@@ -30,7 +30,7 @@ export default class ViewController {
    * @param {ViewProxy}   proxy This ViewController's ViewProxy.
    * @param {[type]}      opts  Configuration options.
    */
-  constructor(private workspace: Workspace, private proxy: ViewProxy, opts: ViewOptions) {
+  constructor(workspace: Workspace, private proxy: ViewProxy, opts: ViewOptions) {
     this.wrapper = workspace.wrapper.appendChild(elt('div', null, 'xi-view', 'height: 100%; width: 100%'));
     this.wrapper.style.border = '1px solid #000';
     this.wrapper.style.overflow = 'hidden';
