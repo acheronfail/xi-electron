@@ -1,3 +1,5 @@
+'use strict';
+
 console.log('Starting build of xi-core...');
 
 const cp = require('child_process');
@@ -10,15 +12,18 @@ const XI_CORE = path.join(PROJECT_ROOT, 'xi-editor', 'rust');
 const XI_CORE_BUILD = path.join(XI_CORE, 'target', 'release', 'xi-core');
 const XI_CORE_DEST = path.join(PROJECT_ROOT, 'src', 'xi', 'xi-core');
 
-// Do we have cargo? (this will throw if not).
+// Do we have cargo & git? (this will throw if not).
+which.sync('git');
 which.sync('cargo');
 
+let res = null;
+const args = (o) => Object.assign({ encoding: 'utf8', stdio: 'inherit' }, o || {});
+
+// Ensure that the submodule is present.
+res = cp.spawnSync('git', ['submodule', 'update', '--init'], args());
+
 // Build xi-core.
-let res = cp.spawnSync('cargo', ['build', '--release'], {
-  encoding: 'utf8',
-  stdio: 'inherit',
-  cwd: XI_CORE
-});
+res = cp.spawnSync('cargo', ['build', '--release'], args({ cwd: XI_CORE }));
 if (res.status != 0) {
   throw res.error || new Error('Could not build xi-core!');
 }
@@ -43,11 +48,7 @@ const XI_PLUGINS_SYNTECT_DEST = path.join(XI_PLUGINS_DEST, 'syntect', 'bin', 'xi
 // Build plugins that need building.
 console.log('Building plugins...');
 
-res = cp.spawnSync('cargo', ['build', '--release'], {
-  encoding: 'utf8',
-  stdio: 'inherit',
-  cwd: XI_PLUGINS_SYNTECT
-});
+res = cp.spawnSync('cargo', ['build', '--release'], args({ cwd: XI_PLUGINS_SYNTECT }));
 if (res.status != 0) {
   throw res.error || new Error('Could not build syntect-plugin!');
 }

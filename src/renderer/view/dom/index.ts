@@ -75,12 +75,14 @@ export default class DOMView implements View {
     if (this.scroller.clientHeight) {
       this.controller.updateViewport();
 
-      // HACK: This is a shameless hack in order to stop an infinite loop from
+      // HACK: a shameless hack in order to stop an infinite loop from
       // occurring. When `line.lines` has a margin applied to it (for it to
-      // scroll past the end) it, it triggers a scroll event on the scroller,
-      // thereby calling this listener again ... and so on ... and so on ...
+      // scroll past the end) it triggers a scroll event on the scroller (since
+      // its contents changes size) thereby calling this listener again ...
+      // and so on ... and so on ...
       off(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
       this.render();
+      // Wait for re-draw to complete, then re-attach scroll listener.
       setTimeout(() => {
         on(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
       });
