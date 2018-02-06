@@ -1,4 +1,5 @@
 # Xi Electron
+
 _A front-end for the xi-editor built with modern web technologies._
 
 NOTE: This is still a WIP!
@@ -12,9 +13,10 @@ NOTE: This is still a WIP!
 * Make a front-end for [`xi-editor`](https://github.com/google/xi-editor) that is consistent across platforms
 * Experiment with different editor rendering techniques on the web, specifically:
     - `2d` - `<canvas>`
-    - `DOM` - direct use of the DOM (have a look at [CodeMirror](https://github.com/codemirror/codemirror))
-    - `WebGL` - via `<canvas>`
-* Hopefully create a functional mobile friendly version that is fast and pleasant to use
+    - `DOM` - direct use of the DOM (have a look at how [CodeMirror](http://marijnhaverbeke.nl/blog/a-pathological-scrolling-model.html) tackled some of the challenges of using the DOM)
+    - `WebGL` - GPU accelerated rendering (via `<canvas>`)
+* Hopefully create a functional mobile friendly version that is also fast and pleasant to use
+    - once all three views are implemented we can benchmark them against each other
 
 The main motivation for this repo is to experiment and profile the speeds and performance of different rendering techniques for text editors in the browser, specifically with modern HTML5 APIs and the like. The final goal would be a fully cross-platform (desktop+mobile) text editing experience, but that's still a long hope at this stage.
 
@@ -64,15 +66,8 @@ Please! 🙏
 
 # TODO for `xi-electron`
 
-- [ ] figure out how to build small xi-core/xi-syntect-plugin libs??
-- [ ] make nice debugging tasks/configurations for vscode
+- [ ] figure out how to build small xi-core/xi-syntect-plugin libs - currently they're quite large
 - [ ] re-factor to be more platform portable (hopefully generate nice libs for non-electron platforms)
-- [ ] add in gutters
-    - [ ] line numbers
-    - [ ] gutter markers ?
-    - [ ] click to select line
-    - [ ] other gutter behaviour
-- [ ] implement DOMView
 - [ ] implement WebGLView
 
 -->
