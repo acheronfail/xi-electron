@@ -20,7 +20,7 @@ let res = cp.spawnSync('cargo', ['build', '--release'], {
   cwd: XI_CORE
 });
 if (res.status != 0) {
-  throw result.error || new Error('Could not build xi-core!');
+  throw res.error || new Error('Could not build xi-core!');
 }
 
 // Copy build into project source.
@@ -49,7 +49,7 @@ res = cp.spawnSync('cargo', ['build', '--release'], {
   cwd: XI_PLUGINS_SYNTECT
 });
 if (res.status != 0) {
-  throw result.error || new Error('Could not build syntect-plugin!');
+  throw res.error || new Error('Could not build syntect-plugin!');
 }
 
 // Copy over plugins.
