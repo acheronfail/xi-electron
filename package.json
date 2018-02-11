@@ -1,8 +1,8 @@
 {
   "name": "xi-electron",
-  "productName": "xi-electron",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "productName": "Xi Electron",
+  "version": "0.1.0",
+  "description": "A frontend for xi-editor based on modern web-technologies",
   "main": "src/main/index.ts",
   "scripts": {
     "precommit": "lint-staged",
@@ -19,7 +19,14 @@
       "git add"
     ]
   },
-  "keywords": [],
+  "keywords": [
+    "electron",
+    "electron-forge",
+    "xi-editor",
+    "canvas",
+    "webgl",
+    "text-editor"
+  ],
   "author": "acheronfail",
   "license": "MIT",
   "config": {
@@ -29,15 +36,19 @@
           "squirrel"
         ],
         "darwin": [
-          "zip"
+          "zip",
+          "dmg"
         ],
         "linux": [
           "deb",
-          "rpm"
+          "rpm",
+          "snap",
+          "flatpak"
         ]
       },
       "electronPackagerConfig": {
-        "packageManager": "yarn"
+        "packageManager": "yarn",
+        "appBundleId": "io.acheronfail.xi-electron"
       },
       "electronWinstallerConfig": {
         "name": "xi_electron"
@@ -45,11 +56,11 @@
       "electronInstallerDebian": {},
       "electronInstallerRedhat": {},
       "github_repository": {
-        "owner": "",
-        "name": ""
+        "owner": "acheronfail",
+        "name": "xi-electron"
       },
       "windowsStoreConfig": {
-        "packageName": "",
+        "packageName": "io.acheronfail.xi-electron",
         "name": "xi_electron"
       }
     }
@@ -65,7 +76,7 @@
     "@types/electron-devtools-installer": "^2.0.2",
     "electron-devtools-installer": "^2.2.3",
     "electron-forge": "^5.1.0",
-    "electron-prebuilt-compile": "1.8.2-beta.3",
+    "electron-prebuilt-compile": "1.8.2",
     "husky": "^0.14.3",
     "lint-staged": "^6.1.0",
     "tslint": "^5.9.1",
