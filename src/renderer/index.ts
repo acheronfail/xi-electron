@@ -9,7 +9,9 @@ const opts = {
     env: Object.assign({ RUST_BACKTRACE: 1 }, process.env)
   },
   viewOptions: {
-    type: ViewType.Canvas,
+    // type: ViewType.Canvas,
+    // type: ViewType.DOM,
+    type: ViewType.WebGL,
     scrollPastEnd: true
   }
 };

@@ -42,7 +42,6 @@
         "linux": [
           "deb",
           "rpm",
-          "snap",
           "flatpak"
         ]
       },

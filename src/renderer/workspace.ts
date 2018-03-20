@@ -66,7 +66,7 @@ export default class Workspace {
     this.core.send(CoreMethod.NEW_VIEW, { file_path: opts.filePath }, { id: viewInstanceId++ });
 
     // Attach unload handler to window.
-    window.onbeforeunload = this.beforeUnload;
+    window.onbeforeunload = this.beforeUnload.bind(this);
   }
 
   /**
