@@ -1,4 +1,4 @@
-import { elt, removeChildrenAndAdd, removeChildren } from '../../../utils/dom';
+import {elt, removeChildrenAndAdd, removeChildren} from '../../../utils/dom';
 import EventEmitter from '../../../utils/emitter';
 
 export type FontOptions = {
@@ -31,7 +31,7 @@ export default class FontMetrics extends EventEmitter {
   // Cached value for line height.
   private cachedLineHeight: number;
 
-  private cachedWidths: { [char: string]: number } = {};
+  private cachedWidths: {[char: string]: number} = {};
   private ctx: CanvasRenderingContext2D;
 
   /**
@@ -68,17 +68,17 @@ export default class FontMetrics extends EventEmitter {
    * @param  {FontOptions} opts Options for the new settings.
    */
   public update(opts: FontOptions) {
-    if (opts.family) { this.familyValue = opts.family; }
-    if (opts.size) { this.sizeValue = opts.size; }
+    if (opts.family) {this.familyValue = opts.family; }
+    if (opts.size) {this.sizeValue = opts.size; }
 
     const fontString = this.fontString();
     this.ctx.font = this.measure.style.font = fontString;
 
     // Purge cached values which are now inaccurate.
     this.cachedWidths = {};
-    if (this.cachedBaseline != null) { this.baseline(true); }
-    if (this.cachedAsciiWidth != null) { this.asciiWidth(true); }
-    if (this.cachedLineHeight != null) { this.lineHeight(true); }
+    if (this.cachedBaseline != null) {this.baseline(true); }
+    if (this.cachedAsciiWidth != null) {this.asciiWidth(true); }
+    if (this.cachedLineHeight != null) {this.lineHeight(true); }
 
     this.emit('update');
   }
@@ -89,7 +89,7 @@ export default class FontMetrics extends EventEmitter {
    * @return {Number}        The font's baseline (in pixels).
    */
   public baseline(force: boolean = false): number {
-    if (!force && this.cachedBaseline != null) { return this.cachedBaseline; }
+    if (!force && this.cachedBaseline != null) {return this.cachedBaseline; }
     return this.computeBaseline();
   }
 
@@ -100,7 +100,7 @@ export default class FontMetrics extends EventEmitter {
    * @return {Number}        The character width (in pixels).
    */
   public charWidth(char: string, force: boolean = false): number {
-    if (!force && this.cachedWidths[char] != null) { return this.cachedWidths[char]; }
+    if (!force && this.cachedWidths[char] != null) {return this.cachedWidths[char]; }
     return this.computeCharWidth(char);
   }
 
@@ -123,7 +123,7 @@ export default class FontMetrics extends EventEmitter {
    * @return {Number}        The character width (in pixels).
    */
   public asciiWidth(force: boolean = false): number {
-    if (!force && this.cachedAsciiWidth != null) { return this.cachedAsciiWidth; }
+    if (!force && this.cachedAsciiWidth != null) {return this.cachedAsciiWidth; }
     return this.computeAsciiWidth();
   }
 
@@ -133,7 +133,7 @@ export default class FontMetrics extends EventEmitter {
    * @return {Number}        The line height (in pixels).
    */
   public lineHeight(force: boolean = false): number {
-    if (!force && this.cachedLineHeight != null) { return this.cachedLineHeight; }
+    if (!force && this.cachedLineHeight != null) {return this.cachedLineHeight; }
     return this.computeLineHeight();
   }
 
@@ -184,7 +184,7 @@ export default class FontMetrics extends EventEmitter {
 
   // TODO: support different styles
   public computeCharWidth(char: string) {
-    if (this.cachedWidths[char] != null) { return this.cachedWidths[char]; }
+    if (this.cachedWidths[char] != null) {return this.cachedWidths[char]; }
     const width = this.ctx.measureText(char).width;
     this.cachedWidths[char] = width;
     return width;
@@ -201,9 +201,9 @@ export default class FontMetrics extends EventEmitter {
     removeChildrenAndAdd(this.measure, pre);
 
     const rect = anchor.getBoundingClientRect(),
-          width = (rect.right - rect.left) / 10;
+      width = (rect.right - rect.left) / 10;
 
-    if (width > 2) { this.cachedAsciiWidth = width; }
+    if (width > 2) {this.cachedAsciiWidth = width; }
     return width || 10;
   }
 
@@ -222,16 +222,16 @@ export default class FontMetrics extends EventEmitter {
     removeChildrenAndAdd(this.measure, pre);
 
     const height = pre.offsetHeight / 50;
-    if (height > 3) { this.cachedLineHeight = height; }
+    if (height > 3) {this.cachedLineHeight = height; }
     return height || 1;
   }
 
-  private computeTextHeight(): { ascent: number, descent: number, height: number } {
+  private computeTextHeight(): {ascent: number, descent: number, height: number} {
     const span = elt('span', 'Hg', null, `font-family: ${this.familyValue}`);
     const div = elt('div', null, null, 'display: inline-block; width: 1px; height: 0');
 
     removeChildrenAndAdd(this.measure, [span, div]);
-    const result = { ascent: 0, descent: 0, height: 0 };
+    const result = {ascent: 0, descent: 0, height: 0};
 
     div.style.verticalAlign = 'baseline';
     result.ascent = div.getBoundingClientRect().top - span.getBoundingClientRect().top;

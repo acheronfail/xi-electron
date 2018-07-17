@@ -1,4 +1,4 @@
-import { StyleSpan } from './style-map';
+import {StyleSpan} from './style-map';
 import EventEmitter from '../utils/emitter';
 
 /**
@@ -69,8 +69,8 @@ export class Line {
    * @param  {Object} data The JSON data.
    * @return {Line}        Newly created Line class.
    */
-  public static fromJSON(data: { text: string, cursor: number[], styles: number[] }): Line {
-    const { text = '', cursor = [], styles = [] } = data;
+  public static fromJSON(data: {text: string, cursor: number[], styles: number[]}): Line {
+    const {text = '', cursor = [], styles = []} = data;
     const line = new Line(text, styles, cursor);
     return line;
   }
@@ -81,11 +81,11 @@ export class Line {
    * @param  {Object} data The JSON data.
    * @return {Line}        The given Line class.
    */
-  public static updateFromJSON(data: { cursor: number[], styles: StyleSpan[] }, line?: Line, ): Line | null {
-    const { cursor, styles } = data;
-    if (!line) { return null; }
-    if (cursor) { line.cursors = cursor; }
-    if (styles) { line.styles = styles; }
+  public static updateFromJSON(data: {cursor: number[], styles: StyleSpan[]}, line?: Line, ): Line | null {
+    const {cursor, styles} = data;
+    if (!line) {return null; }
+    if (cursor) {line.cursors = cursor; }
+    if (styles) {line.styles = styles; }
     return line;
   }
 
@@ -102,12 +102,12 @@ export class Line {
    * @return {Boolean} Whether or not it does contain a reserved style.
    */
   containsReservedStyle(): boolean {
-    return this.styles.length > 0 && this.styles.some(({ style }) => style.isReservedStyle());
+    return this.styles.length > 0 && this.styles.some(({style}) => style.isReservedStyle());
   }
 
-  toJSON(): { cursor: number[], styles: StyleSpan[] } {
-    const { cursors, styles } = this;
-    return { cursor: cursors, styles };
+  toJSON(): {cursor: number[], styles: StyleSpan[]} {
+    const {cursors, styles} = this;
+    return {cursor: cursors, styles};
   }
 }
 
@@ -147,9 +147,9 @@ export default class LineCache extends EventEmitter {
    * @return {String}   The text of the line at i, or null if none exists.
    */
   get(i: number): Line | null {
-    if (i < this.nInvalidBefore) { return null; }
+    if (i < this.nInvalidBefore) {return null; }
     i -= this.nInvalidBefore;
-    if (i < this.lines.length) { return this.lines[i]; }
+    if (i < this.lines.length) {return this.lines[i]; }
     return null;
   }
 
@@ -158,7 +158,7 @@ export default class LineCache extends EventEmitter {
    * @param {Object} update The update from xi-core.
    */
   applyUpdate(data: any): void {
-    if (!data.ops) { return; }
+    if (!data.ops) {return; }
 
     let newInvalidBefore = 0;
     let newInvalidAfter = 0;
@@ -167,8 +167,8 @@ export default class LineCache extends EventEmitter {
 
     const ops = data.ops;
     for (let i = 0; i < ops.length; ++i) {
-      const { n, op: op_type } = ops[i];
-      if (!op_type || !n) { return; }
+      const {n, op: op_type} = ops[i];
+      if (!op_type || !n) {return; }
 
       switch (op_type) {
         case 'invalidate': {
@@ -181,11 +181,11 @@ export default class LineCache extends EventEmitter {
         }
 
         case 'ins': {
-          for (let i = 0; i < newInvalidAfter; ++i) { newLines.push(null); }
+          for (let i = 0; i < newInvalidAfter; ++i) {newLines.push(null); }
           newInvalidAfter = 0;
 
-          const { lines } = ops[i];
-          if (!lines) { return; }
+          const {lines} = ops[i];
+          if (!lines) {return; }
 
           for (let i = 0; i < lines.length; ++i) {
             const line = Line.fromJSON(lines[i]);
@@ -209,7 +209,7 @@ export default class LineCache extends EventEmitter {
           }
 
           if (nRemaining > 0 && oldIndex < this.nInvalidBefore + this.lines.length) {
-            for (let i = 0; i < newInvalidAfter; ++i) { newLines.push(null); }
+            for (let i = 0; i < newInvalidAfter; ++i) {newLines.push(null); }
             newInvalidAfter = 0;
 
             let nCopy = Math.min(nRemaining, this.nInvalidBefore + this.lines.length - oldIndex);
@@ -217,13 +217,13 @@ export default class LineCache extends EventEmitter {
             if (op_type == 'copy') {
               newLines.push(...this.lines.slice(start, start + nCopy));
             } else {
-              const { lines } = ops[i];
-              if (!lines) { return; }
+              const {lines} = ops[i];
+              if (!lines) {return; }
 
               let jsonIndex = n - nRemaining;
               for (let i = start; i < start + nCopy; ++i) {
                 const line = this.lines[i];
-                if (!line) { continue; }
+                if (!line) {continue; }
                 newLines.push(Line.updateFromJSON(line.toJSON(), lines[jsonIndex]));
                 jsonIndex++;
               }

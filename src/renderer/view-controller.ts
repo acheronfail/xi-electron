@@ -1,12 +1,12 @@
-import { elt, on } from '../utils/dom';
+import {elt, on} from '../utils/dom';
 import Workspace from './workspace';
 import LineCache from './line-cache';
-import { createView } from './view';
+import {createView} from './view';
 
-import { View, ViewOptions } from './view';
+import {View, ViewOptions} from './view';
 import ViewProxy from './view-proxy';
-import { CoreMethod } from './types/core';
-import { posIsClose, Point, clamp } from '../utils/misc';
+import {CoreMethod} from './types/core';
+import {posIsClose, Point, clamp} from '../utils/misc';
 
 // This module should be controlled by the "workspace" which has the xi-core running
 // it is linked to a view inside of xi-core via a "ViewProxy"
@@ -50,7 +50,7 @@ export default class ViewController {
     const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
         if (entry.target == this.wrapper) {
-          const { width, height } = entry.contentRect;
+          const {width, height} = entry.contentRect;
           this.view.resize(width, height);
           this.updateViewport();
         }
@@ -58,7 +58,7 @@ export default class ViewController {
     });
     ro.observe(this.wrapper);
 
-    const { width, height } = this.wrapper.getBoundingClientRect();
+    const {width, height} = this.wrapper.getBoundingClientRect();
     this.view.resize(width, height);
 
     this.proxy.on('update', this.update.bind(this));
@@ -84,7 +84,7 @@ export default class ViewController {
    * @param  {String} chars Given string.
    */
   public insert(chars: string): void {
-    this.edit(CoreMethod.INSERT, { chars });
+    this.edit(CoreMethod.INSERT, {chars});
   }
 
   // Contains info about previous click history
@@ -93,10 +93,10 @@ export default class ViewController {
     count: number,
     point: Point
   } = {
-    last: Date.now(),
-    count: 1,
-    point: { x: 0, y: 0 }
-  };
+      last: Date.now(),
+      count: 1,
+      point: {x: 0, y: 0}
+    };
 
   /**
    * Perform a "click" event on the view.
@@ -104,11 +104,11 @@ export default class ViewController {
    * @return {Array}        A [line, char] object of where the click occurred.
    */
   public doClick(event: MouseEvent): [number, number] {
-    if (!this.isFocused()) { this.focus(); }
+    if (!this.isFocused()) {this.focus(); }
     event.preventDefault();
 
     const now = Date.now();
-    const { left, top } = this.wrapper.getBoundingClientRect();
+    const {left, top} = this.wrapper.getBoundingClientRect();
     const point = {
       x: event.clientX - left,
       y: event.clientY - top,
@@ -123,7 +123,7 @@ export default class ViewController {
     } else {
       const wasClose = posIsClose(point, this.clicks.point);
       if (wasClose) {
-        const { count } = this.clicks;
+        const {count} = this.clicks;
         this.clicks.last = now;
         this.clicks.count = count == 3 ? 1 : count + 1;
         this.clicks.point = point;
@@ -143,7 +143,7 @@ export default class ViewController {
    * doDrag
    */
   public doDrag(event: MouseEvent) {
-    const { left, top, width, height } = this.wrapper.getBoundingClientRect();
+    const {left, top, width, height} = this.wrapper.getBoundingClientRect();
     const point = {
       x: clamp(event.clientX - left, 0, width),
       y: clamp(event.clientY - top, 0, height),
@@ -198,7 +198,7 @@ export default class ViewController {
    * knows how much information to give us.
    */
   public updateViewport(): void {
-    const { lineStart, lineEnd } = this.view.getViewport();
+    const {lineStart, lineEnd} = this.view.getViewport();
     this.edit(CoreMethod.SCROLL, [lineStart, lineEnd]);
   }
 
@@ -231,7 +231,7 @@ export default class ViewController {
    * @param  {Object}     params The edit method's parameters.
    */
   private edit(method: CoreMethod, params: any = {}): void {
-    this.proxy.send(CoreMethod.EDIT, { method, params });
+    this.proxy.send(CoreMethod.EDIT, {method, params});
   }
 
   // Responses to xi-core's messages -------------------------------------------

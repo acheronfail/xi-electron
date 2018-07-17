@@ -1,6 +1,6 @@
 import ViewController from './view-controller';
-import { CoreMethod } from './types/core';
-import { MACOS } from '../utils/environment';
+import {CoreMethod} from './types/core';
+import {MACOS} from '../utils/environment';
 
 /**
  * Key shortcut precedence:
@@ -9,44 +9,44 @@ import { MACOS } from '../utils/environment';
  */
 
 const CmdOrCtrl = MACOS ? 'Super' : 'Ctrl';
-export const keyMap: { [key: string]: CoreMethod } = {
+export const keyMap: {[key: string]: CoreMethod} = {
   // Editing
-  [`Tab`]:                    CoreMethod.INSERT_TAB,
-  [`Enter`]:                  CoreMethod.INSERT_NEWLINE,
-  [`Backspace`]:              CoreMethod.DELETE_BACKWARD,
-  [`Shift+Backspace`]:        CoreMethod.DELETE_FORWARD,
-  [`Delete`]:                 CoreMethod.DELETE_FORWARD,
+  [`Tab`]: CoreMethod.INSERT_TAB,
+  [`Enter`]: CoreMethod.INSERT_NEWLINE,
+  [`Backspace`]: CoreMethod.DELETE_BACKWARD,
+  [`Shift+Backspace`]: CoreMethod.DELETE_FORWARD,
+  [`Delete`]: CoreMethod.DELETE_FORWARD,
   [`${CmdOrCtrl}+Backspace`]: CoreMethod.DELETE_TO_BEGINNING_OF_LINE,
-  [`Alt+Backspace`]:          CoreMethod.DELETE_WORD_BACKWARD,
-  [`Shift+Alt+Backspace`]:    CoreMethod.DELETE_WORD_FORWARD,
-  [`Alt+Delete`]:             CoreMethod.DELETE_WORD_FORWARD,
-  [`${CmdOrCtrl}+Shift+Z`]:   CoreMethod.REDO,
-  [`${CmdOrCtrl}+Z`]:         CoreMethod.UNDO,
-  [`Ctrl+T`]:                 CoreMethod.TRANSPOSE,
-  [`${CmdOrCtrl}+Y`]:         CoreMethod.YANK,
+  [`Alt+Backspace`]: CoreMethod.DELETE_WORD_BACKWARD,
+  [`Shift+Alt+Backspace`]: CoreMethod.DELETE_WORD_FORWARD,
+  [`Alt+Delete`]: CoreMethod.DELETE_WORD_FORWARD,
+  [`${CmdOrCtrl}+Shift+Z`]: CoreMethod.REDO,
+  [`${CmdOrCtrl}+Z`]: CoreMethod.UNDO,
+  [`Ctrl+T`]: CoreMethod.TRANSPOSE,
+  [`${CmdOrCtrl}+Y`]: CoreMethod.YANK,
 
   // Movement & selection
-  [`ArrowDown`]:                     CoreMethod.MOVE_DOWN,
-  [`Shift+ArrowDown`]:               CoreMethod.MOVE_DOWN_AND_MODIFY_SELECTION,
-  [`ArrowLeft`]:                     CoreMethod.MOVE_LEFT,
-  [`Shift+ArrowLeft`]:               CoreMethod.MOVE_LEFT_AND_MODIFY_SELECTION,
-  [`ArrowRight`]:                    CoreMethod.MOVE_RIGHT,
-  [`Shift+ArrowRight`]:              CoreMethod.MOVE_RIGHT_AND_MODIFY_SELECTION,
-  [`Super+ArrowUp`]:                 CoreMethod.MOVE_TO_BEGINNING_OF_DOCUMENT,
-  [`Super+Shift+ArrowUp`]:           CoreMethod.MOVE_TO_BEGINNING_OF_DOCUMENT_AND_MODIFY_SELECTION,
-  [`Super+ArrowDown`]:               CoreMethod.MOVE_TO_END_OF_DOCUMENT,
-  [`Super+Shift+ArrowDown`]:         CoreMethod.MOVE_TO_END_OF_DOCUMENT_AND_MODIFY_SELECTION,
-  [`${CmdOrCtrl}+ArrowLeft`]:        CoreMethod.MOVE_TO_LEFT_END_OF_LINE,
-  [`${CmdOrCtrl}+Shift+ArrowLeft`]:  CoreMethod.MOVE_TO_LEFT_END_OF_LINE_AND_MODIFY_SELECTION,
-  [`${CmdOrCtrl}+ArrowRight`]:       CoreMethod.MOVE_TO_RIGHT_END_OF_LINE,
+  [`ArrowDown`]: CoreMethod.MOVE_DOWN,
+  [`Shift+ArrowDown`]: CoreMethod.MOVE_DOWN_AND_MODIFY_SELECTION,
+  [`ArrowLeft`]: CoreMethod.MOVE_LEFT,
+  [`Shift+ArrowLeft`]: CoreMethod.MOVE_LEFT_AND_MODIFY_SELECTION,
+  [`ArrowRight`]: CoreMethod.MOVE_RIGHT,
+  [`Shift+ArrowRight`]: CoreMethod.MOVE_RIGHT_AND_MODIFY_SELECTION,
+  [`Super+ArrowUp`]: CoreMethod.MOVE_TO_BEGINNING_OF_DOCUMENT,
+  [`Super+Shift+ArrowUp`]: CoreMethod.MOVE_TO_BEGINNING_OF_DOCUMENT_AND_MODIFY_SELECTION,
+  [`Super+ArrowDown`]: CoreMethod.MOVE_TO_END_OF_DOCUMENT,
+  [`Super+Shift+ArrowDown`]: CoreMethod.MOVE_TO_END_OF_DOCUMENT_AND_MODIFY_SELECTION,
+  [`${CmdOrCtrl}+ArrowLeft`]: CoreMethod.MOVE_TO_LEFT_END_OF_LINE,
+  [`${CmdOrCtrl}+Shift+ArrowLeft`]: CoreMethod.MOVE_TO_LEFT_END_OF_LINE_AND_MODIFY_SELECTION,
+  [`${CmdOrCtrl}+ArrowRight`]: CoreMethod.MOVE_TO_RIGHT_END_OF_LINE,
   [`${CmdOrCtrl}+Shift+ArrowRight`]: CoreMethod.MOVE_TO_RIGHT_END_OF_LINE_AND_MODIFY_SELECTION,
-  [`ArrowUp`]:                       CoreMethod.MOVE_UP,
-  [`Shift+ArrowUp`]:                 CoreMethod.MOVE_UP_AND_MODIFY_SELECTION,
-  [`Alt+ArrowLeft`]:                 CoreMethod.MOVE_WORD_LEFT,
-  [`Shift+Alt+ArrowLeft`]:           CoreMethod.MOVE_WORD_LEFT_AND_MODIFY_SELECTION,
-  [`Alt+ArrowRight`]:                CoreMethod.MOVE_WORD_RIGHT,
-  [`Shift+Alt+ArrowRight`]:          CoreMethod.MOVE_WORD_RIGHT_AND_MODIFY_SELECTION,
-  [`${CmdOrCtrl}+A`]:                CoreMethod.SELECT_ALL,
+  [`ArrowUp`]: CoreMethod.MOVE_UP,
+  [`Shift+ArrowUp`]: CoreMethod.MOVE_UP_AND_MODIFY_SELECTION,
+  [`Alt+ArrowLeft`]: CoreMethod.MOVE_WORD_LEFT,
+  [`Shift+Alt+ArrowLeft`]: CoreMethod.MOVE_WORD_LEFT_AND_MODIFY_SELECTION,
+  [`Alt+ArrowRight`]: CoreMethod.MOVE_WORD_RIGHT,
+  [`Shift+Alt+ArrowRight`]: CoreMethod.MOVE_WORD_RIGHT_AND_MODIFY_SELECTION,
+  [`${CmdOrCtrl}+A`]: CoreMethod.SELECT_ALL,
 };
 
 function normalizeKey(input: string): string {
@@ -71,7 +71,7 @@ function normalizeKey(input: string): string {
 export function execKey(viewController: ViewController, event: KeyboardEvent): boolean {
   if (event.type == 'keydown') {
 
-    const { metaKey, ctrlKey, shiftKey, altKey } = event;
+    const {metaKey, ctrlKey, shiftKey, altKey} = event;
 
     let prefix = '';
     if (metaKey) {

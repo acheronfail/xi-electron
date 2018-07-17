@@ -1,5 +1,5 @@
 import EventEmitter from '../utils/emitter';
-import { CoreMethod } from './types/core';
+import {CoreMethod} from './types/core';
 
 /**
  * A proxy that listens/emits to events in regards to one xi view.

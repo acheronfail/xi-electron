@@ -1,10 +1,10 @@
-import { elt, on, off } from '../../../utils/dom';
-import { clamp, nDigits } from '../../../utils/misc';
-import { COLORS, StyleSpan } from '../../style-map';
+import {elt, on} from '../../../utils/dom';
+import {clamp, nDigits} from '../../../utils/misc';
+import {COLORS, StyleSpan} from '../../style-map';
 
-import { View, ViewOptions, Viewport } from '../index';
+import {View, ViewOptions, Viewport} from '../index';
 import ViewController from '../../view-controller';
-import LineCache, { Line } from '../../line-cache';
+import LineCache from '../../line-cache';
 import FontMetrics from './font-metrics';
 
 export default class CanvasView implements View {
@@ -62,7 +62,7 @@ export default class CanvasView implements View {
   // whenever we render... (also won't decrease it longest line changes)
   private nChars: number = 0;
 
-  constructor(private controller: ViewController,  opts: ViewOptions) {
+  constructor(private controller: ViewController, opts: ViewOptions) {
     this.wrapper = controller.wrapper;
     this.lineCache = controller.lineCache;
 
@@ -116,8 +116,8 @@ export default class CanvasView implements View {
    * @param event The mouse wheel event on the canvas.
    */
   private scrollCanvas(event: MouseWheelEvent) {
-    let { deltaX, deltaY } = event;
-    const { charStart, charEnd, lineStart, lineEnd } = this.getViewport();
+    let {deltaX, deltaY} = event;
+    const {charStart, charEnd, lineStart, lineEnd} = this.getViewport();
 
     // NOTE: this currently doesn't tale into account unicode widths, since we don't know the max
     // width of the editor. Adding a value of 5 is intended to give some right padding when
@@ -249,7 +249,7 @@ export default class CanvasView implements View {
   public render() {
     const baseline = this.metrics.baseline();
     const lineHeight = this.metrics.lineHeight();
-    const { editorPadding, gutterPadding, gutterWidth } = this;
+    const {editorPadding, gutterPadding, gutterWidth} = this;
     const xOffset = gutterWidth + editorPadding[0] - this.x;
     const xViewportEnd = this.width + this.x - xOffset;
 
@@ -261,7 +261,7 @@ export default class CanvasView implements View {
     this.ctx.fillStyle = COLORS.BACKGROUND;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    const { lineStart, lineEnd } = this.getViewport();
+    const {lineStart, lineEnd} = this.getViewport();
     this.lineCache.computeMissing(lineStart, lineEnd);
 
     const getLineData = (i: number) => ({
@@ -271,14 +271,14 @@ export default class CanvasView implements View {
 
     // First pass, for drawing background selections and search highlights.
     for (let i = lineStart; i <= lineEnd; ++i) {
-      const { line, y } = getLineData(i);
-      if (!line || !line.containsReservedStyle()) { continue; }
+      const {line, y} = getLineData(i);
+      if (!line || !line.containsReservedStyle()) {continue; }
 
       // Draw selection(s) and highlight(s).
       const renderBlock = (styleSpans: StyleSpan[]) => {
         if (styleSpans.length) {
           this.ctx.fillStyle = styleSpans[0].style.bg;
-          styleSpans.forEach(({ range: { start, length } }) => {
+          styleSpans.forEach(({range: {start, length}}) => {
             const a = line.chTo16Indices[start];
             const b = line.chTo16Indices[start + length];
             const beforeTextWidth = this.metrics.stringWidth(line.text.substring(0, a));
@@ -295,8 +295,8 @@ export default class CanvasView implements View {
     // Second pass, for actually rendering text.
     this.ctx.save();
     for (let i = lineStart; i <= lineEnd; ++i) {
-      const { line, y } = getLineData(i);
-      if (!line) { continue; }
+      const {line, y} = getLineData(i);
+      if (!line) {continue; }
 
       // FIXME: TODO: bit of a hack atm, will need to reset when longest line is shortened...
       // See https://github.com/google/xi-editor/issues/479
@@ -317,9 +317,9 @@ export default class CanvasView implements View {
       let posX = 0;
       const textY = y + baseline;
       for (let i = 0; i < line.styles.length; ++i) {
-        const { style, range: { start, length } } = line.styles[i];
-        if (posX > xViewportEnd) { break; }
-        if (style.isReservedStyle()) { continue; }
+        const {style, range: {start, length}} = line.styles[i];
+        if (posX > xViewportEnd) {break; }
+        if (style.isReservedStyle()) {continue; }
 
         let a = start;
         let b = start + length;
@@ -350,7 +350,7 @@ export default class CanvasView implements View {
         }
 
         // Skip style since it's not in the visible range.
-        if (posX < this.x) { continue; }
+        if (posX < this.x) {continue; }
 
         // Render the text with correct styling.
         const text = line.text.substring(line.chTo16Indices[a], line.chTo16Indices[b]);
@@ -376,8 +376,8 @@ export default class CanvasView implements View {
       // Third pass, draw the gutter.
       this.ctx.fillStyle = '#5a5a5a';
       for (let i = lineStart; i <= lineEnd; ++i) {
-        const { line, y } = getLineData(i);
-        if (!line) { continue; }
+        const {line, y} = getLineData(i);
+        if (!line) {continue; }
 
         // Right-align gutter text by prepending whitespace.
         const text = `${i + 1}`.padStart(this.gutterChars, ' ');

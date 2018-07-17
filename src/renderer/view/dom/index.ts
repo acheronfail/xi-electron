@@ -1,25 +1,77 @@
-import { nDigits } from '../../../utils/misc';
-import { elt, removeChildren, on, off } from '../../../utils/dom';
-import { StyleSpan, N_RESERVED_STYLES, COLORS } from '../../style-map';
+import {nDigits} from '../../../utils/misc';
+import {elt, removeChildren, on, off} from '../../../utils/dom';
+import {StyleSpan, COLORS} from '../../style-map';
 
-import { View, ViewOptions, Viewport } from '../index';
+import {View, ViewOptions, Viewport} from '../index';
 import ViewController from '../../view-controller';
-import LineCache, { Line } from '../../line-cache';
+import LineCache, {Line} from '../../line-cache';
 import FontMetrics from './font-metrics';
+
+/**
+ * Represents a line in the DOM editor.
+ */
+class LineNode {
+  public element: HTMLPreElement;
+
+  private asciiWidth: number;
+  private lineHeight: number;
+
+  constructor(public line: Line, private metrics: FontMetrics) {
+    this.asciiWidth = this.metrics.asciiWidth();
+    this.lineHeight = this.metrics.lineHeight();
+    this.element = (<HTMLPreElement>elt('pre', null, null, `
+      position: relative;
+      border-width: 0;
+      border-radius: 0;
+      word-wrap: normal;
+      margin: 0;
+      z-index: 2;
+      font-variant-ligatures: contextual;
+      font: ${this.metrics.fontString()};
+    `));
+
+    // Build DOM cursors.
+    line.cursors.forEach((char) => {
+      this.element.appendChild(this.createCursor(char));
+    });
+
+    // Build DOM spans from StyleSpans.
+    line.styles.forEach((styleSpan) => {
+      this.element.appendChild(this.nodeFromStyleSpan(styleSpan));
+    });
+  }
+
+  createCursor(char: number): HTMLElement {
+    return elt('div', null, null, `position: absolute;
+                                   border: 1px solid ${COLORS.CURSOR};
+                                   height: ${this.lineHeight}px;
+                                   left: ${this.asciiWidth * char}px`);
+  }
+
+  nodeFromStyleSpan(styleSpan: StyleSpan): HTMLSpanElement {
+    const {style, range: {start, length}} = styleSpan;
+    const css = `
+      font: ${style.fontString(this.metrics)};
+      color: ${style.fg};
+    `;
+    return elt('span', this.line.text.substr(start, length), null, css);
+  }
+}
 
 /**
  * A view built using the Document Object Model.
  * The scrolling mechanism takes inspiration from CodeMirror.
  * See http://marijnhaverbeke.nl/blog/a-pathological-scrolling-model.html
  *
- * See the Canvas implementation of a view for commented/documented code of what
- * how view should be implemeneted.
+ * See the Canvas implementation of a view for commented/documented code abotu
+ * how a custom view class should be implemeneted.
  */
 export default class DOMView implements View {
 
-  private wrapper: HTMLElement;
-  private sizer: HTMLElement;
   private scroller: HTMLElement;
+  private wrapper: HTMLElement;
+  private gutter: HTMLElement;
+  private sizer: HTMLElement;
   private lines: HTMLElement;
   private mover: HTMLElement;
 
@@ -29,9 +81,9 @@ export default class DOMView implements View {
   private drawGutter: boolean = true;
   private gutterChars: number = 0;
   private gutterWidth: number = 0;
-  private editorPadding: [number, number] = [5, 0];
+  // private editorPadding: [number, number] = [5, 0];
   private gutterPadding: [number, number] = [20, 0];
-  private scrollPastEnd: boolean = false;
+  // private scrollPastEnd: boolean = false;
 
   constructor(private controller: ViewController, opts: ViewOptions) {
     this.wrapper = controller.wrapper;
@@ -78,7 +130,7 @@ export default class DOMView implements View {
       padding-bottom: 30px;
       position: relative;
     `));
-    on(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
+    on(this.scroller, 'scroll', this.onScroll, {capture: false, passive: true});
 
     this.lineCache.on('update', () => this.updateViewport());
   }
@@ -118,11 +170,11 @@ export default class DOMView implements View {
       // its contents changes size) thereby calling this listener again ...
       // and so on ... and so on ...
       // There's definitely a better way to get around this!
-      off(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
+      off(this.scroller, 'scroll', this.onScroll, {capture: false, passive: true});
       this.render();
       // Wait for re-draw to complete, then re-attach scroll listener.
       setTimeout(() => {
-        on(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
+        on(this.scroller, 'scroll', this.onScroll, {capture: false, passive: true});
       });
     }
   }
@@ -143,7 +195,7 @@ export default class DOMView implements View {
     this.sizer.scrollLeft = this.metrics.asciiWidth() * char;
   }
 
-  public posFromCoords(x: number, y: number): [number, number] {
+  public posFromCoords(_x: number, _y: number): [number, number] {
     return [0, 0];
   }
 
@@ -152,7 +204,7 @@ export default class DOMView implements View {
     const lineHeight = this.metrics.lineHeight();
     // TODO: gutter and offsets
     const xOffset = 0; // this.gutterWidth - this.editorPadding[0];
-    const { scrollTop, scrollLeft, clientHeight, clientWidth } = this.scroller;
+    const {scrollTop, scrollLeft, clientHeight, clientWidth} = this.scroller;
     return {
       lineStart: Math.floor(scrollTop / lineHeight),
       lineEnd: Math.floor((scrollTop + clientHeight) / lineHeight),
@@ -166,7 +218,7 @@ export default class DOMView implements View {
     removeChildren(this.lines);
     removeChildren(this.gutter);
 
-    let { lineStart, lineEnd } = this.getViewport();
+    let {lineStart, lineEnd} = this.getViewport();
     this.lineCache.computeMissing(lineStart, lineEnd);
 
     // Push mover forward as we scroll.
@@ -176,7 +228,9 @@ export default class DOMView implements View {
 
     for (let i = lineStart; i < lineEnd + 1; ++i) {
       const line = this.lineCache.get(i);
-      if (!line) { continue; }
+      if (!line) {
+        continue;
+      }
 
       // TODO: CodeMirror draws the gutter itself and the line numbers separately.
       // The gutter itself is placed in the scroller, but the numbers are positioned
@@ -191,56 +245,5 @@ export default class DOMView implements View {
       const lineNode = new LineNode(line, this.metrics);
       this.lines.appendChild(lineNode.element);
     }
-  }
-}
-
-/**
- * Represents a line in the DOM editor.
- */
-class LineNode {
-  public element: HTMLPreElement;
-
-  private asciiWidth: number;
-  private lineHeight: number;
-
-  constructor(public line: Line, private metrics: FontMetrics) {
-    this.asciiWidth = this.metrics.asciiWidth();
-    this.lineHeight = this.metrics.lineHeight();
-    this.element = (<HTMLPreElement>elt('pre', null, null, `
-      position: relative;
-      border-width: 0;
-      border-radius: 0;
-      word-wrap: normal;
-      margin: 0;
-      z-index: 2;
-      font-variant-ligatures: contextual;
-      font: ${this.metrics.fontString()};
-    `));
-
-    // Build DOM cursors.
-    line.cursors.forEach((char) => {
-      this.element.appendChild(this.createCursor(char));
-    });
-
-    // Build DOM spans from StyleSpans.
-    line.styles.forEach((styleSpan) => {
-      this.element.appendChild(this.nodeFromStyleSpan(styleSpan));
-    });
-  }
-
-  createCursor(char: number): HTMLElement {
-    return elt('div', null, null, `position: absolute;
-                                   border: 1px solid ${COLORS.CURSOR};
-                                   height: ${this.lineHeight}px;
-                                   left: ${this.asciiWidth * char}px`);
-  }
-
-  nodeFromStyleSpan(styleSpan: StyleSpan): HTMLSpanElement {
-    const { style, range: { start, length } } = styleSpan;
-    const css = `
-      font: ${style.fontString(this.metrics)};
-      color: ${style.fg};
-    `;
-    return elt('span', this.line.text.substr(start, length), null, css);
   }
 }

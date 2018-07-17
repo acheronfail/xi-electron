@@ -22,12 +22,10 @@
     "indentSize": 2,
     "tabSize": 2
   },
-  "linterOptions": {
-    "exclude": [
-      "out/**/*",
-      "src/xi-core/**/*",
-      "src/xi-plugins/**/*",
-      "xi-editor/**/*",
-    ]
-  }
+  "exclude": [
+    "out/**/*",
+    "src/xi-core/**/*",
+    "src/xi-plugins/**/*",
+    "xi-editor/**/*",
+  ]
 }

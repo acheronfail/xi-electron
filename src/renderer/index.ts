@@ -1,17 +1,17 @@
 import Workspace from './workspace';
-import { DEVMODE } from '../utils/environment';
-import { ViewType } from './view/index';
+import {DEVMODE} from '../utils/environment';
+import {ViewType} from './view/index';
 
 const opts = {
   filePath: 'src/xi/plugins/xi_plugin/cache.py',
   coreOptions: {
     // TODO: XI_RPC_LOG ?
-    env: Object.assign({ RUST_BACKTRACE: 1 }, process.env)
+    env: Object.assign({RUST_BACKTRACE: 1}, process.env)
   },
   viewOptions: {
-    // type: ViewType.Canvas,
+    type: ViewType.Canvas,
     // type: ViewType.DOM,
-    type: ViewType.WebGL,
+    // type: ViewType.WebGL,
     scrollPastEnd: true
   }
 };

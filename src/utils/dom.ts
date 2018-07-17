@@ -5,8 +5,8 @@ export function elt(
   cssText?: string
 ): HTMLElement {
   const e = document.createElement(tag);
-  if (className) { e.className = className; }
-  if (cssText) { e.style.cssText = cssText; }
+  if (className) {e.className = className; }
+  if (cssText) {e.style.cssText = cssText; }
   if (typeof content === 'string') {
     e.appendChild(document.createTextNode(content));
   } else if (Array.isArray(content)) {
@@ -41,7 +41,7 @@ export function off(
 }
 
 export function removeChildren(el: HTMLElement): HTMLElement {
-  while (el.firstChild) { el.removeChild(el.firstChild); }
+  while (el.firstChild) {el.removeChild(el.firstChild); }
   return el;
 }
 

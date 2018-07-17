@@ -1,4 +1,12 @@
 {
+  "linterOptions": {
+    "exclude": [
+      "out/**/*",
+      "src/xi-core/**/*",
+      "src/xi-plugins/**/*",
+      "xi-editor/**/*"
+    ]
+  },
   "rules": {
     "curly": true,
     "eofline": false,
@@ -28,7 +36,7 @@
     ],
     "semicolon": [true, "always"],
     "typedef-whitespace": [
-      true, 
+      true,
       {
         "call-signature": "nospace",
         "index-signature": "nospace",
