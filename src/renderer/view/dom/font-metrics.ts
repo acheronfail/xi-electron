@@ -1,4 +1,4 @@
-import {elt, removeChildrenAndAdd, removeChildren} from '../../../utils/dom';
+import {elt, removeChildrenAndAdd} from '../../../utils/dom';
 import EventEmitter from '../../../utils/emitter';
 
 export type FontOptions = {

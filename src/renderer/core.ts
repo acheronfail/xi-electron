@@ -1,4 +1,5 @@
 import * as execa from 'execa';
+import {ChildProcess} from 'child_process';
 import EventEmitter from '../utils/emitter';
 import {XI_CORE_BIN, XI_CORE_DIR} from '../utils/environment';
 import ViewProxy from './view-proxy';
@@ -6,7 +7,7 @@ import {CoreMethod, CoreResponse} from './types/core';
 import {defineStyle} from './style-map';
 
 export type CoreOptions = {
-  env?: {[key: string]: string | number},
+  env?: {[key: string]: string | undefined},
   configDir?: string,
 };
 
@@ -19,7 +20,7 @@ export type CoreOptions = {
 export default class Core extends EventEmitter {
 
   // The spawned child process.
-  private child: cp.ChildProcess;
+  private child: ChildProcess;
 
   // References to our ViewProxy classes. Keyed by the view's id.
   private proxies: {[key: string]: ViewProxy};

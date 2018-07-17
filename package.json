@@ -70,11 +70,12 @@
     "electron-squirrel-startup": "^1.0.0",
     "execa": "^0.10.0",
     "fs-extra": "^7.0.0",
-    "typescript": "^2.9.2",
-    "tslib": "^1.9.3"
+    "tslib": "^1.9.3",
+    "typescript": "^2.9.2"
   },
   "devDependencies": {
     "@types/electron-devtools-installer": "^2.0.3",
+    "@types/execa": "^0.9.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-forge": "^5.2.2",
     "electron-prebuilt-compile": "2.0.4",

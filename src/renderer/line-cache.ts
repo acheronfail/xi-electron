@@ -286,7 +286,7 @@ export default class LineCache extends EventEmitter {
     }
 
     // Request missing lines.
-    ranges.forEach(([first, last]) => {
+    ranges.forEach(([_first, _last]) => {
       // TODO: should something be done in this case?
       // this.emit(CoreMethod.REQUEST_LINES, [first, last]);
     });

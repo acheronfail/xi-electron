@@ -58,7 +58,7 @@ export interface View {
   // Scrolls the view to the given `line, char` position.
   scrollTo(line: number, char: number): void;
   // Return the `line, char` at the given `x, y` coordinate.
-  posFromCoords(x: number, y: number): [number, number];
+  posFromCoords(x: number, y: number, rect: boolean): [number, number];
   // Get details of the visible lines in the current viewport.
   getViewport(): Viewport;
 }
@@ -75,6 +75,6 @@ export interface FontMetrics {
  * @return {View}                      The newly created view.
  */
 export function createView(controller: ViewController, opts: ViewOptions): View {
-  const View = Views[opts.type];
+  const View = <any>Views[opts.type];
   return new View(controller, opts);
 }
