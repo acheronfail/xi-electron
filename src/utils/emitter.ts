@@ -2,7 +2,7 @@
 export default class EventEmitter {
 
   // Map of events and listeners.
-  _events: {[key: string]: Array<(...args: any[]) => void>};
+  _events: { [key: string]: Array<(...args: any[]) => void> };
 
   // Max amount of listeners that will be added without warnings. Useful to
   // protect against accidental memory leaks.

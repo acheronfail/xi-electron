@@ -1,6 +1,6 @@
-import {FontMetrics} from './view';
-import {DEVMODE} from '../utils/environment';
-import {colorFromARBG} from '../utils/misc';
+import { FontMetrics } from './view';
+import { DEVMODE } from '../utils/environment';
+import { colorFromARBG } from '../utils/misc';
 
 // TODO: color/embolden gutter line number in active line
 // TODO: find a place/method for theming the frontend
@@ -34,7 +34,7 @@ export class Style {
     public weight: number | string = 'normal',
     public italic: boolean = false,
     public underline: boolean = false,
-  ) {}
+  ) { }
 
   // TODO: will have to manually implement underlines in the canvas view!
   // TODO: and obviously will need to implement complete font for WebGL
@@ -58,7 +58,7 @@ export class Style {
 // Reserve DefinedStyles[-1] for a default style.
 Style.DefinedStyles[-1] = new Style(-1, 'white', '');
 export const defineStyle = (params: any) => {
-  const {id, fg_color, bg_color, italic, weight, underline} = params;
+  const { id, fg_color, bg_color, italic, weight, underline } = params;
   Style.DefinedStyles[id] = new Style(
     id,
     colorFromARBG(fg_color),
@@ -78,7 +78,7 @@ export class Range {
    * @param  {Number} start  Starting index.
    * @param  {Number} length Length of range.
    */
-  constructor(public start: number = 0, public length: number = 0) {}
+  constructor(public start: number = 0, public length: number = 0) { }
 }
 
 /**
@@ -140,7 +140,7 @@ export class StyleSpan {
    * @param  {Range}           range The range of the StyleSpan.
    * @param  {StyleIdentifier} style The style's type or identifier.
    */
-  constructor(public range: Range, public style: Style = Style.DefinedStyles[-1]) {}
+  constructor(public range: Range, public style: Style = Style.DefinedStyles[-1]) { }
 }
 
 // Expose `DefinedStyles` in devmode.

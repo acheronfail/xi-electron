@@ -13,7 +13,7 @@
   "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
   "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
   "insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
-  "insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+  "insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
   "insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
   "insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": false,
   "insertSpaceAfterTypeAssertion": false,

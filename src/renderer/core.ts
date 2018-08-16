@@ -1,13 +1,13 @@
 import * as execa from 'execa';
-import {ChildProcess} from 'child_process';
+import { ChildProcess } from 'child_process';
 import EventEmitter from '../utils/emitter';
-import {XI_CORE_BIN, XI_CORE_DIR} from '../utils/environment';
+import { XI_CORE_BIN, XI_CORE_DIR } from '../utils/environment';
 import ViewProxy from './view-proxy';
-import {CoreMethod, CoreResponse} from './types/core';
-import {defineStyle} from './style-map';
+import { CoreMethod, CoreResponse } from './types/core';
+import { defineStyle } from './style-map';
 
 export type CoreOptions = {
-  env?: {[key: string]: string | undefined},
+  env?: { [key: string]: string | undefined },
   configDir?: string,
 };
 
@@ -23,7 +23,7 @@ export default class Core extends EventEmitter {
   private child: ChildProcess;
 
   // References to our ViewProxy classes. Keyed by the view's id.
-  private proxies: {[key: string]: ViewProxy};
+  private proxies: { [key: string]: ViewProxy };
 
   /**
    * Create the class.
@@ -35,7 +35,7 @@ export default class Core extends EventEmitter {
     this.proxies = {};
 
     // Spawn xi-core.
-    this.child = execa(XI_CORE_BIN, [], {env: opts.env || {}});
+    this.child = execa(XI_CORE_BIN, [], { env: opts.env || {} });
     this.child.on('close', this.coreClosed.bind(this));
 
     // Receive messages from xi-core as text.
@@ -64,7 +64,7 @@ export default class Core extends EventEmitter {
    * @return {Boolean}       Whether or not the message successfully sent.
    */
   public send(method: CoreMethod, params: any = {}, rest: any = {}): boolean {
-    const data = {method, params, ...rest};
+    const data = { method, params, ...rest };
     try {
       this.stdin().write(`${JSON.stringify(data)}\n`);
       return true;
@@ -83,9 +83,9 @@ export default class Core extends EventEmitter {
    */
 
   // Getters for easier access to streams.
-  private stdin() {return this.child.stdin; }
-  private stdout() {return this.child.stdout; }
-  private stderr() {return this.child.stderr; }
+  private stdin() { return this.child.stdin; }
+  private stdout() { return this.child.stdout; }
+  private stderr() { return this.child.stderr; }
 
   /**
    * Called when we get events from xi-core's `stdout` stream.
@@ -106,7 +106,7 @@ export default class Core extends EventEmitter {
       switch (msg.method) {
         case CoreResponse.AVAILABLE_THEMES: {
           // TODO: set/save theme + move logic elsewhere
-          this.send(CoreMethod.SET_THEME, {theme_name: 'base16-eighties.dark'});
+          this.send(CoreMethod.SET_THEME, { theme_name: 'base16-eighties.dark' });
           return;
         }
         case CoreResponse.AVAILABLE_PLUGINS:
@@ -178,7 +178,7 @@ function parseMessages(raw: string): Array<any> {
   const lines = raw.split('\n');
 
   for (let i = 0; i < lines.length; ++i) {
-    if (typeof lines[i] !== 'string' || lines[i] === '') {continue; }
+    if (typeof lines[i] !== 'string' || lines[i] === '') { continue; }
     try {
       parsed.push(JSON.parse(lines[i]));
     } catch (err) {

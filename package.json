@@ -11,8 +11,8 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "format": "tsfmt -r",
-    "lint": "tslint --project tsconfig.json --config tslint.json"
+    "lint:fix": "tslint --project tsconfig.json --config tslint.json --fix && tsfmt -r",
+    "lint": "tslint --project tsconfig.json --config tslint.json && tsfmt --verify"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,js,jsx,json,css}": [

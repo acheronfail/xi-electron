@@ -1,7 +1,7 @@
 import * as path from 'path';
-import {app, BrowserWindow} from 'electron';
-import {enableLiveReload} from 'electron-compile';
-import {DEVMODE} from '../utils/environment';
+import { app, BrowserWindow } from 'electron';
+import { enableLiveReload } from 'electron-compile';
+import { DEVMODE } from '../utils/environment';
 
 if (DEVMODE) {
   enableLiveReload();

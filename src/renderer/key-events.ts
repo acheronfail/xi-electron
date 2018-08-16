@@ -1,6 +1,6 @@
 import ViewController from './view-controller';
-import {CoreMethod} from './types/core';
-import {MACOS} from '../utils/environment';
+import { CoreMethod } from './types/core';
+import { MACOS } from '../utils/environment';
 
 /**
  * Key shortcut precedence:
@@ -9,7 +9,7 @@ import {MACOS} from '../utils/environment';
  */
 
 const CmdOrCtrl = MACOS ? 'Super' : 'Ctrl';
-export const keyMap: {[key: string]: CoreMethod} = {
+export const keyMap: { [key: string]: CoreMethod } = {
   // Editing
   [`Tab`]: CoreMethod.INSERT_TAB,
   [`Enter`]: CoreMethod.INSERT_NEWLINE,
@@ -71,7 +71,7 @@ function normalizeKey(input: string): string {
 export function execKey(viewController: ViewController, event: KeyboardEvent): boolean {
   if (event.type == 'keydown') {
 
-    const {metaKey, ctrlKey, shiftKey, altKey} = event;
+    const { metaKey, ctrlKey, shiftKey, altKey } = event;
 
     let prefix = '';
     if (metaKey) {

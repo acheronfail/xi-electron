@@ -1,4 +1,4 @@
-import {elt, removeChildrenAndAdd} from '../../../utils/dom';
+import { elt, removeChildrenAndAdd } from '../../../utils/dom';
 import EventEmitter from '../../../utils/emitter';
 
 export type FontOptions = {
@@ -53,13 +53,13 @@ export default class FontMetrics extends EventEmitter {
    * @param  {FontOptions} opts Options for the new settings.
    */
   public update(opts: FontOptions) {
-    if (opts.family) {this.familyValue = opts.family; }
-    if (opts.size) {this.sizeValue = opts.size; }
+    if (opts.family) { this.familyValue = opts.family; }
+    if (opts.size) { this.sizeValue = opts.size; }
 
     // Purge cached values which are now inaccurate.
     this.measure.style.font = this.fontString();
-    if (this.cachedAsciiWidth != null) {this.asciiWidth(true); }
-    if (this.cachedLineHeight != null) {this.lineHeight(true); }
+    if (this.cachedAsciiWidth != null) { this.asciiWidth(true); }
+    if (this.cachedLineHeight != null) { this.lineHeight(true); }
 
     this.emit('update');
   }
@@ -70,7 +70,7 @@ export default class FontMetrics extends EventEmitter {
    * @return {Number}        The character width (in pixels).
    */
   public asciiWidth(force: boolean = false): number {
-    if (!force && this.cachedAsciiWidth != null) {return this.cachedAsciiWidth; }
+    if (!force && this.cachedAsciiWidth != null) { return this.cachedAsciiWidth; }
     return this.computeAsciiWidth();
   }
 
@@ -80,7 +80,7 @@ export default class FontMetrics extends EventEmitter {
    * @return {Number}        The line height (in pixels).
    */
   public lineHeight(force: boolean = false): number {
-    if (!force && this.cachedLineHeight != null) {return this.cachedLineHeight; }
+    if (!force && this.cachedLineHeight != null) { return this.cachedLineHeight; }
     return this.computeLineHeight();
   }
 
@@ -126,7 +126,7 @@ export default class FontMetrics extends EventEmitter {
     const rect = anchor.getBoundingClientRect(),
       width = (rect.right - rect.left) / 10;
 
-    if (width > 2) {this.cachedAsciiWidth = width; }
+    if (width > 2) { this.cachedAsciiWidth = width; }
     return width || 10;
   }
 
@@ -145,7 +145,7 @@ export default class FontMetrics extends EventEmitter {
     removeChildrenAndAdd(this.measure, pre);
 
     const height = pre.offsetHeight / 50;
-    if (height > 3) {this.cachedLineHeight = height; }
+    if (height > 3) { this.cachedLineHeight = height; }
     return height || 1;
   }
 }

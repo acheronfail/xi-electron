@@ -1,10 +1,10 @@
-import {elt, on, off} from '../utils/dom';
-import {execKey} from './key-events';
-import Core, {CoreOptions} from './core';
+import { elt, on, off } from '../utils/dom';
+import { execKey } from './key-events';
+import Core, { CoreOptions } from './core';
 import ViewController from './view-controller';
 import ViewProxy from './view-proxy';
-import {ViewOptions} from './view';
-import {CoreMethod} from './types/core';
+import { ViewOptions } from './view';
+import { CoreMethod } from './types/core';
 
 /**
  * Our unique id of the our views, we send this through to xi-core when
@@ -63,7 +63,7 @@ export default class Workspace {
     });
 
     // Initially create just one view.
-    this.core.send(CoreMethod.NEW_VIEW, {file_path: opts.filePath}, {id: viewInstanceId++});
+    this.core.send(CoreMethod.NEW_VIEW, { file_path: opts.filePath }, { id: viewInstanceId++ });
 
     // Attach unload handler to window.
     window.onbeforeunload = this.beforeUnload.bind(this);
@@ -105,7 +105,7 @@ export default class Workspace {
    */
   private mousedown(event: MouseEvent) {
     const controller = this.controllers.find((c) => c.getWrapperElement().contains((<Node>event.target)));
-    if (!controller) {return; }
+    if (!controller) { return; }
 
     // Send click event through to ViewController.
     controller.doClick(event);

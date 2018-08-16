@@ -1,10 +1,10 @@
-import {nDigits} from '../../../utils/misc';
-import {elt, removeChildren, on, off} from '../../../utils/dom';
-import {StyleSpan, COLORS} from '../../style-map';
+import { nDigits } from '../../../utils/misc';
+import { elt, removeChildren, on, off } from '../../../utils/dom';
+import { StyleSpan, COLORS } from '../../style-map';
 
-import {View, ViewOptions, Viewport} from '../index';
+import { View, ViewOptions, Viewport } from '../index';
 import ViewController from '../../view-controller';
-import LineCache, {Line} from '../../line-cache';
+import LineCache, { Line } from '../../line-cache';
 import FontMetrics from './font-metrics';
 
 /**
@@ -49,7 +49,7 @@ class LineNode {
   }
 
   nodeFromStyleSpan(styleSpan: StyleSpan): HTMLSpanElement {
-    const {style, range: {start, length}} = styleSpan;
+    const { style, range: { start, length } } = styleSpan;
     const css = `
       font: ${style.fontString(this.metrics)};
       color: ${style.fg};
@@ -130,7 +130,7 @@ export default class DOMView implements View {
       padding-bottom: 30px;
       position: relative;
     `));
-    on(this.scroller, 'scroll', this.onScroll, {capture: false, passive: true});
+    on(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
 
     this.lineCache.on('update', () => this.updateViewport());
   }
@@ -170,11 +170,11 @@ export default class DOMView implements View {
       // its contents changes size) thereby calling this listener again ...
       // and so on ... and so on ...
       // There's definitely a better way to get around this!
-      off(this.scroller, 'scroll', this.onScroll, {capture: false, passive: true});
+      off(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
       this.render();
       // Wait for re-draw to complete, then re-attach scroll listener.
       setTimeout(() => {
-        on(this.scroller, 'scroll', this.onScroll, {capture: false, passive: true});
+        on(this.scroller, 'scroll', this.onScroll, { capture: false, passive: true });
       });
     }
   }
@@ -204,7 +204,7 @@ export default class DOMView implements View {
     const lineHeight = this.metrics.lineHeight();
     // TODO: gutter and offsets
     const xOffset = 0; // this.gutterWidth - this.editorPadding[0];
-    const {scrollTop, scrollLeft, clientHeight, clientWidth} = this.scroller;
+    const { scrollTop, scrollLeft, clientHeight, clientWidth } = this.scroller;
     return {
       lineStart: Math.floor(scrollTop / lineHeight),
       lineEnd: Math.floor((scrollTop + clientHeight) / lineHeight),
@@ -218,7 +218,7 @@ export default class DOMView implements View {
     removeChildren(this.lines);
     removeChildren(this.gutter);
 
-    let {lineStart, lineEnd} = this.getViewport();
+    let { lineStart, lineEnd } = this.getViewport();
     this.lineCache.computeMissing(lineStart, lineEnd);
 
     // Push mover forward as we scroll.
