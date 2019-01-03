@@ -27,25 +27,28 @@ To build and run `xi-electron` you'll need to have [NodeJS](https://nodejs.org) 
 To get started:
 
 ```bash
-> git clone https://github.com/acheronfail/xi-electron
+> git clone https://github.com/acheronfail/xi-electron --recursive
 > cd xi-electron
-> yarn          # or: npm install
+> yarn            # or: npm install
 
-# To build xi-electron into an application:
-> yarn make     # or: npm run make
+# Build xi-core:
+> yarn build:core
 
 # If you just want to run in dev mode then run:
-> yarn start    # or: npm run start
+> yarn start      # or: npm run start
+
+# To build xi-electron into an application:
+> yarn make       # or: npm run make
 ```
 
-The `postinstall` script will attempt to build `xi-editor`, so you'll need Rust (see below for details).
+The `yarn build:core` script will attempt to build `xi-editor`, so you'll need Rust (see below for details).
 The built app will be output to `xi-electron/out/`.
 
 ## Building `xi-core`
 
 Keep in mind you'll need [Rust](https://www.rust-lang.org/) (version 1.20+ is recommended at the moment). On macOS platforms you'll need [Xcode 8.2](https://developer.apple.com/xcode/) and other relevant build tools.
 
-This should automatically be done via `scripts/postinstall.js` once the node dependencies have been installed. You can re-run this script anytime you like. [`xi-editor`](https://github.com/google/xi-editor) is currently placed in this repository as a submodule, so we can have a "somewhat" stable experience. 
+You can build and install xi-core via `yarn build:core`. You can re-run this script anytime you like. [`xi-editor`](https://github.com/google/xi-editor) is currently placed in this repository as a submodule, so we can have a "somewhat" stable experience.
 
 If you run into build issues ensure the submodule is present, ie:
 
@@ -67,7 +70,7 @@ Please! 🙏
 
 [MIT](LICENSE)
 
-<!-- 
+<!--
 
 # TODO for `xi-electron`
 

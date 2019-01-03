@@ -1,14 +1,14 @@
-language: node_js
-node_js: node
+language: rust
+rust: nightly
+
 os:
-- linux
-- osx
-dist: trusty
-osx_image: xcode8.3
-sudo: false
+  - linux
+  - osx
+  - windows
 
 cache:
   yarn: true
+  cargo: true
   directories:
   - node_modules
   - $HOME/.cache/electron
@@ -19,19 +19,15 @@ addons:
     - fakeroot
     - rpm
 
-branches:
-  only:
-  - master
-  - /^v\d+\.\d+\.\d+/
+before_install:
+  - nvm install lts/carbon
 
 install:
-- curl -sSf https://sh.rustup.rs > ./rustup.sh
-- chmod +x ./rustup.sh
-- ./rustup.sh -y
-- source $HOME/.cargo/env
-- yarn
+  - yarn
 
 script:
-- yarn lint
-- if test -z "$TRAVIS_TAG"; then travis_wait yarn make; fi
-after_success: if test -n "$TRAVIS_TAG"; then yarn publish; fi
+  - yarn lint
+  - if test -z "$TRAVIS_TAG"; then travis_wait yarn make; fi
+
+after_success:
+  - if test -n "$TRAVIS_TAG"; then yarn publish; fi
