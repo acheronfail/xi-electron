@@ -1,6 +1,13 @@
 language: rust
 rust: nightly
 
+sudo: false
+
+notifications:
+  email:
+    on_success: never
+    on_failure: change
+
 os:
   - linux
   - osx
@@ -16,19 +23,26 @@ cache:
 addons:
   apt:
     packages:
-    - fakeroot
-    - rpm
-    - snapcraft
-    - flatpak-builder
+      - fakeroot
+      - rpm
+  homebrew:
+    packages:
+      - yarn
 
 before_install:
-  - if [ $TRAVIS_OS_NAME = windows ]; then choco install nvm; fi
-  - nvm install lts/carbon
+  # Use NVS for Windows builds (easier to setup than NVM at the moment).
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then git clone --branch "v1.5.2" --depth 1 https://github.com/jasongin/nvs ~/.nvs; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then source ~/.nvs/nvs.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then nvs add lts/carbon; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then nvs use lts/carbon; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install yarn; export PATH="/c/Program Files (x86)/Yarn/bin:$PATH"; fi
+  # Use NVM on linux and macos (comes pre-installed).
+  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then nvm install lts/carbon; fi
 
 script:
   - yarn
   - yarn lint
-  - if test -z "$TRAVIS_TAG"; then travis_wait yarn make; fi
+  - if [ -n "$TRAVIS_TAG" ]; then travis_wait yarn make; fi
 
 after_success:
-  - if test -n "$TRAVIS_TAG"; then yarn publish; fi
+  - if [ -n "$TRAVIS_TAG" ]; then yarn run publish; fi

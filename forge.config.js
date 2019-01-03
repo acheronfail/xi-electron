@@ -2,7 +2,7 @@ module.exports = {
   make_targets: {
     win32: ['squirrel'],
     darwin: ['zip', 'dmg'],
-    linux: ['deb', 'rpm', 'flatpak']
+    linux: ['deb', 'rpm']
   },
   electronPackagerConfig: {
     packageManager: 'yarn',
