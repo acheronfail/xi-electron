@@ -18,14 +18,15 @@ addons:
     packages:
     - fakeroot
     - rpm
+    - snapcraft
+    - flatpak-builder
 
 before_install:
+  - if [ $TRAVIS_OS_NAME = windows ]; then choco install nvm; fi
   - nvm install lts/carbon
 
-install:
-  - yarn
-
 script:
+  - yarn
   - yarn lint
   - if test -z "$TRAVIS_TAG"; then travis_wait yarn make; fi
 

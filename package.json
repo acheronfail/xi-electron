@@ -31,39 +31,7 @@
   "author": "acheronfail",
   "license": "MIT",
   "config": {
-    "forge": {
-      "make_targets": {
-        "win32": [
-          "squirrel"
-        ],
-        "darwin": [
-          "zip",
-          "dmg"
-        ],
-        "linux": [
-          "deb",
-          "rpm",
-          "flatpak"
-        ]
-      },
-      "electronPackagerConfig": {
-        "packageManager": "yarn",
-        "appBundleId": "io.acheronfail.xi-electron"
-      },
-      "electronWinstallerConfig": {
-        "name": "xi_electron"
-      },
-      "electronInstallerDebian": {},
-      "electronInstallerRedhat": {},
-      "github_repository": {
-        "owner": "acheronfail",
-        "name": "xi-electron"
-      },
-      "windowsStoreConfig": {
-        "packageName": "io.acheronfail.xi-electron",
-        "name": "xi_electron"
-      }
-    }
+    "forge": "./forge.config.js"
   },
   "dependencies": {
     "electron-compile": "^6.4.4",
