@@ -2,6 +2,8 @@
 
 _A front-end for the xi-editor built with modern web technologies._
 
+[![Build Status](https://travis-ci.org/acheronfail/xi-electron.svg?branch=master)](https://travis-ci.org/acheronfail/xi-electron)
+
 NOTE: This is still a WIP!
 
 ## Demo
