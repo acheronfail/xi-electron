@@ -34,7 +34,7 @@ To get started:
 > yarn            # or: npm install
 
 # Build xi-core:
-> yarn build:core
+> yarn core:build
 
 # If you just want to run in dev mode then run:
 > yarn start      # or: npm run start
@@ -48,7 +48,7 @@ The built app will be output to `xi-electron/out/`.
 
 ## Building `xi-core`
 
-Keep in mind you'll need [Rust](https://www.rust-lang.org/) (version 1.20+ is recommended at the moment). On macOS platforms you'll need [Xcode 8.2](https://developer.apple.com/xcode/) and other relevant build tools.
+Keep in mind you'll need [Rust](https://www.rust-lang.org/) (version 1.30+ is recommended at the moment). On macOS platforms you'll need [Xcode 8.2](https://developer.apple.com/xcode/) and other relevant build tools.
 
 You can build and install xi-core via `yarn build:core`. You can re-run this script anytime you like. [`xi-editor`](https://github.com/google/xi-editor) is currently placed in this repository as a submodule, so we can have a "somewhat" stable experience.
 
@@ -56,6 +56,15 @@ If you run into build issues ensure the submodule is present, ie:
 
 ```bash
 > git submodule update --init
+```
+
+Alternatively, if you'd like to clean and re-build everything again, you can run:
+
+```bash
+# Deletes all build artefacts:
+> yarn core:clean
+# Rebuilds the core:
+> yarn core:build
 ```
 
 If you'd like to build and use a more recent version of `xi-editor` then just place it under `src/xi-core`. For building `xi-editor` manually [refer to its instructions](https://github.com/google/xi-editor#building-the-core).

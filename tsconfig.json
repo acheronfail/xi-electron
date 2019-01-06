@@ -2,6 +2,8 @@
   "compilerOptions": {
     "removeComments": false,
     "preserveConstEnums": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "declaration": true,
     "noImplicitAny": true,

@@ -5,7 +5,8 @@
   "description": "A frontend for xi-editor based on modern web-technologies",
   "main": "src/main/index.ts",
   "scripts": {
-    "build:core": "node scripts/build-core.js",
+    "core:build": "node scripts/core-build.js",
+    "core:clean": "node scripts/core-clean.js",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
