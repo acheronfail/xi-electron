@@ -1,7 +1,7 @@
 {
   "name": "xi-electron",
   "productName": "Xi Electron",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A frontend for xi-editor based on modern web-technologies",
   "main": "src/main/index.ts",
   "scripts": {
