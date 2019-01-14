@@ -13,6 +13,12 @@ os:
   - osx
   - windows
 
+matrix:
+  allow_failures:
+    # Windows currently fails whenever there are secrets set in Travis
+    # See: https://travis-ci.community/t/windows-instances-hanging-before-install/250/2?u=acheronfail
+    - os: windows
+
 cache:
   yarn: true
   cargo: true
@@ -42,7 +48,7 @@ before_install:
 script:
   - yarn
   - yarn lint
-  - if [ -n "$TRAVIS_TAG" ]; then travis_wait yarn make; fi
+  - if [ -n "$TRAVIS_TAG" ]; then yarn make; fi
 
 after_success:
   - if [ -n "$TRAVIS_TAG" ]; then yarn run publish; fi
