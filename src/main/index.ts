@@ -7,7 +7,7 @@ if (DEVMODE) {
   enableLiveReload();
 }
 
-// TODO: menus
+// TODO: native os menus
 // TODO: main proc
 
 let win: BrowserWindow | null = null;
@@ -17,11 +17,16 @@ app.on('ready', async () => {
   win = new BrowserWindow({
     show: true,
     webPreferences: {
+      nodeIntegration: true,
       // Enable experimental features that we use: ResizeObserver
       experimentalFeatures: true
     }
   });
   win.loadURL('file://' + path.join(__dirname, '..', 'pages', 'index.html'));
   win.on('close', () => win = null);
+
+  if (process.env.DEBUG) {
+    win.webContents.toggleDevTools();
+  }
 
 });

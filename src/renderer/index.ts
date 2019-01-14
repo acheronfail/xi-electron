@@ -4,7 +4,7 @@ import { DEVMODE } from '../utils/environment';
 import { ViewType } from './view/index';
 
 const opts = {
-  filePath: path.join('src', 'xi', 'plugins', 'xi_plugin', 'cache.py'),
+  filePath: path.resolve(__dirname, '..', 'xi', 'plugins', 'xi_plugin', 'cache.py'),
   coreOptions: {
     // TODO: XI_RPC_LOG ?
     env: Object.assign({ RUST_BACKTRACE: 1 }, process.env)
