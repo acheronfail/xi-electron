@@ -48,6 +48,7 @@ before_install:
 script:
   - yarn
   - yarn lint
+  - yarn core:build
   - if [ -n "$TRAVIS_TAG" ]; then yarn make; fi
 
 after_success:
