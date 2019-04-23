@@ -57,6 +57,9 @@ export default class CanvasView implements View {
   // Whether or not to draw the gutter.
   private drawGutter: boolean = true;
 
+  // Cursor beat timer
+  private cursorBeat: number;
+
   // The character length of the longest line of the editor.
   // HACK: need to find a better way of getting the longest line, right now we just update it
   // whenever we render... (also won't decrease it longest line changes)
@@ -309,8 +312,26 @@ export default class CanvasView implements View {
       //      - have another transparent canvas on top for selections/highlights/cursors? *
       this.ctx.fillStyle = COLORS.CURSOR;
       line.cursors.forEach((ch) => {
+        if (this.cursorBeat != undefined) {
+          clearInterval(this.cursorBeat);
+        }
+
+        const beatInterval = 800;
         const textWidth = this.metrics.stringWidth(line.text.substring(0, line.chTo16Indices[ch]));
-        this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
+
+        const colorizeCursor = (color) => () => {
+          this.ctx.fillStyle = color;
+          this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
+        };
+
+        // First beat
+        colorizeCursor(COLORS.CURSOR);
+        setTimeout(colorizeCursor(COLORS.BACKGROUND), beatInterval);
+
+        this.cursorBeat = <any>setInterval(() => {
+          colorizeCursor(COLORS.CURSOR);
+          setTimeout(colorizeCursor(COLORS.BACKGROUND), beatInterval);
+        }, beatInterval * 2);
       });
 
       // Draw text.
