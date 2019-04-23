@@ -319,18 +319,23 @@ export default class CanvasView implements View {
         const beatInterval = 800;
         const textWidth = this.metrics.stringWidth(line.text.substring(0, line.chTo16Indices[ch]));
 
-        const colorizeCursor = (color: string) => () => {
-          this.ctx.fillStyle = color;
+        const fadeCursor = () => {
+          this.ctx.fillStyle = COLORS.BACKGROUND;
+          this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
+        };
+
+        const showCursor = () => {
+          this.ctx.fillStyle = COLORS.CURSOR;
           this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
         };
 
         // First beat
-        colorizeCursor(COLORS.CURSOR);
-        setTimeout(colorizeCursor(COLORS.BACKGROUND), beatInterval);
+        showCursor();
+        setTimeout(fadeCursor, beatInterval);
 
         this.cursorBeat = <any>setInterval(() => {
-          colorizeCursor(COLORS.CURSOR);
-          setTimeout(colorizeCursor(COLORS.BACKGROUND), beatInterval);
+          showCursor();
+          setTimeout(fadeCursor, beatInterval);
         }, beatInterval * 2);
       });
 
