@@ -320,7 +320,8 @@ export default class CanvasView implements View {
         const textWidth = this.metrics.stringWidth(line.text.substring(0, line.chTo16Indices[ch]));
 
         const fadeCursor = (line: any) => () => {
-          let nondefaultStyles = line.styles.reverse().filter((span: StyleSpan) => (span.style.isSelection() || span.style.isHighlight()));
+          let nondefaultStyles = line.styles.reverse()
+          .filter((span: StyleSpan) => (span.style.isSelection() || span.style.isHighlight()));
 
           this.ctx.fillStyle = COLORS.BACKGROUND;
           this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
