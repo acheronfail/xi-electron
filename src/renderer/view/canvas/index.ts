@@ -321,7 +321,7 @@ export default class CanvasView implements View {
 
         const fadeCursor = (line: any) => () => {
           let nondefaultStyles = line.styles.reverse()
-          .filter((span: StyleSpan) => (span.style.isSelection() || span.style.isHighlight()));
+            .filter((span: StyleSpan) => (span.style.isSelection() || span.style.isHighlight()));
 
           this.ctx.fillStyle = COLORS.BACKGROUND;
           this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
