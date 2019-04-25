@@ -319,9 +319,17 @@ export default class CanvasView implements View {
         const beatInterval = 800;
         const textWidth = this.metrics.stringWidth(line.text.substring(0, line.chTo16Indices[ch]));
 
-        const fadeCursor = () => {
+        const fadeCursor = (line: any) => () => {
+          let nondefaultStyles = line.styles.reverse().filter((span: StyleSpan) => (span.style.isSelection() || span.style.isHighlight()));
+
           this.ctx.fillStyle = COLORS.BACKGROUND;
           this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
+
+          if (nondefaultStyles.length) {
+            let span = nondefaultStyles[0];
+            this.ctx.fillStyle = span.style.bg;
+            this.ctx.fillRect(textWidth + xOffset, y, 2, lineHeight);
+          }
         };
 
         const showCursor = () => {
@@ -331,11 +339,11 @@ export default class CanvasView implements View {
 
         // First beat
         showCursor();
-        setTimeout(fadeCursor, beatInterval);
+        setTimeout(fadeCursor(line), beatInterval);
 
         this.cursorBeat = <any>setInterval(() => {
           showCursor();
-          setTimeout(fadeCursor, beatInterval);
+          setTimeout(fadeCursor(line), beatInterval);
         }, beatInterval * 2);
       });
 
